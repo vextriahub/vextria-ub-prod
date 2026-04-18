@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const API_CONFIG = {
   // Base URLs das APIs
-  PROCESSO_API_BASE_URL: 'https://api.cnj.jus.br/v1',
+  PROCESSO_API_BASE_URL: 'https://api-publica.datajud.cnj.jus.br',
   
   // Configurações Stripe (APENAS CHAVE PÚBLICA NO FRONTEND)
   STRIPE: {
