@@ -237,7 +237,7 @@ const Landing: React.FC = () => {
                       Contato
                     </Button>
                     <hr className="border-border" />
-                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro")}>
+                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro?plan=básico")}>
                       Começar Agora
                     </Button>
                   </div>
@@ -262,7 +262,7 @@ const Landing: React.FC = () => {
                 <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="font-medium">
                   Entrar
                 </Button>
-                <Button onClick={() => navigate("/cadastro")} size="sm" className="bg-primary hover:bg-primary/90 font-semibold shadow-lg shadow-primary/20">
+                <Button onClick={() => navigate("/cadastro?plan=básico")} size="sm" className="bg-primary hover:bg-primary/90 font-semibold shadow-lg shadow-primary/20">
                   Experimentar Grátis
                 </Button>
               </div>
@@ -285,11 +285,11 @@ const Landing: React.FC = () => {
             Criado especialmente para advogados que querem organização sem complicação.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <Button size="lg" className="text-lg px-8 bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro")}>
+            <Button size="lg" className="text-lg px-8 bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro?plan=básico")}>
               Testar Grátis por 7 Dias
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8">
+            <Button variant="outline" size="lg" className="text-lg px-8" onClick={() => document.getElementById('funcionalidades')?.scrollIntoView({ behavior: 'smooth' })}>
               Ver Demonstração
             </Button>
           </div>
@@ -497,7 +497,7 @@ const Landing: React.FC = () => {
               <strong>7 dias grátis, sem compromisso.</strong> Se não gostar, cancele com um clique.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <Button size="lg" className="text-lg px-12 py-4 bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro")}>
+              <Button size="lg" className="text-lg px-12 py-4 bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro?plan=básico")}>
                 Começar Agora com 7 Dias Grátis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -537,20 +537,20 @@ const Landing: React.FC = () => {
               <ul className="space-y-2 text-muted-foreground">
                 <li><a href="#funcionalidades" className="hover:text-foreground transition-colors">Funcionalidades</a></li>
                 <li><a href="#planos" className="hover:text-foreground transition-colors">Planos</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Período Trial</a></li>
+                <li><a href="#planos" className="hover:text-foreground transition-colors">Período Trial</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Empresa</h4>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Sobre</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Contato</a></li>
+                <li><a href="#beneficios" className="hover:text-foreground transition-colors">Sobre</a></li>
+                <li><a href="mailto:contato@vextriahub.com" className="hover:text-foreground transition-colors">Contato</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Suporte</h4>
               <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Central de Ajuda</a></li>
+                <li><a href="mailto:contato@vextriahub.com" className="hover:text-foreground transition-colors">Central de Ajuda</a></li>
                 <li><a href="/politica-privacidade" className="hover:text-foreground transition-colors">Política de Privacidade</a></li>
               </ul>
             </div>
