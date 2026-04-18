@@ -97,7 +97,7 @@ export const SubscriptionManagement: React.FC = () => {
   const resetForm = () => {
     setFormData({
       office_id: '',
-      plan: 'basic',
+      plan: 'basico',
       status: 'active',
       start_date: new Date().toISOString().split('T')[0],
       end_date: null,
@@ -181,10 +181,10 @@ export const SubscriptionManagement: React.FC = () => {
 
   const getPlanDisplayName = (plan: string) => {
     const names: Record<string, string> = {
-      free: 'Gratuito',
-      'básico': 'Básico',
-      'intermediário': 'Intermediário',
-      'avançado': 'Avançado',
+      trial: 'Trial',
+      basico: 'Básico',
+      intermediario: 'Intermediário',
+      avancado: 'Avançado',
       premium: 'Premium',
     };
     return names[plan] || plan;
@@ -283,9 +283,9 @@ export const SubscriptionManagement: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                      <SelectContent>
-                      <SelectItem value="básico">Básico</SelectItem>
-                      <SelectItem value="intermediário">Intermediário</SelectItem>
-                      <SelectItem value="avançado">Avançado</SelectItem>
+                      <SelectItem value="basico">Básico</SelectItem>
+                      <SelectItem value="intermediario">Intermediário</SelectItem>
+                      <SelectItem value="avancado">Avançado</SelectItem>
                       <SelectItem value="premium">Premium</SelectItem>
                     </SelectContent>
                   </Select>
@@ -460,9 +460,9 @@ export const SubscriptionManagement: React.FC = () => {
                 </SelectTrigger>
                  <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="básico">Básico</SelectItem>
-                  <SelectItem value="intermediário">Intermediário</SelectItem>
-                  <SelectItem value="avançado">Avançado</SelectItem>
+                  <SelectItem value="basico">Básico</SelectItem>
+                  <SelectItem value="intermediario">Intermediário</SelectItem>
+                  <SelectItem value="avancado">Avançado</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
                 </SelectContent>
               </Select>

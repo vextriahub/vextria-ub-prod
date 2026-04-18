@@ -49,10 +49,10 @@ serve(async (req) => {
 
     // Map plan names to Stripe price IDs (preços de produção)
     const priceIds: Record<string, string> = {
-      'Básico': 'price_1TNgGiRxpxHvdzs7GZQgGad2',
-      'Intermediário': 'price_1TNgH6RxpxHvdzs72OZhS2mb',
-      'Avançado': 'price_1TNgHMRxpxHvdzs7SCBkNwR2',
-      'Premium': 'price_1TNgHbRxpxHvdzs7Q5ocxeMj'
+      'basico': 'price_1TNgGiRxpxHvdzs7GZQgGad2',
+      'intermediario': 'price_1TNgH6RxpxHvdzs72OZhS2mb',
+      'avancado': 'price_1TNgHMRxpxHvdzs7SCBkNwR2',
+      'premium': 'price_1TNgHbRxpxHvdzs7Q5ocxeMj'
     };
 
     const priceId = priceIds[planName];

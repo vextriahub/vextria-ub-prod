@@ -11,7 +11,7 @@ export interface SubscriptionData {
   stripe_payment_intent_id?: string;
   payment_status: 'paid' | 'pending' | 'overdue' | 'canceled' | 'unknown';
   access_status: 'active' | 'suspended' | 'blocked';
-  plan_type: 'basic' | 'premium' | 'enterprise';
+  plan_type: 'trial' | 'basico' | 'intermediario' | 'avancado' | 'premium';
   monthly_fee: number;
   due_date?: string;
   paid_date?: string;

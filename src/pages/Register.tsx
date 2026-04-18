@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Register = () => {
   const [searchParams] = useSearchParams();
-  const selectedPlan = searchParams.get('plan') || 'básico';
+  const selectedPlan = searchParams.get('plan') || 'basico';
   
   const [formData, setFormData] = useState({
     name: "",
@@ -43,7 +43,7 @@ const Register = () => {
       const { data, error } = await supabase
         .from('plan_configs')
         .select('*')
-        .eq('plan_name', selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1))
+        .eq('plan_type', selectedPlan)
         .single();
       
       if (data) {
@@ -182,7 +182,7 @@ const Register = () => {
 
       // Criar checkout session via Stripe
       const checkoutData = await createCheckoutSession(
-        selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1),
+        selectedPlan,
         planData ? planData.price_cents / 100 : 99
       );
 

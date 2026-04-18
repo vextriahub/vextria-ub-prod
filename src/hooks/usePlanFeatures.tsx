@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export type PlanType = 'free' | 'básico' | 'intermediário' | 'avançado' | 'premium';
+export type PlanType = 'trial' | 'basico' | 'intermediario' | 'avancado' | 'premium';
 
 interface PlanFeatures {
   // Limites quantitativos
@@ -44,12 +44,12 @@ interface PlanFeatures {
 }
 
 const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
-  free: {
-    maxProcesses: 5,
-    maxClients: 10,
+  trial: {
+    maxProcesses: 10,
+    maxClients: 20,
     maxUsers: 1,
-    maxTasks: 20,
-    maxDeadlines: 10,
+    maxTasks: 50,
+    maxDeadlines: 20,
     hasFinancialModule: false,
     hasGoalsModule: false,
     hasIAModule: false,
@@ -72,7 +72,7 @@ const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
     canCustomizeTheme: false,
     canUploadLogo: false,
   },
-  'básico': {
+  basico: {
     maxProcesses: 30,
     maxClients: 100,
     maxUsers: 1,
@@ -100,7 +100,7 @@ const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
     canCustomizeTheme: true,
     canUploadLogo: true,
   },
-  'intermediário': {
+  intermediario: {
     maxProcesses: 100,
     maxClients: 500,
     maxUsers: 3,
@@ -128,7 +128,7 @@ const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
     canCustomizeTheme: true,
     canUploadLogo: true,
   },
-  'avançado': {
+  avancado: {
     maxProcesses: 300,
     maxClients: 2000,
     maxUsers: 5,
@@ -197,13 +197,12 @@ export const usePlanFeatures = () => {
     
     // Escritório Vitalício tem acesso completo (Premium)
     if (office?.is_lifetime) {
-      console.log('💎 Acesso Vitalício detectado. Liberando funcionalidades Premium.');
       return PLAN_FEATURES.premium;
     }
     
-    // Usar o plano do escritório ou free como padrão
-    const plan = office?.plan || 'free';
-    const features = PLAN_FEATURES[plan as PlanType] || PLAN_FEATURES.free;
+    // Usar o plano do escritório ou trial como padrão
+    const plan = office?.plan || 'trial';
+    const features = PLAN_FEATURES[plan as PlanType] || PLAN_FEATURES.trial;
     
     return features;
   }, [office?.plan, office?.is_lifetime, isSuperAdmin]);
@@ -262,23 +261,23 @@ export const usePlanLimits = () => {
       },
       features,
       loading,
-      currentPlan: (office?.plan || 'free') as PlanType,
+      currentPlan: (office?.plan || 'trial') as PlanType,
     };
   }, [features, office?.plan, stats, loading]);
 };
 
 export const PLAN_NAMES: Record<PlanType, string> = {
-  free: 'Gratuito',
-  'básico': 'Básico',
-  'intermediário': 'Intermediário',
-  'avançado': 'Avançado',
+  trial: 'Trial (7 dias)',
+  basico: 'Básico',
+  intermediario: 'Intermediário',
+  avancado: 'Avançado',
   premium: 'Premium',
 };
 
 export const PLAN_PRICES: Record<PlanType, { monthly: number; yearly: number }> = {
-  free: { monthly: 0, yearly: 0 },
-  'básico': { monthly: 47, yearly: 470 },
-  'intermediário': { monthly: 97, yearly: 970 },
-  'avançado': { monthly: 197, yearly: 1970 },
+  trial: { monthly: 0, yearly: 0 },
+  basico: { monthly: 47, yearly: 470 },
+  intermediario: { monthly: 97, yearly: 970 },
+  avancado: { monthly: 197, yearly: 1970 },
   premium: { monthly: 397, yearly: 3970 },
 };

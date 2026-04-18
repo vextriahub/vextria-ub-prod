@@ -135,10 +135,10 @@ export const OfficeManagement: React.FC = () => {
 
   const getPlanDisplayName = (plan: string) => {
     const names: Record<string, string> = {
-      free: 'Gratuito',
-      'básico': 'Básico',
-      'intermediário': 'Intermediário',
-      'avançado': 'Avançado',
+      trial: 'Trial',
+      basico: 'Básico',
+      intermediario: 'Intermediário',
+      avancado: 'Avançado',
       premium: 'Premium',
     };
     return names[plan] || plan;
@@ -146,10 +146,10 @@ export const OfficeManagement: React.FC = () => {
 
   const getPlanBadgeVariant = (plan: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      free: 'outline',
-      'básico': 'secondary',
-      'intermediário': 'default',
-      'avançado': 'default',
+      trial: 'outline',
+      basico: 'secondary',
+      intermediario: 'default',
+      avancado: 'default',
       premium: 'destructive',
     };
     return variants[plan] || 'outline';
@@ -250,9 +250,10 @@ export const OfficeManagement: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="básico">Básico</SelectItem>
-                      <SelectItem value="intermediário">Intermediário</SelectItem>
-                      <SelectItem value="avançado">Avançado</SelectItem>
+                      <SelectItem value="trial">Trial</SelectItem>
+                      <SelectItem value="basico">Básico</SelectItem>
+                      <SelectItem value="intermediario">Intermediário</SelectItem>
+                      <SelectItem value="avancado">Avançado</SelectItem>
                       <SelectItem value="premium">Premium</SelectItem>
                     </SelectContent>
                   </Select>
@@ -358,10 +359,10 @@ export const OfficeManagement: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="free">Gratuito</SelectItem>
-                  <SelectItem value="básico">Básico</SelectItem>
-                  <SelectItem value="intermediário">Intermediário</SelectItem>
-                  <SelectItem value="avançado">Avançado</SelectItem>
+                  <SelectItem value="trial">Trial</SelectItem>
+                  <SelectItem value="basico">Básico</SelectItem>
+                  <SelectItem value="intermediario">Intermediário</SelectItem>
+                  <SelectItem value="avancado">Avançado</SelectItem>
                   <SelectItem value="premium">Premium</SelectItem>
                 </SelectContent>
               </Select>
