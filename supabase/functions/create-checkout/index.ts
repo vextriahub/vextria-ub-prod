@@ -47,12 +47,12 @@ serve(async (req) => {
     if (!planName || !planPrice) throw new Error("Plan name and price are required");
     logStep("Request parsed", { planName, planPrice });
 
-    // Map plan names to Stripe price IDs (corrigido com IDs de preços corretos)
+    // Map plan names to Stripe price IDs (preços de produção)
     const priceIds: Record<string, string> = {
-      'Básico': 'price_1RqJvsL3T8PU7YpVYYq4WzDX',
-      'Intermediário': 'price_1RqJx9L3T8PU7YpVlg5wy3N6', 
-      'Avançado': 'price_1RqJzRL3T8PU7YpVxjHWf9M5',
-      'Premium': 'price_1RqK0rL3T8PU7YpVuO1a8htU'
+      'Básico': 'price_1TNgGiRxpxHvdzs7GZQgGad2',
+      'Intermediário': 'price_1TNgH6RxpxHvdzs72OZhS2mb',
+      'Avançado': 'price_1TNgHMRxpxHvdzs7SCBkNwR2',
+      'Premium': 'price_1TNgHbRxpxHvdzs7Q5ocxeMj'
     };
 
     const priceId = priceIds[planName];

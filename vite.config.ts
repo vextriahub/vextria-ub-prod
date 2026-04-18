@@ -23,11 +23,4 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
-    __WS_TOKEN__: JSON.stringify(process.env.WS_TOKEN || ''),
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/tests/setup.ts'],
-  },
-}));
+    __WS_TOKEN__: JSON.stringify(proces
