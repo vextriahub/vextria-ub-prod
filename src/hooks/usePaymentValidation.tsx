@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+
+import { useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useStripe } from './useStripe';
 
 export interface PaymentValidationResult {
   needsPayment: boolean;
@@ -12,10 +13,10 @@ export interface PaymentValidationResult {
 
 export const usePaymentValidation = () => {
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { checkSubscription } = useStripe();
 
-  const validateUserPayment = useCallback(async (userId?: string): Promise<PaymentValidationResult> => {
-    if (!userId && !user?.id) {
+  const validatePayment = useCallback(async (userId: string, officeId?: string | null): Promise<PaymentValidationResult> => {
+    if (!userId) {
       return {
         needsPayment: false,
         daysRegistered: 0,
@@ -25,19 +26,16 @@ export const usePaymentValidation = () => {
       };
     }
 
-    const targetUserId = userId || user!.id;
     setLoading(true);
-
     try {
-      // Buscar dados do perfil do usuário para verificar data de criação
+      // Buscar dados do perfil do usuário
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('created_at, role, office_id')
-        .eq('user_id', targetUserId)
+        .eq('user_id', userId)
         .single();
 
       if (profileError || !profile) {
-        console.error('Erro ao buscar perfil:', profileError);
         return {
           needsPayment: false,
           daysRegistered: 0,
@@ -47,40 +45,65 @@ export const usePaymentValidation = () => {
         };
       }
 
-      // Se for super admin, não precisa validar pagamento
+      // 1. Super Admin is always paid
       if (profile.role === 'super_admin') {
         return {
           needsPayment: false,
           daysRegistered: 0,
           hasActiveSubscription: true,
           paymentStatus: 'paid',
-          message: 'Super admin - sem necessidade de pagamento'
+          message: 'Super admin - acesso liberado'
         };
       }
 
-      // Calcular dias desde o cadastro
+      // 2. Calculate days since registration
       const createdAt = new Date(profile.created_at);
       const now = new Date();
       const diffTime = Math.abs(now.getTime() - createdAt.getTime());
       const daysRegistered = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      // Período de teste de 7 dias
+      // 3. Check for Lifetime status
+      const targetOfficeId = officeId || profile.office_id;
+      if (targetOfficeId) {
+        const { data: officeData } = await supabase
+          .from('offices')
+          .select('is_lifetime')
+          .eq('id', targetOfficeId)
+          .maybeSingle();
+
+        if (officeData?.is_lifetime) {
+          return {
+            needsPayment: false,
+            daysRegistered,
+            hasActiveSubscription: true,
+            paymentStatus: 'paid',
+            message: 'Acesso Vitalício Ativado'
+          };
+        }
+      }
+
+      // 4. Trial period (7 days)
       const trialDays = 7;
       const isTrialActive = daysRegistered <= trialDays;
-      
-      // Verificar se o usuário já tem uma assinatura ativa
-      const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status, payment_confirmed, is_trial, trial_end_date')
-        .eq('office_id', profile.office_id)
-        .single();
 
-      const hasValidSubscription = subscription && 
-        (subscription.status === 'active' || 
-         (subscription.is_trial && subscription.trial_end_date && new Date(subscription.trial_end_date) >= now));
+      // 5. Check Stripe Subscription
+      try {
+        const stripeSubscription = await checkSubscription();
+        if (stripeSubscription.subscribed) {
+          return {
+            needsPayment: false,
+            daysRegistered,
+            hasActiveSubscription: true,
+            paymentStatus: 'paid',
+            message: 'Assinatura ativa'
+          };
+        }
+      } catch (error) {
+        console.error('Erro Stripe validation:', error);
+      }
 
-      // Se está no período de trial, permitir acesso
-      if (isTrialActive && !hasValidSubscription) {
+      // 6. Trial fallback
+      if (isTrialActive) {
         return {
           needsPayment: false,
           daysRegistered,
@@ -90,35 +113,13 @@ export const usePaymentValidation = () => {
         };
       }
 
-      // Se já tem assinatura ativa
-      if (hasValidSubscription) {
-        return {
-          needsPayment: false,
-          daysRegistered,
-          hasActiveSubscription: true,
-          paymentStatus: subscription?.payment_confirmed ? 'paid' : 'pending',
-          message: 'Assinatura ativa'
-        };
-      }
-
-      // Se já passou do período de trial e não tem assinatura
-      if (daysRegistered > trialDays && !hasValidSubscription) {
-        return {
-          needsPayment: true,
-          daysRegistered,
-          hasActiveSubscription: false,
-          paymentStatus: 'overdue',
-          message: 'Período de teste expirado. Realize o pagamento para continuar usando o sistema.'
-        };
-      }
-
-      // Caso padrão - usuário novo
+      // 7. Expired
       return {
-        needsPayment: false,
+        needsPayment: true,
         daysRegistered,
-        hasActiveSubscription: true,
-        paymentStatus: 'trial',
-        message: `Período de teste: ${trialDays - daysRegistered} dias restantes`
+        hasActiveSubscription: false,
+        paymentStatus: 'overdue',
+        message: 'Período de teste expirado. Realize o pagamento.'
       };
 
     } catch (error) {
@@ -133,10 +134,7 @@ export const usePaymentValidation = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [checkSubscription]);
 
-  return {
-    validateUserPayment,
-    loading
-  };
+  return { validatePayment, loading };
 };

@@ -20,11 +20,15 @@ class StripeService {
 
   constructor() {
     this.publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-    this.secretKey = import.meta.env.STRIPE_SECRET_KEY || '';
-    this.webhookSecret = import.meta.env.STRIPE_WEBHOOK_SECRET || '';
+    // SEGURANÇA: Chaves privadas NUNCA devem estar no frontend.
+    this.secretKey = ''; 
+    this.webhookSecret = '';
   }
 
   private getHeaders() {
+    if (!this.secretKey) {
+      console.error('ERRO DE SEGURANÇA: Tentativa de usar Stripe Secret Key no frontend desabilitada.');
+    }
     return {
       'Authorization': `Bearer ${this.secretKey}`,
       'Content-Type': 'application/x-www-form-urlencoded',

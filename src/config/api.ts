@@ -1,16 +1,14 @@
 // Configurações de API
 export const API_CONFIG = {
-  // API Key para busca de processos jurídicos
-  PROCESSO_API_KEY: 'cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==',
+  // API Key para busca de processos jurídicos (DEVE SER USADA VIA EDGE FUNCTION EM PROD)
+  PROCESSO_API_KEY: import.meta.env.VITE_PROCESSO_API_KEY || '',
   
   // Base URLs das APIs
   PROCESSO_API_BASE_URL: 'https://api.cnj.jus.br/v1',
   
-  // Configurações Stripe
+  // Configurações Stripe (APENAS CHAVE PÚBLICA NO FRONTEND)
   STRIPE: {
     PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
-    SECRET_KEY: import.meta.env.VITE_STRIPE_SECRET_KEY || '',
-    WEBHOOK_SECRET: import.meta.env.VITE_STRIPE_WEBHOOK_SECRET || '',
     WEBHOOK_URL: 'https://rceixowecqpiotophyku.supabase.co/functions/v1/stripe-webhook',
   },
   
@@ -21,9 +19,9 @@ export const API_CONFIG = {
   }
 };
 
-// Função para verificar se Stripe está configurado
+// Função para verificar se Stripe está configurado minimamente
 export const isStripeConfigured = () => {
-  return !!(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY && import.meta.env.STRIPE_SECRET_KEY);
+  return !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 };
 
 // Função para criar headers com autenticação

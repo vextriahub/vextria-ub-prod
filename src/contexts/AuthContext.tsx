@@ -5,14 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { Profile, OfficeUser, Office } from '@/types/database';
 import { useStripe } from '@/hooks/useStripe';
-
-interface PaymentValidationResult {
-  needsPayment: boolean;
-  daysRegistered: number;
-  hasActiveSubscription: boolean;
-  paymentStatus: 'paid' | 'pending' | 'overdue' | 'canceled' | 'unknown' | 'trial';
-  message?: string;
-}
+import { usePaymentValidation, type PaymentValidationResult } from '@/hooks/usePaymentValidation';
+import { officeService } from '@/services/officeService';
 
 interface User {
   id: string;
@@ -82,9 +76,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!mountedRef.current) return null;
     
     try {
-      console.log('🔍 Fetching profile for user:', userId);
-      console.log('🔍 Supabase client ready:', !!supabase);
-      
       const { data, error } = await Promise.race([
         supabase
           .from('profiles')
@@ -95,8 +86,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
         )
       ]) as any;
-
-      console.log('🔍 Raw query result:', { data, error, userId });
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
@@ -109,8 +98,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      console.log('✅ Profile fetched successfully:', data);
-      console.log('✅ Profile role:', data?.role);
       return data;
     } catch (error) {
       console.error('❌ Error in fetchProfile:', error);
@@ -118,7 +105,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Função para validar pagamento do usuário
+  const { validatePayment: validatePaymentInternal } = usePaymentValidation();
+
+  // Função para validar pagamento do usuário (delegada ao hook)
   const validatePayment = useCallback(async (userId?: string): Promise<PaymentValidationResult> => {
     const targetUserId = userId || user?.id;
     
@@ -132,141 +121,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    try {
-      // Buscar dados do perfil do usuário para verificar data de criação
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('created_at, role, office_id')
-        .eq('user_id', targetUserId)
-        .single();
-
-      if (profileError || !profile) {
-        console.error('Erro ao buscar perfil:', profileError);
-        return {
-          needsPayment: false,
-          daysRegistered: 0,
-          hasActiveSubscription: false,
-          paymentStatus: 'unknown',
-          message: 'Erro ao verificar dados do usuário'
-        };
-      }
-
-      // Se for super admin, não precisa validar pagamento
-      if (profile.role === 'super_admin') {
-        return {
-          needsPayment: false,
-          daysRegistered: 0,
-          hasActiveSubscription: true,
-          paymentStatus: 'paid',
-          message: 'Super admin - sem necessidade de pagamento'
-        };
-      }
-
-      // Calcular dias desde o cadastro
-      const createdAt = new Date(profile.created_at);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - createdAt.getTime());
-      const daysRegistered = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      // Período de teste de 7 dias
-      const trialDays = 7;
-      const isTrialActive = daysRegistered <= trialDays;
-      
-      // Verificar assinatura via banco de dados local primeiro (para Vitalício e Descontos manuais)
-      let hasValidSubscription = false;
-      let isLifetime = false;
-      
-      try {
-        const { data: officeData } = await supabase
-          .from('offices')
-          .select('is_lifetime, manual_discount_percent')
-          .eq('id', profile.office_id)
-          .maybeSingle();
-
-        if (officeData?.is_lifetime) {
-          isLifetime = true;
-          hasValidSubscription = true;
-        }
-      } catch (subErr) {
-        console.error('Erro ao verificar status vitalício no escritório:', subErr);
-      }
-
-      // Se for Vitalício, liberar na hora
-      if (isLifetime) {
-        return {
-          needsPayment: false,
-          daysRegistered,
-          hasActiveSubscription: true,
-          paymentStatus: 'paid',
-          message: 'Acesso Vitalício Ativado'
-        };
-      }
-      
-      // Verificar assinatura via Stripe se não tiver local garantido
-      if (!hasValidSubscription) {
-        try {
-          const stripeSubscription = await checkSubscription();
-          setSubscriptionInfo(stripeSubscription);
-          hasValidSubscription = stripeSubscription.subscribed;
-        } catch (error) {
-          console.error('Erro ao verificar assinatura Stripe:', error);
-          setSubscriptionInfo({ subscribed: false });
-        }
-      }
-
-      // Se está no período de trial, permitir acesso
-      if (isTrialActive && !hasValidSubscription) {
-        return {
-          needsPayment: false,
-          daysRegistered,
-          hasActiveSubscription: true,
-          paymentStatus: 'trial',
-          message: `Período de teste: ${trialDays - daysRegistered} dias restantes`
-        };
-      }
-
-      // Se já tem assinatura ativa (local ou Stripe)
-      if (hasValidSubscription) {
-        return {
-          needsPayment: false,
-          daysRegistered,
-          hasActiveSubscription: true,
-          paymentStatus: 'paid',
-          message: 'Assinatura ativa'
-        };
-      }
-
-      // Se já passou do período de trial e não tem assinatura
-      if (daysRegistered > trialDays && !hasValidSubscription) {
-        return {
-          needsPayment: true,
-          daysRegistered,
-          hasActiveSubscription: false,
-          paymentStatus: 'overdue',
-          message: 'Período de teste expirado. Realize o pagamento para continuar usando o sistema.'
-        };
-      }
-
-      // Caso padrão - usuário novo
-      return {
-        needsPayment: false,
-        daysRegistered,
-        hasActiveSubscription: true,
-        paymentStatus: 'trial',
-        message: `Período de teste: ${trialDays - daysRegistered} dias restantes`
-      };
-
-    } catch (error) {
-      console.error('Erro na validação de pagamento:', error);
-      return {
-        needsPayment: false,
-        daysRegistered: 0,
-        hasActiveSubscription: false,
-        paymentStatus: 'unknown',
-        message: 'Erro ao validar status de pagamento'
-      };
-    }
-  }, [user]);
+    const result = await validatePaymentInternal(targetUserId, office?.id);
+    setPaymentValidation(result);
+    return result;
+  }, [user, office, validatePaymentInternal]);
 
   // Create user profile in database
   const createProfile = useCallback(async (userId: string, email: string, fullName: string) => {
@@ -314,38 +172,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Fetch office data for user
+  // Fetch office data (Delegado ao serviço)
   const fetchOfficeData = useCallback(async (userId: string) => {
-    if (!mountedRef.current) return { officeUser: null, office: null };
-    
-    try {
-      // Buscar office_user
-      const { data: officeUserData, error: officeUserError } = await supabase
-        .from('office_users')
-        .select(`
-          *,
-          office:offices(
-            *,
-            is_lifetime,
-            manual_discount_percent
-          )
-        `)
-        .eq('user_id', userId)
-        .eq('active', true)
-        .single();
-
-      if (officeUserError || !officeUserData) {
-        return { officeUser: null, office: null };
-      }
-
-      return { 
-        officeUser: officeUserData, 
-        office: officeUserData.office 
-      };
-    } catch (error) {
-      console.error('Error fetching office data:', error);
-      return { officeUser: null, office: null };
-    }
+    return await officeService.getOfficeData(userId);
   }, []);
 
   // Process user data after authentication
@@ -353,33 +182,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!mountedRef.current || initializingRef.current) return;
     
     try {
-      console.log('🔐 Processing user data for:', sessionUser.email, 'User ID:', sessionUser.id);
-      console.log('🔐 Session user metadata:', sessionUser.user_metadata);
-      
-      // Lista de emails super admin para verificação
-      const superAdminEmails = [
-        'contato@vextriahub.com.br',
-        '1266jp@gmail.com',
-        'joao.pedro@vextriahub.com.br',
-        'dev.jp.991@gmail.com',
-        'vextriahubv1@gmail.com',
-        'ceo@gustavodantas.adv.br'
-      ];
-      
-      const shouldBeSuperAdmin = superAdminEmails.includes(sessionUser.email || '');
-      console.log('🔐 Should be super admin:', shouldBeSuperAdmin, 'for email:', sessionUser.email);
-      
-      // Fetch user profile
+      // 1. Fetch user profile
       let profileData = await fetchProfile(sessionUser.id);
-      console.log('🔐 Profile fetch result:', profileData);
-      console.log('🔐 Profile exists:', !!profileData);
-      console.log('🔐 Profile role:', profileData?.role);
       
       if (!mountedRef.current) return;
       
-      // If profile doesn't exist, create it (fallback for trigger failure)
+      // 2. If profile doesn't exist, create it
       if (!profileData && sessionUser.email) {
-        console.log('🔐 Profile not found, creating new profile for:', sessionUser.email);
         const fullName = sessionUser.user_metadata?.full_name || 
                         sessionUser.user_metadata?.name ||
                         sessionUser.email.split('@')[0];
@@ -389,167 +198,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           sessionUser.email, 
           fullName
         );
-        console.log('🔐 Profile creation result:', profileData);
       }
       
-      // EMERGENCY: If still no profile data, force create one for super admin emails
-      if (!profileData && shouldBeSuperAdmin && sessionUser.email) {
-        console.log('🚨 EMERGENCY: Force creating profile for super admin email:', sessionUser.email);
-        try {
-          const { data: emergencyProfile, error: emergencyError } = await supabase
-            .from('profiles')
-            .upsert({
-              user_id: sessionUser.id,
-              email: sessionUser.email,
-              full_name: sessionUser.user_metadata?.full_name || sessionUser.email.split('@')[0],
-              role: 'super_admin',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-            
-          if (!emergencyError && emergencyProfile) {
-            console.log('🚨 Emergency profile created:', emergencyProfile);
-            profileData = emergencyProfile;
-          } else {
-            console.error('🚨 Emergency profile creation failed:', emergencyError);
-          }
-        } catch (emergencyErr) {
-          console.error('🚨 Emergency profile creation exception:', emergencyErr);
-        }
-      }
+      if (!mountedRef.current || !profileData) return;
       
-      // Check if profile exists but has wrong role for super admin emails
-      if (profileData && shouldBeSuperAdmin && profileData.role !== 'super_admin') {
-        console.log('🔐 Profile exists but role is incorrect. Updating to super_admin...');
-        console.log('🔐 Current role:', profileData.role, '-> Should be: super_admin');
-        
-        try {
-          const { data: updatedProfile, error: updateError } = await supabase
-            .from('profiles')
-            .update({ 
-              role: 'super_admin',
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', sessionUser.id)
-            .select()
-            .single();
-
-          if (updateError) {
-            console.error('❌ Error updating profile role:', updateError);
-          } else {
-            console.log('✅ Profile role updated successfully:', updatedProfile);
-            profileData = updatedProfile;
-          }
-        } catch (updateErr) {
-          console.error('❌ Exception updating profile role:', updateErr);
-        }
-      }
-      
-      // Double-check: verify profile directly from database after any updates
-      if (shouldBeSuperAdmin) {
-        try {
-          console.log('🔍 Double-checking profile in database for super admin...');
-          const { data: verifyProfile, error: verifyError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('email', sessionUser.email)
-            .single();
-            
-          console.log('🔍 Database verification result:', { verifyProfile, verifyError });
-          
-          if (!verifyError && verifyProfile) {
-            console.log('🔍 Profile verified from DB:', verifyProfile);
-            console.log('🔍 Verified role:', verifyProfile.role);
-            // Use the verified profile data
-            profileData = verifyProfile;
-          }
-        } catch (verifyErr) {
-          console.error('❌ Error verifying profile:', verifyErr);
-        }
-      }
-      
-      // Final check: if STILL no profile data but should be super admin, create a basic one
-      if (!profileData && shouldBeSuperAdmin) {
-        console.log('🚨 FINAL FALLBACK: Creating minimal profile for super admin');
-        profileData = {
-          user_id: sessionUser.id,
-          email: sessionUser.email,
-          full_name: sessionUser.email?.split('@')[0] || 'Super Admin',
-          role: 'super_admin',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          office_id: null
-        };
-      }
-      
-      if (!mountedRef.current || !profileData) {
-        console.log('🔐 No profile data available, aborting user data processing');
-        return;
-      }
-      
-      console.log('🔐 Setting profile data:', profileData);
-      
-      // Fetch office data
+      // 3. Fetch office data
       const { officeUser, office } = await fetchOfficeData(sessionUser.id);
       
       if (!mountedRef.current) return;
       
-      // Create user object for compatibility with emergency fallback
-      let finalRole = profileData.role;
-      
-      // Emergency fallback: if email should be super admin but role isn't, override it
-      if (shouldBeSuperAdmin && finalRole !== 'super_admin') {
-        console.log('🚨 EMERGENCY FALLBACK: Overriding role to super_admin for email:', sessionUser.email);
-        console.log('🚨 Profile role was:', finalRole, '-> Forcing to: super_admin');
-        finalRole = 'super_admin';
-      }
-      
+      // 4. Create user object
       const userData: User = {
         id: sessionUser.id,
         name: profileData.full_name || sessionUser.email?.split('@')[0] || 'Usuário',
         email: sessionUser.email || '',
-        role: finalRole,
+        role: profileData.role,
         office_id: profileData.office_id,
         office_role: officeUser?.role || null
       };
       
-      console.log('🔐 Setting user data:', userData);
-      console.log('🔐 Final role assigned:', finalRole);
-      console.log('🔐 Is super admin:', finalRole === 'super_admin');
-      
-      // Log detailed role information before setting state
-      console.log('🔍 DETAILED ROLE DEBUG:', {
-        'profileData': profileData,
-        'profileData.role': profileData?.role,
-        'finalRole': finalRole,
-        'userData.role': userData.role,
-        'shouldBeSuperAdmin': shouldBeSuperAdmin,
-        'sessionUser.email': sessionUser.email
-      });
-      
-      // Set all state in the correct order
+      // Set state
       setProfile(profileData);
       setOfficeUser(officeUser);
       setOffice(office);
       setUser(userData);
       
-      // Verify state was set correctly
-      console.log('🔐 State update completed. Verifying...');
-      setTimeout(() => {
-        console.log('🔐 State verification after 100ms:', {
-          profileSet: !!profileData,
-          userSet: !!userData,
-          userRole: userData.role,
-          profileRole: profileData?.role,
-          isSuperAdmin: userData.role === 'super_admin'
-        });
-      }, 100);
-      
-      // Check if it's first login (profile just created)
+      // Check if it's first login
       const profileAge = Date.now() - new Date(profileData.created_at).getTime();
-      const isNewProfile = profileAge < 60000; // Less than 1 minute old
+      const isNewProfile = profileAge < 60000;
       setIsFirstLogin(isNewProfile && profileData.role !== 'super_admin');
       
     } catch (error) {
@@ -924,43 +600,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsFirstLogin(false);
   }, []);
 
-  // Verificação robusta de super_admin com fallback por email (case-insensitive e trim)
-  const superAdminEmailsList = [
-    'contato@vextriahub.com.br', 
-    '1266jp@gmail.com', 
-    'joao.pedro@vextriahub.com.br', 
-    'dev.jp.991@gmail.com'
-  ].map(e => e.toLowerCase().trim());
-
-  const currentEmail = user?.email?.toLowerCase().trim() || session?.user?.email?.toLowerCase().trim();
-  const isEmailAdmin = currentEmail ? superAdminEmailsList.includes(currentEmail) : false;
-
   const isUserSuperAdmin = Boolean(
     user?.role === 'super_admin' || 
-    profile?.role === 'super_admin' || 
-    isEmailAdmin
+    profile?.role === 'super_admin'
   );
-
-  // Debug logging for authentication values
-  console.log('🔐 AuthContext Values:', {
-    userExists: !!user,
-    userEmail: user?.email,
-    userRole: user?.role,
-    profileExists: !!profile,
-    profileRole: profile?.role,
-    isAuthenticated: !!session,
-    isLoading,
-    isSuperAdmin: isUserSuperAdmin,
-    emailInSuperAdminList: isEmailAdmin
-  });
-
-  console.log('🔐 Super Admin Check:', {
-    userRole: user?.role,
-    profileRole: profile?.role,
-    userEmail: user?.email,
-    emailMatch: user?.email ? superAdminEmails.includes(user.email) : false,
-    finalResult: isUserSuperAdmin
-  });
 
   const value = {
     user,

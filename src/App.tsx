@@ -46,7 +46,6 @@ import Timesheet from "./pages/Timesheet";
 import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import Pagamento from "./pages/Pagamento";
 import Obrigado from "./pages/Obrigado";
-import StripeDebugPanel from "./components/Debug/StripeDebugPanel";
 import { useState, useEffect } from "react";
 
 const queryClient = new QueryClient({
@@ -341,9 +340,6 @@ const AppWithRouter = () => {
         <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
         <Route path="/pagamento" element={<Pagamento />} />
         <Route path="/obrigado" element={<Obrigado />} />
-        {/* DEBUG: StripeDebugPanel removido de produção - uso apenas em development */}
-        {/* <Route path="/debug/stripe" element={<StripeDebugPanel />} /> */}
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
       

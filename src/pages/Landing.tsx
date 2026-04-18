@@ -196,70 +196,78 @@ const Landing: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur-md">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <span className="text-2xl font-bold text-primary">VextriaHub</span>
+            <span className="text-2xl font-bold tracking-tight text-primary">VextriaHub</span>
           </div>
           
-          {/* Mobile Navigation */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <SheetHeader>
-                  <SheetTitle className="text-left text-2xl font-bold text-primary">VextriaHub</SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-6 mt-10">
-                  <a href="#beneficios" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
-                    Benefícios
-                  </a>
-                  <a href="#funcionalidades" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
-                    Funcionalidades
-                  </a>
-                  <a href="#planos" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
-                    Planos
-                  </a>
-                  <Button variant="outline" size="lg" className="w-full justify-start" onClick={() => window.open('mailto:contato@vextriahub.com', '_blank')}>
-                    Contato
+          <div className="flex items-center gap-2">
+            {/* Mobile Actions */}
+            <div className="flex md:hidden items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-sm font-medium"
+                onClick={() => navigate("/login")}
+              >
+                Entrar
+              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <Menu className="h-5 w-5" />
                   </Button>
-                  <hr className="border-border" />
-                  <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/login")}>
-                    Entrar
-                  </Button>
-                  <Button size="lg" className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro")}>
-                    Testar Grátis por 7 Dias
-                  </Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] border-l border-border bg-card/95 backdrop-blur-lg">
+                  <SheetHeader>
+                    <SheetTitle className="text-left text-2xl font-bold text-primary">VextriaHub</SheetTitle>
+                  </SheetHeader>
+                  <div className="flex flex-col gap-6 mt-10">
+                    <a href="#beneficios" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
+                      Benefícios
+                    </a>
+                    <a href="#funcionalidades" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
+                      Funcionalidades
+                    </a>
+                    <a href="#planos" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
+                      Planos
+                    </a>
+                    <Button variant="outline" size="lg" className="w-full justify-start" onClick={() => window.open('mailto:contato@vextriahub.com', '_blank')}>
+                      Contato
+                    </Button>
+                    <hr className="border-border" />
+                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro")}>
+                      Começar Agora
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#beneficios" className="text-muted-foreground hover:text-foreground transition-colors">
-              Benefícios
-            </a>
-            <Button variant="outline" size="sm" onClick={() => window.open('mailto:contato@vextriahub.com', '_blank')}>
-              Contato
-            </Button>
-            <a href="#funcionalidades" className="text-muted-foreground hover:text-foreground transition-colors">
-              Funcionalidades
-            </a>
-            <a href="#planos" className="text-muted-foreground hover:text-foreground transition-colors">
-              Planos
-            </a>
-            <Button variant="outline" onClick={() => navigate("/login")}>
-              Entrar
-            </Button>
-            <Button onClick={() => navigate("/cadastro")} className="bg-primary hover:bg-primary/90">
-              Testar Grátis por 7 Dias
-            </Button>
-          </nav>
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <div className="flex items-center gap-6 mr-4 border-r border-border pr-6">
+                <a href="#beneficios" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  Benefícios
+                </a>
+                <a href="#funcionalidades" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  Funcionalidades
+                </a>
+                <a href="#planos" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  Planos
+                </a>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="font-medium">
+                  Entrar
+                </Button>
+                <Button onClick={() => navigate("/cadastro")} size="sm" className="bg-primary hover:bg-primary/90 font-semibold shadow-lg shadow-primary/20">
+                  Experimentar Grátis
+                </Button>
+              </div>
+            </nav>
+          </div>
         </div>
       </header>
 
