@@ -1011,7 +1011,7 @@ export type Database = {
     Enums: {
       app_role: "user" | "super_admin" | "admin"
       invitation_status: "pending" | "accepted" | "expired"
-      subscription_plan: "free" | "basic" | "professional" | "enterprise"
+      subscription_plan: "trial" | "basico" | "intermediario" | "avancado" | "premium"
       subscription_status:
         | "active"
         | "inactive"
@@ -1148,7 +1148,7 @@ export const Constants = {
     Enums: {
       app_role: ["user", "super_admin", "admin"],
       invitation_status: ["pending", "accepted", "expired"],
-      subscription_plan: ["free", "basic", "professional", "enterprise"],
+      subscription_plan: ["trial", "basico", "intermediario", "avancado", "premium"],
       subscription_status: [
         "active",
         "inactive",

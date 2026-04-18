@@ -189,14 +189,12 @@ export const GlobalMetrics: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-5">
-            {['básico', 'intermediário', 'avançado', 'premium', 'vitalício'].map((plan) => {
+            {['basico', 'intermediario', 'avancado', 'premium', 'vitalicio'].map((plan) => {
               let planCount = 0;
               let planRevenue = 0;
 
-              if (plan === 'vitalício') {
+              if (plan === 'vitalicio') {
                 planCount = offices.filter(office => office.is_lifetime).length;
-                // Vitalícios geralmente não geram receita recorrente no gráfico de assinaturas,
-                // mas podemos mostrar o valor total investido se necessário no futuro.
                 planRevenue = 0;
               } else {
                 planCount = offices.filter(office => office.plan === plan && !office.is_lifetime).length;
@@ -206,21 +204,21 @@ export const GlobalMetrics: React.FC = () => {
               }
               
               const planNames: Record<string, string> = {
-                'básico': 'Básico',
-                'intermediário': 'Intermediário',
-                'avançado': 'Avançado',
+                basico: 'Básico',
+                intermediario: 'Intermediário',
+                avancado: 'Avançado',
                 premium: 'Premium',
-                vitalício: 'Vitalício'
+                vitalicio: 'Vitalício'
               };
 
               return (
-                <div key={plan} className={`text-center p-4 border rounded-lg ${plan === 'vitalício' ? 'bg-amber-500/5 border-amber-200' : ''}`}>
-                  <div className={`text-2xl font-bold ${plan === 'vitalício' ? 'text-amber-600' : 'text-primary'}`}>
+                <div key={plan} className={`text-center p-4 border rounded-lg ${plan === 'vitalicio' ? 'bg-amber-500/5 border-amber-200' : ''}`}>
+                  <div className={`text-2xl font-bold ${plan === 'vitalicio' ? 'text-amber-600' : 'text-primary'}`}>
                     {planCount}
                   </div>
                   <p className="text-sm font-medium">{planNames[plan] || plan}</p>
                   <p className="text-xs text-muted-foreground">
-                    {plan === 'vitalício' ? 'Acesso Permanente' : `R$ ${planRevenue.toLocaleString('pt-BR')}/mês`}
+                    {plan === 'vitalicio' ? 'Acesso Permanente' : `R$ ${planRevenue.toLocaleString('pt-BR')}/mês`}
                   </p>
                 </div>
               );

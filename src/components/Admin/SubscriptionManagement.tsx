@@ -37,7 +37,7 @@ export const SubscriptionManagement: React.FC = () => {
 
   const [formData, setFormData] = useState<NovaSubscription>({
     office_id: '',
-    plan: 'basic',
+    plan: 'basico',
     status: 'active',
     start_date: new Date().toISOString().split('T')[0],
     end_date: null,
