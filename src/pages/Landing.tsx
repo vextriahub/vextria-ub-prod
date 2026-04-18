@@ -15,8 +15,16 @@ import {
   Users,
   BarChart3,
   FileText,
-  Calendar
+  Calendar,
+  Menu
 } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
 
 const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -193,6 +201,45 @@ const Landing: React.FC = () => {
           <div className="flex items-center">
             <span className="text-2xl font-bold text-primary">VextriaHub</span>
           </div>
+          
+          {/* Mobile Navigation */}
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetHeader>
+                  <SheetTitle className="text-left text-2xl font-bold text-primary">VextriaHub</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-6 mt-10">
+                  <a href="#beneficios" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    Benefícios
+                  </a>
+                  <a href="#funcionalidades" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    Funcionalidades
+                  </a>
+                  <a href="#planos" className="text-lg font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    Planos
+                  </a>
+                  <Button variant="outline" size="lg" className="w-full justify-start" onClick={() => window.open('mailto:contato@vextriahub.com', '_blank')}>
+                    Contato
+                  </Button>
+                  <hr className="border-border" />
+                  <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/login")}>
+                    Entrar
+                  </Button>
+                  <Button size="lg" className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/cadastro")}>
+                    Testar Grátis por 7 Dias
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <a href="#beneficios" className="text-muted-foreground hover:text-foreground transition-colors">
               Benefícios
