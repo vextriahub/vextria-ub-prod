@@ -212,4 +212,10 @@ class StripeService {
     return {
       publishableKey: this.publishableKey,
       environment: this.secretKey?.startsWith('sk_test') ? 'test' : 'production',
-     
+      webhookSecret: this.webhookSecret
+    };
+  }
+}
+
+export const stripeService = new StripeService();
+export default stripeService;

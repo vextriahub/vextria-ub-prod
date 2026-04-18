@@ -17,9 +17,24 @@ import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const { isFirstLogin, isSuperAdmin } = useAuth();
+  const { isFirstLogin, isSuperAdmin, validatePayment } = useAuth();
   const navigate = useNavigate();
   const [trialInfo, setTrialInfo] = useState<{daysLeft: number; isTrial: boolean} | null>(null);
+
+  // Verificar se o usuário voltou de um pagamento bem-sucedido
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('success')) {
+      // Pequeno atraso para garantir que o webhook do Stripe possa ter sido processado
+      setTimeout(async () => {
+        await validatePayment();
+        console.log('✅ Pagamento validado após retorno do Stripe');
+      }, 1000);
+      
+      // Limpar os parâmetros da URL para manter a interface limpa
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [validatePayment]);
 
   // Redirecionar Super Admins para o painel administrativo imediatamente
   // Usamos useEffect e também um retorno antecipado para garantir que nada de advogado seja renderizado

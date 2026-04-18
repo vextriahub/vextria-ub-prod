@@ -332,4 +332,4 @@ const Clientes = () => {
   );
 };
 
-export default C
+export default Clientes;

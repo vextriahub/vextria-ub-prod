@@ -73,7 +73,7 @@ serve(async (req) => {
       logStep("New customer created", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://f6e3a80f-33ed-4f07-b816-88b41e388fa8.lovableproject.com";
+    const origin = req.headers.get("origin") || "https://vextriahub.com.br";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

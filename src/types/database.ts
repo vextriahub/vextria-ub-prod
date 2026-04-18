@@ -46,4 +46,6 @@ export interface DatabaseHookResult<T, CreateT> {
   create: (newRecord: CreateT) => Promise<T | null>;
   update: (id: string, updates: Partial<T>) => Promise<T | null>;
   requestDelete: (id: string, motivo?: string) => Promise<boolean>;
-  reques
+  requestMultipleDelete: (ids: string[], motivo?: string) => Promise<boolean>;
+  isEmpty: boolean;
+}

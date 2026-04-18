@@ -222,4 +222,7 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
     create,
     update,
     requestDelete,
-    requestMul
+    requestMultipleDelete,
+    isEmpty: data.length === 0 && !loading,
+  };
+}

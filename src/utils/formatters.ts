@@ -327,4 +327,6 @@ export function formatChartValue(value: number): string {
   } else if (value >= 1000) {
     return `${(value / 1000).toFixed(1)}K`;
   } else {
-    return val
+    return value.toString();
+  }
+}

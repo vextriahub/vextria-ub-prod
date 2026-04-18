@@ -130,7 +130,7 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      console.log('🚀 Starting registration process for:', formData.email);
+      // Registration process
       
       // Marcar no localStorage que estamos em processo de checkout para evitar redirecionamento
       localStorage.setItem('checkout_in_progress', 'true');
@@ -148,10 +148,10 @@ const Register = () => {
         return;
       }
 
-      console.log('✅ Registration successful, starting checkout process...');
+      // Starting checkout
       
       // Fazer login automático após o registro bem-sucedido
-      console.log('🔐 Attempting automatic login after registration...');
+      // Automatic login
       const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -170,7 +170,7 @@ const Register = () => {
         return;
       }
 
-      console.log('✅ Automatic login successful');
+      // Login success
       
       // Usuário cadastrado com sucesso, agora criar checkout IMEDIATAMENTE
       toast({
@@ -178,7 +178,7 @@ const Register = () => {
         description: "Criando seu checkout de pagamento...",
       });
 
-      console.log('📦 Creating Stripe checkout for plan:', selectedPlan);
+      // Creating Stripe session
 
       // Criar checkout session via Stripe
       const checkoutData = await createCheckoutSession(
@@ -186,7 +186,7 @@ const Register = () => {
         planData ? planData.price_cents / 100 : 99
       );
 
-      console.log('📦 Stripe checkout response:', checkoutData);
+      // Checkout session created
 
       if (!checkoutData?.url) {
         console.error('❌ Stripe checkout error: No URL returned');
@@ -207,7 +207,7 @@ const Register = () => {
         return;
       }
 
-      console.log('✅ Stripe checkout created successfully, redirecting to Stripe...');
+      // Redirecionando
       
       // Limpar flag de checkout em progresso antes de redirecionar
       localStorage.removeItem('checkout_in_progress');
@@ -217,8 +217,8 @@ const Register = () => {
         description: "Você será redirecionado para o Stripe para completar o pagamento.",
       });
       
-      // Redirecionar para Stripe checkout
-      window.open(checkoutData.url, '_blank');
+      // Redirecionar para Stripe checkout (usando location.href para evitar bloqueio de popup)
+      window.location.href = checkoutData.url;
 
     } catch (error) {
       console.error('❌ Unexpected error:', error);
