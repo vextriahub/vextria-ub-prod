@@ -1,0 +1,279 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design system colors for JurisFlow */
+@layer base {
+  /* Tema Claro (Branco) */
+  :root,
+  .light {
+    /* Sistema de cores JurisFlow - Tema Claro */
+    --background: 0 0% 100%; /* Branco */
+    --foreground: 222.2 84% 4.9%; /* Texto escuro */
+    
+    --card: 0 0% 100%; /* Branco */
+    --card-foreground: 222.2 84% 4.9%; /* Texto escuro */
+    
+    --popover: 0 0% 100%; /* Branco */
+    --popover-foreground: 222.2 84% 4.9%; /* Texto escuro */
+    
+    --primary: 200 100% 28%; /* Azul petróleo */
+    --primary-foreground: 210 40% 98%; /* Texto claro */
+    
+    --secondary: 120 60% 85%; /* Verde claro */
+    --secondary-foreground: 120 60% 15%; /* Texto verde escuro */
+    
+    --muted: 210 40% 96%; /* Cinza muito claro */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Cinza médio */
+    
+    --accent: 45 100% 85%; /* Amarelo suave */
+    --accent-foreground: 45 100% 15%; /* Texto amarelo escuro */
+    
+    --destructive: 0 84.2% 60.2%; /* Vermelho */
+    --destructive-foreground: 210 40% 98%; /* Texto claro */
+    
+    --border: 214.3 31.8% 91.4%; /* Cinza claro */
+    --input: 214.3 31.8% 91.4%; /* Cinza claro */
+    --ring: 200 100% 28%; /* Azul petróleo */
+    
+    --radius: 0.5rem;
+    
+    /* Cores específicas da sidebar */
+    --sidebar-background: 0 0% 98%; /* Branco levemente acinzentado */
+    --sidebar-foreground: 240 5.3% 26.1%; /* Texto escuro */
+    --sidebar-primary: 200 100% 28%; /* Azul petróleo */
+    --sidebar-primary-foreground: 0 0% 98%; /* Texto claro */
+    --sidebar-accent: 220 14.3% 95.9%; /* Cinza muito claro */
+    --sidebar-accent-foreground: 220 8.9% 46.1%; /* Cinza médio */
+    --sidebar-border: 220 13% 91%; /* Cinza claro */
+    --sidebar-ring: 200 100% 28%; /* Azul petróleo */
+  }
+
+  /* Tema Azul (Tema escuro original) */
+  .blue {
+    --background: 200 50% 10%; /* Azul escuro */
+    --foreground: 210 40% 98%; /* Texto claro */
+    
+    --card: 200 50% 10%; /* Azul escuro */
+    --card-foreground: 210 40% 98%; /* Texto claro */
+    
+    --popover: 200 50% 10%; /* Azul escuro */
+    --popover-foreground: 210 40% 98%; /* Texto claro */
+    
+    --primary: 200 100% 50%; /* Azul vibrante */
+    --primary-foreground: 200 50% 10%; /* Texto escuro */
+    
+    --secondary: 200 30% 20%; /* Azul médio */
+    --secondary-foreground: 210 40% 98%; /* Texto claro */
+    
+    --muted: 200 30% 15%; /* Azul escuro médio */
+    --muted-foreground: 215.4 16.3% 65%; /* Cinza claro */
+    
+    --accent: 45 100% 60%; /* Amarelo vibrante */
+    --accent-foreground: 45 100% 10%; /* Texto escuro */
+    
+    --destructive: 0 84.2% 60.2%; /* Vermelho */
+    --destructive-foreground: 210 40% 98%; /* Texto claro */
+    
+    --border: 200 30% 20%; /* Azul médio */
+    --input: 200 30% 20%; /* Azul médio */
+    --ring: 200 100% 50%; /* Azul vibrante */
+    
+    /* Cores específicas da sidebar */
+    --sidebar-background: 200 50% 8%; /* Azul muito escuro */
+    --sidebar-foreground: 210 40% 98%; /* Texto claro */
+    --sidebar-primary: 200 100% 50%; /* Azul vibrante */
+    --sidebar-primary-foreground: 200 50% 10%; /* Texto escuro */
+    --sidebar-accent: 200 30% 15%; /* Azul escuro médio */
+    --sidebar-accent-foreground: 210 40% 98%; /* Texto claro */
+    --sidebar-border: 200 30% 20%; /* Azul médio */
+    --sidebar-ring: 200 100% 50%; /* Azul vibrante */
+  }
+
+  /* Tema Escuro (Preto) */
+  .dark {
+    --background: 0 0% 3.9%; /* Preto */
+    --foreground: 0 0% 98%; /* Texto claro */
+    
+    --card: 0 0% 3.9%; /* Preto */
+    --card-foreground: 0 0% 98%; /* Texto claro */
+    
+    --popover: 0 0% 3.9%; /* Preto */
+    --popover-foreground: 0 0% 98%; /* Texto claro */
+    
+    --primary: 0 0% 98%; /* Branco */
+    --primary-foreground: 0 0% 9%; /* Texto escuro */
+    
+    --secondary: 0 0% 14.9%; /* Cinza escuro */
+    --secondary-foreground: 0 0% 98%; /* Texto claro */
+    
+    --muted: 0 0% 14.9%; /* Cinza escuro */
+    --muted-foreground: 0 0% 63.9%; /* Cinza médio */
+    
+    --accent: 0 0% 14.9%; /* Cinza escuro */
+    --accent-foreground: 0 0% 98%; /* Texto claro */
+    
+    --destructive: 0 62.8% 30.6%; /* Vermelho escuro */
+    --destructive-foreground: 0 0% 98%; /* Texto claro */
+    
+    --border: 0 0% 14.9%; /* Cinza escuro */
+    --input: 0 0% 14.9%; /* Cinza escuro */
+    --ring: 0 0% 83.1%; /* Cinza claro */
+    
+    /* Cores específicas da sidebar */
+    --sidebar-background: 0 0% 2%; /* Preto mais escuro */
+    --sidebar-foreground: 0 0% 98%; /* Texto claro */
+    --sidebar-primary: 0 0% 98%; /* Branco */
+    --sidebar-primary-foreground: 0 0% 9%; /* Texto escuro */
+    --sidebar-accent: 0 0% 14.9%; /* Cinza escuro */
+    --sidebar-accent-foreground: 0 0% 98%; /* Texto claro */
+    --sidebar-border: 0 0% 14.9%; /* Cinza escuro */
+    --sidebar-ring: 0 0% 83.1%; /* Cinza claro */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    /* Prevent iOS Safari zoom on input focus */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+    /* Prevent horizontal scroll on mobile */
+    overflow-x: hidden;
+    /* Support for iOS safe area */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Text selection styles for proper visibility */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--primary-foreground));
+  }
+
+  ::-moz-selection {
+    background-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--primary-foreground));
+  }
+
+  /* Mobile-first responsive typography */
+  h1 {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+
+  h2 {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+
+  h3 {
+    @apply text-base sm:text-lg lg:text-xl;
+  }
+
+  /* Mobile touch improvements */
+  button, 
+  [role="button"],
+  input,
+  select,
+  textarea {
+    /* Prevent iOS Safari zoom on focus */
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    button, 
+    [role="button"],
+    input,
+    select,
+    textarea {
+      font-size: 14px;
+    }
+  }
+
+  /* Mobile-friendly clickable areas */
+  .mobile-touch {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/60 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/80;
+}
+
+/* Mobile-specific utilities */
+@layer utilities {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .mobile-container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .mobile-text {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-spacing {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  .mobile-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+
+  .mobile-flex {
+    @apply flex flex-col sm:flex-row gap-4;
+  }
+
+  /* Hide scrollbar while keeping functionality */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Mobile performance optimizations */
+* {
+  /* Smooth scrolling on all devices */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Improve button tap response on mobile */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
