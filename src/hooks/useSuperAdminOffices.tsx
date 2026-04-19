@@ -68,37 +68,46 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
             plan,
             price,
             end_date
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (officesError) throw officesError;
 
-      // PASSO 2: Busca todos os usuários administradores vinculados a esses escritórios
-      // Usamos office_users + profiles para garantir 100% de precisão nos nomes e emails
+      // PASSO 2: Busca todos os usuários vinculados a esses escritórios
       const { data: userData, error: userError } = await supabase
         .from('office_users')
-        .select(`
-          office_id,
-          role,
-          user_id,
-          profiles:user_id (
-            full_name,
-            email
-          )
-        `)
+        .select('office_id, role, user_id')
         .in('office_id', (offices || []).map(o => o.id));
 
-      if (userError) console.error("Erro ao buscar usuários:", userError);
+      if (userError) throw userError;
 
-      const transformedAdmins: AdminOffice[] = (offices || []).map((office: any) => {
-        // Encontra o usuário admin deste escritório no segundo fetch
+      // PASSO 3: Busca perfis separadamente para garantir 100% de sucesso no join
+      const userIds = [...new Set((userData || []).map(u => u.user_id))];
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', userIds);
+      
+      if (profileError) {
+        // Se falhar o perfil, ainda podemos mostrar os IDs/emails brutos se necessário
+        console.warn("Aviso: Falha ao carregar perfis, usando fallbacks.", profileError);
+      }
+
+      // PASSO 4: Busca assinaturas
+      const { data: subscriptions, error: subError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .in('office_id', (offices || []).map(o => o.id));
+
+      if (subError) throw subError;
+
+      // PASSO 5: Montar o objeto final
+      const adminList: AdminOffice[] = (offices || []).map(office => {
         const officeUser = (userData || []).find((u: any) => u.office_id === office.id && u.role === 'admin') 
                         || (userData || []).find((u: any) => u.office_id === office.id);
         
-        const profile = (officeUser as any)?.profiles;
-        const sub = office.subscriptions?.[0];
-        
+        const profile = (profileData || []).find(p => p.id === officeUser?.user_id);
+        const sub = (subscriptions || []).find(s => s.office_id === office.id);
         const isLegacyLifetime = sub?.end_date?.includes('2099') || office.plan === 'lifetime';
         const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
@@ -220,17 +229,32 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       }
 
       if (Object.keys(subUpdates).length > 0) {
-        // Usamos upsert com onConflict por office_id para garantir que a linha exista
-        const { error: subError } = await supabase
+        // 3.1 Verificar se a assinatura já existe
+        const { data: existingSub, error: checkError } = await supabase
           .from('subscriptions')
-          .upsert({ 
-            office_id: office_id,
-            ...subUpdates 
-          }, { onConflict: 'office_id' });
+          .select('id')
+          .eq('office_id', office_id)
+          .maybeSingle();
+        
+        if (checkError) throw checkError;
 
-        if (subError) {
-          console.error("Erro no updateOfficeFull (subscriptions):", JSON.stringify(subError, null, 2));
-          throw subError;
+        if (existingSub) {
+          // UPDATE
+          const { error: subUpdateError } = await supabase
+            .from('subscriptions')
+            .update(subUpdates)
+            .eq('id', existingSub.id);
+          if (subUpdateError) throw subUpdateError;
+        } else {
+          // INSERT
+          const { error: subInsertError } = await supabase
+            .from('subscriptions')
+            .insert({
+              office_id: office_id,
+              ...subUpdates,
+              start_date: new Date().toISOString()
+            });
+          if (subInsertError) throw subInsertError;
         }
       }
 

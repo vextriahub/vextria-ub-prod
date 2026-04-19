@@ -332,23 +332,14 @@ export const OfficeControlPanel: React.FC = () => {
                                       />
                                     </div>
                                   </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Controle de Assinatura</h4>
+                                                             <div className="space-y-4">
+                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Controle de Assinatura & Acesso</h4>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                       <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Plano Atual</Label>
                                         <Select 
                                           value={editFormData.plan_name} 
-                                          onValueChange={(val) => {
-                                            const isLifetime = val === 'lifetime';
-                                            setEditFormData({
-                                              ...editFormData, 
-                                              plan_name: val as any,
-                                              is_lifetime: isLifetime || editFormData.is_lifetime
-                                            });
-                                          }}
+                                          onValueChange={(val) => setEditFormData({...editFormData, plan_name: val as any})}
                                         >
                                           <SelectTrigger className="h-10 bg-muted/20 border-none rounded-xl">
                                             <SelectValue placeholder="Selecione o plano" />
@@ -362,19 +353,33 @@ export const OfficeControlPanel: React.FC = () => {
                                           </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="p-4 bg-muted/10 rounded-2xl flex items-center justify-between border border-muted/10 h-[58px] mt-4 sm:mt-0">
-                                      <div className="space-y-0.5">
-                                        <Label className="text-xs font-bold">Vitalício Manual</Label>
-                                        <p className="text-[9px] text-muted-foreground leading-tight uppercase">Ativa data de 2099</p>
-                                      </div>
-                                      <Checkbox 
-                                        checked={editFormData.is_lifetime || false}
-                                        onCheckedChange={(checked) => setEditFormData({...editFormData, is_lifetime: !!checked})}
-                                        className="h-5 w-5 rounded-md border-primary/50"
+                                    <div className="space-y-1.5">
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Desconto Manual (%)</Label>
+                                      <Input 
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={editFormData.manual_discount_percent || 0} 
+                                        onChange={(e) => setEditFormData({...editFormData, manual_discount_percent: Number(e.target.value)})}
+                                        className="h-10 bg-muted/20 border-none rounded-xl"
+                                        placeholder="Ex: 50"
                                       />
                                     </div>
                                   </div>
+
+                                  <div className="p-4 bg-muted/10 rounded-2xl flex items-center justify-between border border-muted/10">
+                                    <div className="space-y-0.5">
+                                      <Label className="text-xs font-bold italic text-amber-500">Status de Vitalício (Manual)</Label>
+                                      <p className="text-[9px] text-muted-foreground leading-tight uppercase">Ativa data de 2099 e ignora Stripe</p>
+                                    </div>
+                                    <Checkbox 
+                                      checked={editFormData.is_lifetime || false}
+                                      onCheckedChange={(checked) => setEditFormData({...editFormData, is_lifetime: !!checked})}
+                                      className="h-6 w-6 rounded-md border-primary/50"
+                                    />
+                                  </div>
                                 </div>
+       </div>
                               </div>
 
                               <DialogFooter className="p-6 pt-2">
