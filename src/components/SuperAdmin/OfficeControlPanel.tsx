@@ -37,7 +37,10 @@ export const OfficeControlPanel: React.FC = () => {
       admin.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admin.office_name?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || admin.payment_status === statusFilter;
+    let matchesStatus = statusFilter === 'all';
+    if (statusFilter === 'trial') matchesStatus = admin.is_trial;
+    if (statusFilter === 'em_dia') matchesStatus = admin.payment_status === 'em_dia' && !admin.is_trial;
+    if (statusFilter === 'vencido') matchesStatus = admin.payment_status === 'vencido';
     
     return matchesSearch && matchesStatus;
   });
@@ -66,7 +69,16 @@ export const OfficeControlPanel: React.FC = () => {
   };
 
   // Função para obter badge de status
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isTrial?: boolean) => {
+    if (isTrial) {
+      return (
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+          <Clock className="w-3 h-3 mr-1" />
+          Trial
+        </Badge>
+      );
+    }
+
     switch (status) {
       case 'em_dia':
         return (
@@ -92,7 +104,7 @@ export const OfficeControlPanel: React.FC = () => {
       default:
         return (
           <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-            Desconhecido
+            Pendente
           </Badge>
         );
     }
@@ -101,8 +113,8 @@ export const OfficeControlPanel: React.FC = () => {
   // Estatísticas para os cards superiores
   const stats = {
     total: admins.length,
-    emDia: admins.filter(a => a.payment_status === 'em_dia').length,
-    proximoVencimento: admins.filter(a => a.payment_status === 'proximo_vencimento').length,
+    emDia: admins.filter(a => a.payment_status === 'em_dia' && !a.is_trial).length,
+    trial: admins.filter(a => a.is_trial).length,
     vencidos: admins.filter(a => a.payment_status === 'vencido').length,
   };
 
@@ -136,7 +148,7 @@ export const OfficeControlPanel: React.FC = () => {
             <div className="flex items-center space-x-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Em Dia</p>
+                <p className="text-sm font-medium text-muted-foreground">Clientes Ativos</p>
                 <p className="text-2xl font-bold text-green-600">{stats.emDia}</p>
               </div>
             </div>
@@ -146,10 +158,10 @@ export const OfficeControlPanel: React.FC = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-yellow-600" />
+              <Clock className="h-4 w-4 text-purple-600" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Próximo Vencimento</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.proximoVencimento}</p>
+                <p className="text-sm font-medium text-muted-foreground">Em Trial</p>
+                <p className="text-2xl font-bold text-purple-600">{stats.trial}</p>
               </div>
             </div>
           </CardContent>
@@ -212,9 +224,9 @@ export const OfficeControlPanel: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="em_dia">Em dia</SelectItem>
-                <SelectItem value="proximo_vencimento">Próximo vencimento</SelectItem>
-                <SelectItem value="vencido">Vencido</SelectItem>
+                <SelectItem value="em_dia">Clientes Ativos</SelectItem>
+                <SelectItem value="trial">Em Trial</SelectItem>
+                <SelectItem value="vencido">Vencidos</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -265,7 +277,7 @@ export const OfficeControlPanel: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getStatusBadge(admin.payment_status)}
+                        {getStatusBadge(admin.payment_status, admin.is_trial)}
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">

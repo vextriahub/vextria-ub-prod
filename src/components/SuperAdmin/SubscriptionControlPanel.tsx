@@ -31,7 +31,11 @@ export const SubscriptionControlPanel: React.FC = () => {
       admin.office_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admin.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || admin.payment_status === statusFilter;
+    let matchesStatus = statusFilter === 'all';
+    if (statusFilter === 'trial') matchesStatus = admin.is_trial;
+    if (statusFilter === 'em_dia') matchesStatus = admin.payment_status === 'em_dia' && !admin.is_trial;
+    if (statusFilter === 'vencido') matchesStatus = admin.payment_status === 'vencido';
+    if (statusFilter === 'proximo_vencimento') matchesStatus = admin.payment_status === 'proximo_vencimento';
     
     return matchesSearch && matchesStatus;
   });
