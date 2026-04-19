@@ -439,7 +439,13 @@ export const OfficeManagement: React.FC = () => {
                         {(() => {
                           const activeSub = (office as any).subscriptions?.find((s: any) => s.status === 'active' || s.status === 'trial');
                           if (office.is_lifetime) return <span className="text-amber-500 font-medium whitespace-nowrap">Acesso Vitalício</span>;
-                          return activeSub?.end_date ? format(new Date(activeSub.end_date), 'dd/MM/yyyy', { locale: ptBR }) : '-';
+                          if (activeSub?.end_date) return format(new Date(activeSub.end_date), 'dd/MM/yyyy', { locale: ptBR });
+                          if (office.plan === 'trial') {
+                            const endDate = new Date(office.created_at);
+                            endDate.setDate(endDate.getDate() + 7);
+                            return format(endDate, 'dd/MM/yyyy', { locale: ptBR }) + ' (Previsto)';
+                          }
+                          return '-';
                         })()}
                       </TableCell>
                       <TableCell>
