@@ -58,7 +58,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
             )
           )
         `)
-        .eq('role', 'admin') // Traz apenas os advogados donos de escritórios
+        .not('office_id', 'is', null) // Traz todos os advogados com escritório criado
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
