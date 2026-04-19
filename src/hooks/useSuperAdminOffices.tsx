@@ -56,15 +56,11 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // QUERY SIMPLIFICADA (Segura) para restaurar funcionamento
-      // Removendo colunas que podem não existir ou estar bloqueadas
+      // USO DE '*' PARA EVITAR ERRO 400 SE COLUNAS FOREM ADICIONADAS MANUALMENTE NO DB
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
-          id,
-          name,
-          active,
-          created_at,
+          *,
           office_users (
             role,
             user_id
@@ -102,12 +98,12 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         const profileData = mainAdminUser ? profilesMap[mainAdminUser.user_id] : null;
         const sub = office.subscriptions?.[0];
         
-        // Lenda de vitalício baseada na data 2099 (Fallback seguro)
-        const isLegacyLifetime = sub?.end_date?.includes('2099');
-        const isTrial = sub?.status === 'trial' || sub?.status === 'trialing';
+        // Detecção ultra-resiliente de vitalício
+        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.is_lifetime === true || office.is_lifetime === 1;
+        const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
-        let plan_display_name = sub?.plan || 'Free';
+        let plan_display_name = office.plan || sub?.plan || 'Free';
 
         if (isTrial) {
           payment_status = 'em_dia';
@@ -125,7 +121,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           }
         }
 
-        let end_date = sub?.end_date || null;
+        // Cálculo dinâmico para garantir que Trials SEMPRE tenham data
+        let end_date = sub?.end_date || office.end_date || null;
         if (isTrial && !end_date && office.created_at) {
           end_date = addDays(new Date(office.created_at), 7).toISOString();
         }
@@ -137,9 +134,9 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           role: mainAdminUser?.role || 'user',
           office_id: office.id,
           office_name: office.name || 'Sem Nome',
-          office_email: null,
-          address: null,
-          phone: null,
+          office_email: office.email || null,
+          address: office.address || null,
+          phone: office.phone || null,
           created_at: office.created_at,
           payment_status,
           plan_name: plan_display_name,
@@ -148,14 +145,14 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           is_trial: isTrial,
           active: office.active ?? true,
           is_lifetime: !!isLegacyLifetime,
-          manual_discount_percent: 0
+          manual_discount_percent: office.manual_discount_percent || 0
         };
       });
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
-      console.error('Erro crítico:', err);
-      setError('Erro ao carregar dados administrativos. Restaurando...');
+      console.error('Erro de sincronização resiliênte:', err);
+      setError('Erro ao carregar dados administrativos. Verifique sua conexão.');
     } finally {
       setLoading(false);
     }
