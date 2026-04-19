@@ -264,7 +264,16 @@ export const OfficeControlPanel: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell className="py-4 text-center font-black text-sm">
-                      {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : "---"}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[10px] uppercase text-primary/50 font-bold mb-1">
+                          {admin.plan_name === 'trial' ? 'Trial' :
+                           admin.plan_name === 'starter' ? 'Starter' :
+                           admin.plan_name === 'pro' ? 'Pro' :
+                           admin.plan_name === 'business' ? 'Business' :
+                           admin.plan_name === 'lifetime' ? 'Vitalício' : admin.plan_name}
+                        </span>
+                        <span>{admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : "---"}</span>
+                      </div>
                     </TableCell>
                     <TableCell className="py-4 text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
@@ -337,18 +346,28 @@ export const OfficeControlPanel: React.FC = () => {
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                       <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Plano Atual</Label>
-                                      <Select value={editFormData.plan_name} onValueChange={(val) => setEditFormData({...editFormData, plan_name: val as any})}>
-                                        <SelectTrigger className="h-10 bg-muted/20 border-none rounded-xl">
-                                          <SelectValue placeholder="Selecione o plano" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="trial">Trial (7 dias)</SelectItem>
-                                          <SelectItem value="starter">Starter</SelectItem>
-                                          <SelectItem value="pro">Pro</SelectItem>
-                                          <SelectItem value="business">Business</SelectItem>
-                                          <SelectItem value="lifetime">Vitalício</SelectItem>
-                                        </SelectContent>
-                                      </Select>
+                                        <Select 
+                                          value={editFormData.plan_name} 
+                                          onValueChange={(val) => {
+                                            const isLifetime = val === 'lifetime';
+                                            setEditFormData({
+                                              ...editFormData, 
+                                              plan_name: val as any,
+                                              is_lifetime: isLifetime || editFormData.is_lifetime
+                                            });
+                                          }}
+                                        >
+                                          <SelectTrigger className="h-10 bg-muted/20 border-none rounded-xl">
+                                            <SelectValue placeholder="Selecione o plano" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="trial">Trial (7 dias)</SelectItem>
+                                            <SelectItem value="starter">Starter</SelectItem>
+                                            <SelectItem value="pro">Pro</SelectItem>
+                                            <SelectItem value="business">Business</SelectItem>
+                                            <SelectItem value="lifetime">Vitalício</SelectItem>
+                                          </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="p-4 bg-muted/10 rounded-2xl flex items-center justify-between border border-muted/10 h-[58px] mt-4 sm:mt-0">
                                       <div className="space-y-0.5">

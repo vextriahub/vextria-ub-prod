@@ -107,10 +107,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
         if (isTrial) {
           payment_status = 'em_dia';
-          plan_display_name = 'Trial';
+          plan_display_name = 'trial';
         } else if (isLegacyLifetime) {
           payment_status = 'em_dia';
-          plan_display_name = 'Vitalício';
+          plan_display_name = 'lifetime';
         } else if (sub) {
           if (sub.status === 'active') {
             payment_status = 'em_dia';
@@ -119,6 +119,15 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           } else {
             payment_status = 'vencido';
           }
+
+          // Mapear de volta do DB para a UI se necessário
+          const revPlanMap: Record<string, string> = {
+            'basico': 'starter',
+            'intermediario': 'pro',
+            'avancado': 'business',
+            'premium': 'lifetime'
+          };
+          plan_display_name = revPlanMap[sub.plan] || sub.plan || 'trial';
         }
 
         let end_date = sub?.end_date || office.end_date || null;
@@ -174,38 +183,51 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     }
   };
 
-  const updateOfficeFull = async (officeId: string, updates: Partial<AdminOffice>) => {
+  const updateOfficeFull = async (office_id: string, updates: Partial<AdminOffice>) => {
     try {
-      // 1. Atualizar dados básicos do escritório
-      const dbUpdates: any = {};
-      if (updates.office_name !== undefined) dbUpdates.name = updates.office_name;
-      if (updates.office_email !== undefined) dbUpdates.email = updates.office_email;
-      if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
-      if (updates.address !== undefined) dbUpdates.address = updates.address;
+      // 1. Mapeamento de planos UI -> Database
+      const planMap: Record<string, string> = {
+        'trial': 'trial',
+        'starter': 'basico',
+        'pro': 'intermediario',
+        'business': 'avancado',
+        'lifetime': 'premium' // Vitalício é tratado como premium internamente ou mantido como está
+      };
 
-      if (Object.keys(dbUpdates).length > 0) {
-        const { error: ofError } = await supabase.from('offices').update(dbUpdates).eq('id', officeId);
+      const dbPlan = updates.plan_name ? (planMap[updates.plan_name] || updates.plan_name) : undefined;
+
+      // 2. Atualizar dados básicos do escritório
+      const officeUpdates: any = {};
+      if (updates.office_name !== undefined) officeUpdates.name = updates.office_name;
+      if (updates.office_email !== undefined) officeUpdates.email = updates.office_email;
+      if (updates.phone !== undefined) officeUpdates.phone = updates.phone;
+      if (updates.address !== undefined) officeUpdates.address = updates.address;
+      if (dbPlan) officeUpdates.plan = dbPlan;
+
+      if (Object.keys(officeUpdates).length > 0) {
+        const { error: ofError } = await supabase.from('offices').update(officeUpdates).eq('id', office_id);
         if (ofError) throw ofError;
       }
 
-      // 2. Atualizar Plano e Vitalício (via Subscription)
+      // 3. Atualizar Assinatura
       const subUpdates: any = {};
-      if (updates.plan_name !== undefined) subUpdates.plan = updates.plan_name;
-      
-      // Se for vitalício, define data para 2099. Se desativar vitalício, define para 30 dias a partir de agora.
+      if (dbPlan) subUpdates.plan = dbPlan;
       if (updates.is_lifetime !== undefined) {
         subUpdates.end_date = updates.is_lifetime ? '2099-12-31T23:59:59Z' : addDays(new Date(), 30).toISOString();
+        subUpdates.is_trial = false;
+        subUpdates.status = 'active';
       }
 
       if (Object.keys(subUpdates).length > 0) {
-        const { error: subError } = await supabase.from('subscriptions').update(subUpdates).eq('office_id', officeId);
+        const { error: subError } = await supabase.from('subscriptions').update(subUpdates).eq('office_id', office_id);
         if (subError) throw subError;
       }
 
-      toast({ title: "Dados Sincronizados", description: "As alterações foram aplicadas com sucesso." });
+      toast({ title: "Dados Sincronizados", description: "Configurações do escritório atualizadas com sucesso." });
       await fetchAdmins();
       return true;
     } catch (err: any) {
+      console.error("Erro no updateOfficeFull:", err);
       toast({ title: "Falha na Atualização", description: err.message, variant: "destructive" });
       return false;
     }
