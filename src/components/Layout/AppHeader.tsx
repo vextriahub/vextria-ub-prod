@@ -42,6 +42,31 @@ export function AppHeader() {
     });
   };
 
+  const getUserDisplayName = () => {
+    // 1. Tentar pegar o nome real do banco de dados (que não sejam os placeholders de fallback)
+    if (profile?.full_name && !['Usuário', 'Advogado(a)'].includes(profile.full_name)) return profile.full_name;
+    if (user?.name && !['Usuário', 'Advogado(a)'].includes(user.name)) return user.name;
+    
+    // 2. Tentar pegar dos metadados da sessão (caso o front-end injetou no OAuth, ex: Google)
+    if (session?.user?.user_metadata?.full_name) return session.user.user_metadata.full_name;
+    if (session?.user?.user_metadata?.name) return session.user.user_metadata.name;
+
+    // 3. Fallback amigável usando a primeira parte do email se houver
+    const emailToUse = profile?.email || user?.email || session?.user?.email;
+    if (emailToUse) {
+      const emailPrefix = emailToUse.split('@')[0];
+      // Capitalizar e remover pontos (ex: joao.silva -> Joao Silva)
+      return emailPrefix
+        .split(/[.\-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    
+    return "Usuário";
+  };
+
+  const displayEmail = profile?.email || user?.email || session?.user?.email || "email@exemplo.com";
+
   return (
     <header className="h-12 md:h-14 lg:h-16 border-b border-border bg-card flex items-center justify-between px-3 md:px-4 lg:px-6">
       {/* Sidebar Trigger - Always visible */}
@@ -85,8 +110,8 @@ export function AppHeader() {
           <DropdownMenuContent align="end" className="w-48 md:w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-xs md:text-sm font-medium">{profile?.full_name || user?.name || session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name || "Usuário"}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground">{profile?.email || user?.email || session?.user?.email || "email@exemplo.com"}</p>
+                <p className="text-xs md:text-sm font-medium">{getUserDisplayName()}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground">{displayEmail}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
