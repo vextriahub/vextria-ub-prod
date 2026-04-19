@@ -39,16 +39,19 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // Usando relacionamentos diretos do Supabase para aninhar: profiles -> offices -> subscriptions
+      // Usando relacionamentos diretos do Supabase pela tabela pivô office_users
       const { data, error: fetchError } = await supabase
-        .from('profiles')
+        .from('office_users')
         .select(`
           id,
-          full_name,
-          email,
           role,
-          office_id,
           created_at,
+          profiles:user_id (
+            id,
+            full_name,
+            email,
+            created_at
+          ),
           offices:office_id (
             id,
             name,
@@ -58,19 +61,20 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
             )
           )
         `)
-        .not('office_id', 'is', null) // Traz todos os advogados com escritório criado
+        .eq('role', 'admin') // O admin originário do Escritório
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
 
-      // Montando a resposta de forma segura tirando de MOCK e jogando pra REAL, assim o Trial da Stripe cai aqui dentro certinho!
-      const transformedAdmins: AdminOffice[] = (data || []).map((admin: any) => {
-        const officeData = admin.offices;
+      // Montando a resposta reconstruindo com a raiz segura
+      const transformedAdmins: AdminOffice[] = (data || []).map((tenant: any) => {
+        const profileData = tenant.profiles;
+        const officeData = tenant.offices;
+        
         let payment_status: AdminOffice['payment_status'] = 'pendente';
         let plan_name = 'Free/Nenhum';
 
         if (officeData && officeData.subscriptions && officeData.subscriptions.length > 0) {
-          // Pega a assinatura mais recente/atrelada
           const sub = officeData.subscriptions[0];
           plan_name = sub.plan || 'Free/Nenhum';
 
@@ -84,13 +88,13 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         }
 
         return {
-          id: admin.id,
-          full_name: admin.full_name,
-          email: admin.email,
-          role: admin.role,
-          office_id: admin.office_id,
+          id: profileData?.id || tenant.id,
+          full_name: profileData?.full_name,
+          email: profileData?.email,
+          role: profileData?.role || 'user',
+          office_id: officeData?.id,
           office_name: officeData?.name || 'Aguardando Cadastro...',
-          created_at: admin.created_at,
+          created_at: profileData?.created_at || tenant.created_at,
           payment_status,
           plan_name
         };
