@@ -211,86 +211,85 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Process user data after authentication
-  const processUserData = useCallback(async (sessionUser: SupabaseUser) => {
-    if (!mountedRef.current) return;
-    
     try {
-      // 1. Fetch user profile
-      let profileData = await fetchProfile(sessionUser.id);
-      
-      if (!mountedRef.current) return;
-      
-      // 2. If profile doesn't exist, create it
-      if (!profileData && sessionUser.email) {
-        console.log('👤 Profile not found, creating new profile for:', sessionUser.email);
-        const fullName = sessionUser.user_metadata?.full_name || 
-                        sessionUser.user_metadata?.name ||
-                        sessionUser.email.split('@')[0];
-        
-        profileData = await createProfile(
-          sessionUser.id, 
-          sessionUser.email, 
-          fullName
-        );
-      }
-      
-      // 3. Fetch office data
-      let officeUser = null;
-      let office = null;
-      
-      if (profileData) {
-        console.log('📦 Profile data and SQL policies active. Fetching office info...');
-        const officeData = await fetchOfficeData(sessionUser.id);
-        officeUser = officeData.officeUser;
-        office = officeData.office;
-      } else {
-        console.warn('⚠️ No profile data found. Skipping office fetch but proceeding with session fallback.');
-      }
-      
-      if (!mountedRef.current) return;
-      
-      // 4. Create user object - MANDATORY (No more early returns)
-      const userData: User = {
-        id: sessionUser.id,
-        name: profileData?.full_name || sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Usuário',
-        email: sessionUser.email || profileData?.email || '',
-        role: profileData?.role || 'user',
-        office_id: profileData?.office_id || null,
-        office_role: officeUser?.role || null
-      };
-      
-      console.log('✅ Final user data prepared:', userData);
-
-      // Set state
-      setProfile(profileData);
-      setOfficeUser(officeUser);
-      setOffice(office);
-      setUser(userData);
-      
-      // Check if it's first login
-      const profileAge = Date.now() - new Date(profileData.created_at).getTime();
-      const isNewProfile = profileAge < 60000;
-      setIsFirstLogin(isNewProfile && profileData.role !== 'super_admin');
-      
-    } catch (error) {
-      console.error('❌ Error processing user data:', error);
-      
-      // FALLBACK: Mesmo com erro no BD, vamos tentar setar um usuário mínimo baseado na sessão
-      // Isso evita que a interface trave em "NULL"
-      const fallbackUser: User = {
+      // 1. SET FALLBACK USER IMMEDIATELY to unlock UI
+      // Use session metadata for the fastest possible UI response
+      const initialUser: User = {
         id: sessionUser.id,
         name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Usuário',
         email: sessionUser.email || '',
-        role: 'user' // Default safe role
+        role: (sessionUser.email && SUPER_ADMIN_EMAILS.includes(sessionUser.email.toLowerCase().trim())) ? 'super_admin' : 'user'
       };
-      console.warn('⚠️ Using fallback user data due to processing error');
-      setUser(fallbackUser);
-    } finally {
-      if (mountedRef.current) {
-        setIsLoading(false);
-      }
+      
+      setUser(initialUser);
+      setIsLoading(false); // UI IS NOW UNLOCKED
+      
+      // 2. FETCH REAL DATA IN BACKGROUND
+      console.log('⚡ UI unlocked with fallback user. Fetching full profile in background...');
+      
+      const backgroundTask = async () => {
+        try {
+          // Fetch profile
+          let profileData = await fetchProfile(sessionUser.id);
+          
+          if (!mountedRef.current) return;
+          
+          // If profile doesn't exist, try to create it (softly)
+          if (!profileData && sessionUser.email) {
+            console.log('👤 Profile not found, attempting to create...');
+            profileData = await createProfile(
+              sessionUser.id, 
+              sessionUser.email, 
+              initialUser.name
+            );
+          }
+          
+          if (!mountedRef.current) return;
+          
+          // Fetch office data
+          let officeUser = null;
+          let office = null;
+          
+          if (profileData) {
+            const officeData = await fetchOfficeData(sessionUser.id);
+            officeUser = officeData.officeUser;
+            office = officeData.office;
+          }
+          
+          if (!mountedRef.current) return;
+          
+          // 3. Update with final data
+          const finalUser: User = {
+            id: sessionUser.id,
+            name: profileData?.full_name || initialUser.name,
+            email: sessionUser.email || profileData?.email || initialUser.email,
+            role: profileData?.role || initialUser.role,
+            office_id: profileData?.office_id || null,
+            office_role: officeUser?.role || null
+          };
+          
+          console.log('✅ Background sync completed');
+          setProfile(profileData);
+          setOfficeUser(officeUser);
+          setOffice(office);
+          setUser(finalUser);
+          
+          if (profileData) {
+            const profileAge = Date.now() - new Date(profileData.created_at).getTime();
+            setIsFirstLogin(profileAge < 60000 && profileData.role !== 'super_admin');
+          }
+        } catch (bgError) {
+          console.error('❌ Background sync error:', bgError);
+        }
+      };
+      
+      // Execute in background
+      backgroundTask();
+      
+    } catch (error) {
+      console.error('❌ Critical error in processUserData:', error);
+      setIsLoading(false);
     }
-  }, [fetchProfile, createProfile, fetchOfficeData]);
 
   // Handle auth state change
   const handleAuthStateChange = useCallback(async (event: string, newSession: Session | null) => {
