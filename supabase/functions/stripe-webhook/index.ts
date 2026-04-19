@@ -87,26 +87,45 @@ serve(async (req) => {
 async function handleCheckoutCompleted(session: any, supabase: any) {
   const { customer, metadata } = session
   
-  if (!metadata?.user_id || !metadata?.office_id) {
-    throw new Error('Metadata incompleto no checkout')
+  if (!metadata?.user_id) {
+    throw new Error('Metadata incompleto: user_id faltando no checkout')
+  }
+  
+  // Buscar office_id correspondente ao user_id caso o Frontend não tenha engatado
+  let targetOfficeId = metadata.office_id;
+  if (!targetOfficeId) {
+    const { data: officeUser } = await supabase
+      .from('office_users')
+      .select('office_id')
+      .eq('user_id', metadata.user_id)
+      .eq('active', true)
+      .maybeSingle();
+      
+    targetOfficeId = officeUser?.office_id;
+    
+    if (!targetOfficeId) {
+      console.warn('⚠️ office_id não encontrado para o usuário:', metadata.user_id);
+    }
   }
 
-  // Atualizar checkout
-  await supabase
-    .from('stripe_checkouts')
-    .update({
-      stripe_customer_id: customer,
-      status: 'completed',
-      completed_at: new Date().toISOString()
-    })
-    .eq('id', metadata.checkout_id)
+  // Atualizar checkout - (Uso Opcional de checkout_id caso exista)
+  if (metadata.checkout_id) {
+    await supabase
+      .from('stripe_checkouts')
+      .update({
+        stripe_customer_id: customer,
+        status: 'completed',
+        completed_at: new Date().toISOString()
+      })
+      .eq('id', metadata.checkout_id)
+  }
 
   // Criar ou atualizar assinatura
   await supabase
     .from('subscriptions')
     .upsert({
       user_id: metadata.user_id,
-      office_id: metadata.office_id,
+      office_id: targetOfficeId,
       stripe_customer_id: customer,
       payment_status: 'paid',
       access_status: 'active',

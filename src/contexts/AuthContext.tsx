@@ -159,7 +159,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      console.log('✅ Profile created successfully:', data);
+      // Criar o Office (Tenant do sistema) para esse novo usuário
+      console.log('🏢 Creating default office for user...');
+      let newOfficeId = null;
+      
+      const { data: newOffice, error: officeError } = await supabase
+        .from('offices')
+        .insert({
+          name: `Escritório de ${fullName.split(' ')[0]}`,
+          active: true,
+          created_by: userId
+        })
+        .select('id')
+        .single();
+        
+      if (newOffice && !officeError) {
+        newOfficeId = newOffice.id;
+        console.log('✅ Default office created:', newOfficeId);
+        
+        // Atrelar como Admin
+        const { error: linkError } = await supabase
+          .from('office_users')
+          .insert({
+            user_id: userId,
+            office_id: newOfficeId,
+            role: 'admin',
+            active: true,
+            joined_at: new Date().toISOString()
+          });
+          
+        if (linkError) {
+          console.error('❌ Error linking user to new office:', linkError);
+        } else {
+          console.log('✅ User linked to office as admin');
+        }
+      } else {
+         console.error('❌ Error creating default office:', officeError);
+      }
+
+      console.log('✅ Profile flow completed successfully:', data);
       return data;
     } catch (error) {
       console.error('❌ Error in createProfile:', error);
