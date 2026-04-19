@@ -124,10 +124,10 @@ export function AppSidebar() {
 
   // Itens da Plataforma exclusivos para Super Admin
   const platformItems = [
-    { title: "Dashboard", url: "/admin?tab=dashboard", icon: BarChart3 },
-    { title: "Escritórios", url: "/admin?tab=offices", icon: Building2 },
-    { title: "Assinaturas", url: "/admin?tab=subscriptions", icon: CreditCard },
-    { title: "Solicitações", url: "/admin?tab=requests", icon: AlertCircle },
+    { title: "Dashboard", url: "/admin", icon: BarChart3 },
+    { title: "Escritórios", url: "/admin", icon: Building2 },
+    { title: "Assinaturas", url: "/subscriptions", icon: CreditCard },
+    { title: "Solicitações", url: "/admin", icon: AlertCircle },
   ];
 
   // Combinar itens do menu baseado no papel do usuário

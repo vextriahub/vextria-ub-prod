@@ -5,10 +5,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Shield, LogOut, Home, Settings, CreditCard } from 'lucide-react';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const SuperAdmin: React.FC = () => {
   const { user, logout, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirecionamento de fallback para tabs
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('tab') === 'subscriptions') {
+      navigate('/subscriptions', { replace: true });
+    }
+  }, [location, navigate]);
 
   const handleLogout = async () => {
     await logout();
