@@ -4,7 +4,9 @@ import { OfficeControlPanel } from '@/components/SuperAdmin/OfficeControlPanel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Shield, LogOut, Home, Settings, CreditCard } from 'lucide-react';
+import { Shield, LogOut, Home, Settings, CreditCard, Building2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SubscriptionControlPanel } from '@/components/SuperAdmin/SubscriptionControlPanel';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -14,12 +16,21 @@ const SuperAdmin: React.FC = () => {
   const location = useLocation();
 
   // Redirecionamento de fallback para tabs
+  // Lógica de abas
+  const [activeTab, setActiveTab] = useState('offices');
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    if (params.get('tab') === 'subscriptions') {
-      navigate('/subscriptions', { replace: true });
+    const tab = params.get('tab');
+    if (tab === 'subscriptions' || tab === 'offices') {
+      setActiveTab(tab);
     }
-  }, [location, navigate]);
+  }, [location]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    navigate(`/super-admin?tab=${value}`, { replace: true });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -105,38 +116,69 @@ const SuperAdmin: React.FC = () => {
 
       {/* Conteúdo Principal */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header da página */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground">
-                Controle de Escritórios
-              </h2>
-              <p className="text-muted-foreground mt-2">
-                Gerencie o status de pagamento e acesso dos escritórios cadastrados no sistema.
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => navigate('/subscriptions')}
-                className="flex items-center gap-2"
-              >
-                <CreditCard className="h-4 w-4" />
-                Controle de Assinaturas
-              </Button>
-              <Card className="px-3 py-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  <span className="text-muted-foreground">Sistema Ativo</span>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
+        {/* Painel de Controle com Abas */}
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
+          <TabsList className="bg-muted/50 p-1 mb-8">
+            <TabsTrigger value="offices" className="gap-2">
+              <Building2 className="h-4 w-4" />
+              Controle de Escritórios
+            </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="gap-2">
+              <CreditCard className="h-4 w-4" />
+              Gestão de Assinaturas
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Painel de Controle */}
-        <OfficeControlPanel />
+          <TabsContent value="offices" className="mt-0 space-y-8 border-none p-0 outline-none">
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight text-foreground">
+                    Dashboard de Escritórios
+                  </h2>
+                  <p className="text-muted-foreground mt-2">
+                    Gerencie o status de pagamento e acesso dos escritórios cadastrados.
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Card className="px-3 py-2 border-none shadow-sm bg-card/60">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-foreground">Sincronizado</span>
+                    </div>
+                  </Card>
+                </div>
+              </div>
+              <OfficeControlPanel />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="subscriptions" className="mt-0 space-y-8 border-none p-0 outline-none">
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight text-foreground">
+                    Controle de Faturamento
+                  </h2>
+                  <p className="text-muted-foreground mt-2">
+                    Analise planos, pagamentos e receita recorrente global.
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Card className="px-3 py-2 border-none shadow-sm bg-card/60">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <div className="h-2 w-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="text-foreground">Dados Reais</span>
+                    </div>
+                  </Card>
+                </div>
+              </div>
+              <SubscriptionControlPanel />
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Informações adicionais */}
         <div className="mt-8 grid gap-4 md:grid-cols-4">
