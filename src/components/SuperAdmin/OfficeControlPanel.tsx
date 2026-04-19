@@ -229,12 +229,12 @@ export const OfficeControlPanel: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/5 hover:bg-muted/5 border-none">
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Administrador</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Identidade</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3">Escritório</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Cadastro</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Status</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Vencimento</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest py-3 pr-6">Ações</TableHead>
+                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest py-3 pr-6">Gerenciar</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -244,12 +244,14 @@ export const OfficeControlPanel: React.FC = () => {
                   <TableRow key={admin.id} className="hover:bg-muted/5 border-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm tracking-tight">{admin.office_name}</span>
-                        <span className="text-[10px] text-muted-foreground tracking-tight">{admin.office_email || admin.email}</span>
+                        <span className="font-bold text-sm tracking-tight">{admin.full_name}</span>
+                        <span className="text-[10px] text-muted-foreground tracking-tight">{admin.email}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
-                      <span className="text-sm font-medium text-muted-foreground/60">{admin.full_name}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-primary/80">{admin.office_name}</span>
+                      </div>
                     </TableCell>
                     <TableCell className="py-4 text-center">
                       <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
@@ -263,17 +265,8 @@ export const OfficeControlPanel: React.FC = () => {
                         {!admin.active && <Badge variant="destructive" className="text-[9px] px-1 h-4 font-bold">SUSPENSO</Badge>}
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 text-center font-black text-sm">
-                      <div className="flex flex-col items-center">
-                        <span className="text-[10px] uppercase text-primary/50 font-bold mb-1">
-                          {admin.plan_name === 'trial' ? 'Trial' :
-                           admin.plan_name === 'starter' ? 'Starter' :
-                           admin.plan_name === 'pro' ? 'Pro' :
-                           admin.plan_name === 'business' ? 'Business' :
-                           admin.plan_name === 'lifetime' ? 'Vitalício' : admin.plan_name}
-                        </span>
-                        <span>{admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : "---"}</span>
-                      </div>
+                    <TableCell className="py-4 text-center font-bold text-sm tabular-nums text-muted-foreground">
+                      {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : "---"}
                     </TableCell>
                     <TableCell className="py-4 text-right pr-6">
                       <div className="flex items-center justify-end gap-1">

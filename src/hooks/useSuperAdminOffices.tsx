@@ -219,16 +219,26 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       }
 
       if (Object.keys(subUpdates).length > 0) {
-        const { error: subError } = await supabase.from('subscriptions').update(subUpdates).eq('office_id', office_id);
-        if (subError) throw subError;
+        // Usamos upsert com onConflict por office_id para garantir que a linha exista
+        const { error: subError } = await supabase
+          .from('subscriptions')
+          .upsert({ 
+            office_id: office_id,
+            ...subUpdates 
+          }, { onConflict: 'office_id' });
+
+        if (subError) {
+          console.error("Erro no updateOfficeFull (subscriptions):", JSON.stringify(subError, null, 2));
+          throw subError;
+        }
       }
 
       toast({ title: "Dados Sincronizados", description: "Configurações do escritório atualizadas com sucesso." });
       await fetchAdmins();
       return true;
     } catch (err: any) {
-      console.error("Erro no updateOfficeFull:", err);
-      toast({ title: "Falha na Atualização", description: err.message, variant: "destructive" });
+      console.error("Falha Crítica no updateOfficeFull:", JSON.stringify(err, null, 2));
+      toast({ title: "Falha na Atualização", description: err.message || "Erro desconhecido", variant: "destructive" });
       return false;
     }
   };
