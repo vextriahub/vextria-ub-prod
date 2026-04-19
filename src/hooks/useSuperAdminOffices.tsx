@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { addDays } from 'date-fns';
 
 export interface AdminOffice {
   id: string;
@@ -10,7 +11,7 @@ export interface AdminOffice {
   role: string;
   office_id: string | null;
   office_name: string | null;
-  office_email: string | null; // E-mail institucional do escritório
+  office_email: string | null;
   address: string | null;
   phone: string | null;
   created_at: string;
@@ -20,8 +21,8 @@ export interface AdminOffice {
   end_date: string | null;
   is_trial: boolean;
   active: boolean;
-  is_lifetime: boolean; // Flag de plano vitalício
-  manual_discount_percent: number; // Porcentagem de desconto manual
+  is_lifetime: boolean;
+  manual_discount_percent: number;
 }
 
 export interface UseSuperAdminOfficesResult {
@@ -55,7 +56,6 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // Buscando escritórios com todas as colunas de perfil e faturamento
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
@@ -108,13 +108,16 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         
         const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
+        // DETECTOR DE VITALÍCIO LEGADO (Data 2099)
+        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.is_lifetime;
+        
         let payment_status: AdminOffice['payment_status'] = 'pendente';
         let plan_display_name = office.plan || sub?.plan || 'Free';
 
         if (isTrial) {
           payment_status = 'em_dia';
           plan_display_name = 'Trial';
-        } else if (office.is_lifetime) {
+        } else if (isLegacyLifetime) {
           payment_status = 'em_dia';
           plan_display_name = 'Vitalício';
         } else if (sub) {
@@ -125,6 +128,12 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           } else {
             payment_status = 'vencido';
           }
+        }
+
+        // CÁLCULO DE DATA DE TRIAL (Criado em + 7 dias se não houver end_date)
+        let end_date = sub?.end_date || null;
+        if (isTrial && !end_date && office.created_at) {
+          end_date = addDays(new Date(office.created_at), 7).toISOString();
         }
 
         return {
@@ -141,10 +150,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           payment_status,
           plan_name: plan_display_name,
           price: sub?.price || 0,
-          end_date: sub?.end_date || null,
+          end_date: end_date,
           is_trial: isTrial,
           active: office.active ?? true,
-          is_lifetime: office.is_lifetime ?? false,
+          is_lifetime: !!isLegacyLifetime,
           manual_discount_percent: office.manual_discount_percent || 0
         };
       });
@@ -152,7 +161,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setAdmins(transformedAdmins);
     } catch (err: any) {
       console.error('Erro de sincronização:', err);
-      setError('Erro ao carregar dados financeiros.');
+      setError('Erro ao carregar dados administrativos.');
     } finally {
       setLoading(false);
     }

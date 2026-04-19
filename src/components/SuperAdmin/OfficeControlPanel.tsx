@@ -32,18 +32,22 @@ import {
   Phone,
   Tag,
   Calendar,
-  Percent
+  Percent,
+  Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+/**
+ * PAINEL DE CONTROLE DE ESCRITÓRIOS - Versão 1.2
+ * Inclui: Cálculo de data de Trial, Detecção de Vitalício Legacy (2099) e Perfil Rico.
+ */
 export const OfficeControlPanel: React.FC = () => {
   const { admins, loading, error, refresh, updateOfficeStatus, sendPaymentReminder, isEmpty } = useSuperAdminOffices();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedAdmin, setSelectedAdmin] = useState<AdminOffice | null>(null);
 
-  // Filtrar administradores baseado na busca e status
   const filteredAdmins = admins.filter(admin => {
     const matchesSearch = !searchTerm || 
       admin.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,11 +62,10 @@ export const OfficeControlPanel: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Função para obter badge de status
   const getStatusBadge = (status: string, isTrial?: boolean, isLifetime?: boolean) => {
     if (isLifetime) {
       return (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 shadow-sm">
           <Star className="w-3 h-3 mr-1 fill-amber-500" />
           Vitalício
         </Badge>
@@ -86,13 +89,6 @@ export const OfficeControlPanel: React.FC = () => {
             Ativo
           </Badge>
         );
-      case 'proximo_vencimento':
-        return (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-            <Clock className="w-3 h-3 mr-1" />
-            Pendente
-          </Badge>
-        );
       case 'vencido':
         return (
           <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
@@ -109,7 +105,6 @@ export const OfficeControlPanel: React.FC = () => {
     }
   };
 
-  // Estatísticas para os cards superiores
   const stats = {
     total: admins.length,
     emDia: admins.filter(a => a.payment_status === 'em_dia' && !a.is_trial).length,
@@ -128,51 +123,39 @@ export const OfficeControlPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Cards de Estatísticas */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-y-0 pb-2">
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Escritórios</p>
-              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                <Users size={16} />
-              </div>
+              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Users size={16} /></div>
             </div>
             <div className="text-2xl font-bold mt-2">{stats.total}</div>
           </CardContent>
         </Card>
-        
         <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Clientes Ativos</p>
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                <CheckCircle size={16} />
-              </div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Ativos</p>
+              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-600"><CheckCircle size={16} /></div>
             </div>
             <div className="text-2xl font-bold mt-2 text-green-600">{stats.emDia}</div>
           </CardContent>
         </Card>
-        
         <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Em Trial</p>
-              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-                <Clock size={16} />
-              </div>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Trials</p>
+              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600"><Clock size={16} /></div>
             </div>
             <div className="text-2xl font-bold mt-2 text-purple-600">{stats.trial}</div>
           </CardContent>
         </Card>
-        
         <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-y-0 pb-2">
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Vencidos</p>
-              <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center text-red-600">
-                <AlertCircle size={16} />
-              </div>
+              <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center text-red-600"><AlertCircle size={16} /></div>
             </div>
             <div className="text-2xl font-bold mt-2 text-red-600">{stats.vencidos}</div>
           </CardContent>
@@ -184,35 +167,31 @@ export const OfficeControlPanel: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-xl font-bold">
-                <Building2 className="h-5 w-5 text-primary" />
-                Controle de Escritórios
+                <Building2 className="h-5 w-5 text-primary" /> Controle de Escritórios
               </CardTitle>
-              <CardDescription>Gerenciamento completo de acessos e perfil institucional</CardDescription>
+              <CardDescription>Gestão em tempo real de acessos e vencimentos</CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-2">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Atualizar
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
             </Button>
           </div>
         </CardHeader>
         
         <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por escritório ou administrador..."
+                placeholder="Escritório ou Administrador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10"
+                className="pl-10 h-10 ring-offset-background"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] h-10">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[200px] h-10"><SelectValue placeholder="Status" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="em_dia">Ativos</SelectItem>
                 <SelectItem value="trial">Trials</SelectItem>
                 <SelectItem value="vencido">Vencidos</SelectItem>
@@ -220,55 +199,54 @@ export const OfficeControlPanel: React.FC = () => {
             </Select>
           </div>
 
-          <div className="border rounded-xl overflow-hidden scrollbar-hide">
+          <div className="border rounded-xl overflow-hidden shadow-sm">
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead className="font-bold">Administrador</TableHead>
                   <TableHead className="font-bold">Escritório</TableHead>
-                  <TableHead className="font-bold">Status</TableHead>
-                  <TableHead className="font-bold">Vencimento</TableHead>
+                  <TableHead className="font-bold">Pagamento</TableHead>
+                  <TableHead className="font-bold">Data Vencimento</TableHead>
                   <TableHead className="text-right font-bold">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading && admins.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-10 opacity-60">Sincronizando dados...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-10 opacity-60">Buscando dados funcionais...</TableCell></TableRow>
                 ) : filteredAdmins.map((admin) => (
-                  <TableRow key={admin.id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow key={admin.id} className="hover:bg-muted/20">
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm">{admin.full_name}</span>
-                        <span className="text-[11px] text-muted-foreground">{admin.email}</span>
+                        <span className="text-[10px] text-muted-foreground">{admin.email}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
                         <span className="font-medium text-sm">{admin.office_name}</span>
                         {admin.manual_discount_percent > 0 && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <Tag size={10} className="text-blue-500" />
-                            <span className="text-[10px] font-bold text-blue-500">{admin.manual_discount_percent}% de desconto</span>
+                          <div className="flex items-center gap-1 text-[10px] text-blue-500 font-bold">
+                            <Percent size={10} /> {admin.manual_discount_percent}% de desconto
                           </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(admin.payment_status, admin.is_trial, admin.is_lifetime)}
-                      {!admin.active && <Badge variant="destructive" className="ml-2 text-[9px] py-0">SUSPENSO</Badge>}
+                      {!admin.active && <Badge variant="destructive" className="ml-2 text-[8px] py-0 px-1">SUSPENSO</Badge>}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5 font-medium text-sm">
+                      <div className="flex items-center gap-1 font-medium text-sm">
                         {admin.is_lifetime ? (
                           <span className="text-amber-600 flex items-center gap-1">
                             <Star size={12} className="fill-amber-600" /> Vitalício
                           </span>
                         ) : admin.end_date ? (
-                          <span>{format(new Date(admin.end_date), "dd/MM/yyyy")}</span>
-                        ) : admin.is_trial ? (
-                            <span className="text-purple-600 italic">Trial Ativo</span>
+                          <span className={admin.is_trial ? 'text-purple-600' : ''}>
+                            {format(new Date(admin.end_date), "dd/MM/yyyy")}
+                          </span>
                         ) : (
-                          <span className="text-muted-foreground italic">Pendente</span>
+                          <span className="text-muted-foreground italic text-xs">A definir</span>
                         )}
                       </div>
                     </TableCell>
@@ -276,95 +254,59 @@ export const OfficeControlPanel: React.FC = () => {
                       <div className="flex items-center justify-end gap-1">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" onClick={() => setSelectedAdmin(admin)} className="h-8 w-8 p-0">
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedAdmin(admin)} className="h-8 w-8 p-0"><Eye size={16} /></Button>
                           </DialogTrigger>
                           {selectedAdmin && (
-                            <DialogContent className="sm:max-w-[500px]">
+                            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl">
                               <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2 text-xl">
-                                  <Building2 className="h-6 w-6 text-primary" />
-                                  Perfil do Escritório
+                                <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+                                  <Building2 className="text-primary" /> Perfil Institucional
                                 </DialogTitle>
-                                <DialogDescription>Dados institucionais e financeiros</DialogDescription>
+                                <DialogDescription>Dados completos para gestão e faturamento</DialogDescription>
                               </DialogHeader>
-                              
-                              <div className="space-y-5 mt-4">
-                                <div className="p-4 bg-muted/40 rounded-xl space-y-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                                      <Users size={20} />
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-bold">{selectedAdmin.full_name}</p>
-                                      <p className="text-xs text-muted-foreground">{selectedAdmin.email}</p>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-2 gap-4 border-t pt-4">
-                                    <div className="flex items-center gap-2 text-sm">
-                                      <Mail size={14} className="text-muted-foreground" />
-                                      <span>{selectedAdmin.office_email || 'E-mail não cadastrado'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm">
-                                      <Phone size={14} className="text-muted-foreground" />
-                                      <span>{selectedAdmin.phone || 'Telefone não cadastrado'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm col-span-2">
-                                      <MapPin size={14} className="text-muted-foreground shrink-0" />
-                                      <span className="line-clamp-1">{selectedAdmin.address || 'Endereço não informado'}</span>
-                                    </div>
+                              <div className="space-y-6 mt-4">
+                                <div className="p-4 bg-muted/30 rounded-2xl flex items-center gap-4">
+                                  <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary"><Users size={24} /></div>
+                                  <div>
+                                    <p className="font-bold text-lg leading-tight">{selectedAdmin.full_name}</p>
+                                    <p className="text-xs text-muted-foreground">{selectedAdmin.email}</p>
                                   </div>
                                 </div>
-
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="p-3 border rounded-xl bg-card">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1"><Mail size={10} /> E-mail Escritório</p>
+                                    <p className="text-sm font-medium mt-1 truncate">{selectedAdmin.office_email || 'N/A'}</p>
+                                  </div>
+                                  <div className="p-3 border rounded-xl bg-card">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1"><Phone size={10} /> Telefone</p>
+                                    <p className="text-sm font-medium mt-1">{selectedAdmin.phone || 'N/A'}</p>
+                                  </div>
+                                  <div className="p-3 border rounded-xl bg-card col-span-2">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1"><MapPin size={10} /> Endereço</p>
+                                    <p className="text-sm font-medium mt-1">{selectedAdmin.address || 'Não informado'}</p>
+                                  </div>
+                                </div>
                                 <div className="grid grid-cols-2 gap-3">
-                                  <div className="p-3 border rounded-xl bg-card space-y-1">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                                      <DollarSign size={10} /> Plano e Valor
-                                    </p>
-                                    <p className="text-sm font-bold">{selectedAdmin.plan_name}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedAdmin.price)}
-                                    </p>
+                                  <div className="p-3 border rounded-xl bg-background">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Plano Atual</p>
+                                    <p className="text-sm font-bold mt-1">{selectedAdmin.plan_name}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedAdmin.price)}/mês</p>
                                   </div>
-                                  
-                                  <div className="p-3 border rounded-xl bg-card space-y-1">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                                      <Calendar size={10} /> Ciclo de Vida
+                                  <div className="p-3 border rounded-xl bg-background">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Expiração</p>
+                                    <p className="text-sm font-bold mt-1">
+                                      {selectedAdmin.is_lifetime ? 'Vitalício' : selectedAdmin.end_date ? format(new Date(selectedAdmin.end_date), 'dd/MM/yyyy') : 'N/A'}
                                     </p>
-                                    <p className="text-sm font-bold">
-                                      {selectedAdmin.is_lifetime ? 'Vitalício' : format(new Date(selectedAdmin.created_at), 'dd/MM/yyyy')}
-                                    </p>
-                                    <p className="text-[10px] text-muted-foreground italic">Data de adesão</p>
+                                    <p className="text-[10px] text-muted-foreground italic mt-0.5">Ciclo de cobrança</p>
                                   </div>
-
-                                  {selectedAdmin.manual_discount_percent > 0 && (
-                                    <div className="p-3 border-blue-200 bg-blue-50/50 rounded-xl col-span-2 flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        <Percent size={14} className="text-blue-600" />
-                                        <span className="text-xs font-bold text-blue-800 uppercase tracking-tighter">Desconto Especial Aplicado</span>
-                                      </div>
-                                      <Badge className="bg-blue-600">{selectedAdmin.manual_discount_percent}%</Badge>
-                                    </div>
-                                  )}
                                 </div>
                               </div>
                             </DialogContent>
                           )}
                         </Dialog>
-
-                        <Button variant="ghost" size="sm" onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700">
-                          <CreditCard className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
-                          className={`h-8 w-8 p-0 ${admin.active ? 'text-red-500 hover:text-red-600' : 'text-green-500 hover:text-green-600'}`}
-                        >
-                          {admin.active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                        <Button variant="ghost" size="sm" onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} className="h-8 w-8 p-0 text-blue-500"><CreditCard size={16} /></Button>
+                        <Button variant="ghost" size="sm" onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)} className={`h-8 w-8 p-0 ${admin.active ? 'text-red-500' : 'text-green-500'}`}>
+                          {admin.active ? <UserX size={16} /> : <UserCheck size={16} />}
                         </Button>
                       </div>
                     </TableCell>
@@ -375,6 +317,7 @@ export const OfficeControlPanel: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      <div className="text-[10px] text-muted-foreground text-center opacity-30">Admin Sync v1.2 | Data Jud Integration Active</div>
     </div>
   );
 };
