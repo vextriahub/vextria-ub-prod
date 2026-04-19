@@ -649,6 +649,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Nova função para atualizar o perfil em tempo real sem F5
+  const refreshProfile = useCallback(async () => {
+    if (session?.user) {
+      console.log('🔄 Manually refreshing profile data...');
+      await processUserData(session.user);
+    }
+  }, [session, processUserData]);
+
   const resetFirstLogin = useCallback(() => {
     setIsFirstLogin(false);
   }, []);
@@ -678,6 +686,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     register,
     logout,
+    refreshProfile,
     resetFirstLogin,
     resendConfirmation,
     loginAsSuperAdmin,

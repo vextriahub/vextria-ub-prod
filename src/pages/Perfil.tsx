@@ -24,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Perfil = () => {
-  const { user, profile, session, isLoading } = useAuth();
+  const { user, profile, session, isLoading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const [editMode, setEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,9 +90,13 @@ const Perfil = () => {
       }
 
       console.log("Sucesso ao atualizar:", data);
+      
+      // Atualizar o estado global imediatamente para mudar o menu lateral
+      if (refreshProfile) await refreshProfile();
+
       toast({
-        title: "Perfil atualizado",
-        description: "Seu nome foi alterado com sucesso! Atualize a página com F5 para ver no menu superior.",
+        title: "Sucesso",
+        description: "Nome de usuário alterado com sucesso!",
       });
       setEditMode(false);
     } catch (err: any) {
@@ -281,31 +285,6 @@ const Perfil = () => {
               </div>
       </div>
 
-      {/* PAINEL DE DIAGNÓSTICO TEMPORÁRIO */}
-      <div className="mt-10 p-4 bg-muted/30 border border-dashed rounded-lg text-[10px] font-mono opacity-50 hover:opacity-100 transition-opacity">
-        <p className="font-bold mb-1 uppercase tracking-wider text-muted-foreground">Diagnóstico de Sessão:</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <div className="flex gap-2">
-            <span>Session:</span>
-            <span className={session ? "text-green-500" : "text-red-500"}>{session ? "OK" : "NULL"}</span>
-          </div>
-          <div className="flex gap-2">
-            <span>User Object:</span>
-            <span className={user?.id ? "text-green-500" : "text-red-500"}>{user?.id ? "OK" : "NULL"}</span>
-          </div>
-          <div className="flex gap-2">
-            <span>Profile Data:</span>
-            <span className={profile?.id ? "text-green-500" : "text-red-500"}>{profile?.id ? "OK" : "NULL"}</span>
-          </div>
-          <div className="flex gap-2">
-            <span>Is Loading:</span>
-            <span className={isLoading ? "text-amber-500" : "text-blue-500"}>{isLoading ? "TRUE" : "FALSE"}</span>
-          </div>
-        </div>
-        {(!user?.id || !profile?.id) && !isLoading && (
-          <p className="text-red-400 mt-2 italic">⚠️ Falha Crítica: Usuário logado mas dados não populados no Context.</p>
-        )}
-      </div>
     </div>
   );
 };

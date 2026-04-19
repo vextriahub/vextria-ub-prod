@@ -35,11 +35,7 @@ export const useExclusoesPendentes = () => {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
-      toast({
-        title: 'Erro ao carregar exclusões pendentes',
-        description: 'Não foi possível carregar as solicitações de exclusão.',
-        variant: 'destructive',
-      });
+      console.error('❌ Hook useExclusoesPendentes failure:', err);
     } finally {
       setLoading(false);
     }
