@@ -75,14 +75,14 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       if (officesError) throw officesError;
 
       // PASSO 2: Busca todos os usuários administradores vinculados a esses escritórios
-      // Usamos office_users + profiles para garantir 100% de precisão nos nomes e emails
+      // Buscamos especificamente perfis através do user_id
       const { data: userData, error: userError } = await supabase
         .from('office_users')
         .select(`
           office_id,
           role,
           user_id,
-          profiles:user_id (
+          profiles!inner(
             full_name,
             email
           )
@@ -209,12 +209,13 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         if (ofError) throw ofError;
       }
 
-      // 3. Atualizar Assinatura
       const subUpdates: any = {};
-      if (dbPlan) subUpdates.plan = dbPlan;
+      if (dbPlan) {
+        subUpdates.plan = dbPlan;
+        subUpdates.plan_name = updates.plan_name; // Mantemos o nome descritivo também
+      }
       if (updates.is_lifetime !== undefined) {
         subUpdates.end_date = updates.is_lifetime ? '2099-12-31T23:59:59Z' : addDays(new Date(), 30).toISOString();
-        subUpdates.is_trial = false;
         subUpdates.status = 'active';
       }
 
