@@ -96,12 +96,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('❌ Error details:', {
           message: error.message,
           code: error.code,
-          details: error.details,
-          hint: error.hint
+          userId: userId
         });
         return null;
       }
 
+      console.log('✅ Profile fetched successfully for:', userId);
       return data;
     } catch (error) {
       console.error('❌ Error in fetchProfile:', error);
@@ -222,6 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // 2. If profile doesn't exist, create it
       if (!profileData && sessionUser.email) {
+        console.log('👤 Profile not found, creating new profile for:', sessionUser.email);
         const fullName = sessionUser.user_metadata?.full_name || 
                         sessionUser.user_metadata?.name ||
                         sessionUser.email.split('@')[0];
@@ -233,7 +234,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
       }
       
-      if (!mountedRef.current || !profileData) return;
+      if (!mountedRef.current) return;
+      
+      if (!profileData) {
+        console.error('❌ FAILED to load or create profile data for user:', sessionUser.id);
+        return;
+      }
+
+      console.log('📦 Profile data ready, fetching office info...');
       
       // 3. Fetch office data
       const { officeUser, office } = await fetchOfficeData(sessionUser.id);
