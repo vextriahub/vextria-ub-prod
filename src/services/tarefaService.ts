@@ -17,13 +17,13 @@ export class TarefaService {
   getPriorityColor(priority: TarefaPriority): string {
     switch (priority) {
       case "alta":
-        return "bg-destructive text-destructive-foreground";
+        return "border-rose-500/50 text-rose-500 bg-transparent font-bold hover:bg-transparent";
       case "media":
-        return "bg-accent text-accent-foreground";
+        return "border-amber-500/50 text-amber-500 bg-transparent font-bold hover:bg-transparent";
       case "baixa":
-        return "bg-muted text-muted-foreground";
+        return "border-blue-500/50 text-blue-500 bg-transparent font-bold hover:bg-transparent";
       default:
-        return "bg-muted text-muted-foreground";
+        return "border-muted/30 text-muted-foreground bg-transparent hover:bg-transparent";
     }
   }
 

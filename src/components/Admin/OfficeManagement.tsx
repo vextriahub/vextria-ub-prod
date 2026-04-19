@@ -144,15 +144,17 @@ export const OfficeManagement: React.FC = () => {
     return names[plan] || plan;
   };
 
-  const getPlanBadgeVariant = (plan: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      trial: 'outline',
-      basico: 'secondary',
-      intermediario: 'default',
-      avancado: 'default',
-      premium: 'destructive',
+  const getPlanBadgeVariant = (plan: string): any => "outline";
+  
+  const getPlanBadgeColor = (plan: string) => {
+    const colors: Record<string, string> = {
+      trial: 'border-purple-500/50 text-purple-500',
+      basico: 'border-blue-500/50 text-blue-500',
+      intermediario: 'border-emerald-500/50 text-emerald-500',
+      avancado: 'border-orange-500/50 text-orange-500',
+      premium: 'border-rose-500/50 text-rose-500',
     };
-    return variants[plan] || 'outline';
+    return colors[plan] || 'border-muted/30 text-muted-foreground';
   };
 
   if (loading) {
@@ -420,12 +422,12 @@ export const OfficeManagement: React.FC = () => {
                         {office.email || '-'}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getPlanBadgeVariant(office.plan)}>
+                        <Badge variant="outline" className={`${getPlanBadgeColor(office.plan)} bg-transparent font-bold uppercase`}>
                           {getPlanDisplayName(office.plan)}
                         </Badge>
                         {office.is_lifetime && (
-                          <Badge className="ml-2 bg-amber-500 hover:bg-amber-600">
-                            <Star className="h-3 w-3 mr-1 fill-current" />
+                          <Badge variant="outline" className="ml-2 border-amber-500/50 text-amber-500 bg-transparent font-bold">
+                            <Star className="h-3 w-3 mr-1 fill-amber-500" />
                             Vitalício
                           </Badge>
                         )}
@@ -455,7 +457,7 @@ export const OfficeManagement: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={office.active ? "default" : "secondary"}>
+                        <Badge variant="outline" className={`${office.active ? 'border-emerald-500/50 text-emerald-500' : 'border-rose-500/50 text-rose-500'} bg-transparent font-bold`}>
                           {office.active ? 'Ativo' : 'Inativo'}
                         </Badge>
                       </TableCell>

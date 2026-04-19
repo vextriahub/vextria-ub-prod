@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSuperAdminOffices } from '@/hooks/useSuperAdminOffices';
 import { 
-  CreditCard, 
   Search, 
   CheckCircle, 
   AlertTriangle, 
@@ -15,7 +14,9 @@ import {
   RefreshCw, 
   Users, 
   TrendingUp,
-  ArrowUpRight
+  ArrowUpRight,
+  Shield,
+  CreditCard
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,6 +30,7 @@ export const SubscriptionControlPanel: React.FC = () => {
   const filteredAdmins = admins.filter(admin => {
     const matchesSearch = !searchTerm || 
       admin.office_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      admin.office_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admin.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     let matchesStatus = statusFilter === 'all';
@@ -49,10 +51,18 @@ export const SubscriptionControlPanel: React.FC = () => {
     revenue: admins.reduce((acc, a) => acc + (a.payment_status === 'em_dia' && !a.is_trial ? a.price : 0), 0)
   };
 
-  const getStatusBadge = (status: string, isTrial?: boolean) => {
+  const getStatusBadge = (status: string, isTrial?: boolean, isLifetime?: boolean) => {
+    if (isLifetime) {
+      return (
+        <Badge variant="outline" className="border-amber-500/50 text-amber-500 bg-transparent font-bold">
+          Vitalício
+        </Badge>
+      );
+    }
+    
     if (isTrial) {
       return (
-        <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-purple-200">
+        <Badge variant="outline" className="border-purple-500/50 text-purple-500 bg-transparent font-bold">
           <Clock className="w-3 h-3 mr-1" /> Trial
         </Badge>
       );
@@ -61,199 +71,165 @@ export const SubscriptionControlPanel: React.FC = () => {
     switch (status) {
       case 'em_dia':
         return (
-          <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
+          <Badge variant="outline" className="border-emerald-500/50 text-emerald-500 bg-transparent font-bold">
             <CheckCircle className="w-3 h-3 mr-1" /> Ativo
           </Badge>
         );
       case 'proximo_vencimento':
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200">
+          <Badge variant="outline" className="border-yellow-500/50 text-yellow-600 bg-transparent font-bold">
             <Clock className="w-3 h-3 mr-1" /> Pendente
           </Badge>
         );
       case 'vencido':
         return (
-          <Badge className="bg-red-100 text-red-700 hover:bg-red-100 border-red-200">
+          <Badge variant="outline" className="border-rose-500/50 text-rose-500 bg-transparent font-bold">
             <AlertTriangle className="w-3 h-3 mr-1" /> Vencido
           </Badge>
         );
       default:
-        return <Badge variant="secondary">N/A</Badge>;
+        return <Badge variant="outline" className="text-muted-foreground">N/A</Badge>;
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Cards de Métricas */}
+      {/* Cards de Métricas com visual limpo */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Escritórios</p>
-              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <Users className="h-4 w-4 text-primary" />
-              </div>
+        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between pb-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Escritórios</p>
+              <Users size={12} className="text-primary opacity-50" />
             </div>
-            <div className="text-2xl font-bold mt-2">{metrics.totalOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">Geral no Hub</p>
+            <div className="text-xl font-black">{metrics.totalOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Assinaturas Ativas</p>
-              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              </div>
+        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between pb-1">
+              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Ativos</p>
+              <CheckCircle size={12} className="text-emerald-500 opacity-50" />
             </div>
-            <div className="text-2xl font-bold mt-2 text-green-600">{metrics.activeOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">Clientes pagantes</p>
+            <div className="text-xl font-black text-emerald-500">{metrics.activeOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Período de Trial</p>
-              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <Clock className="h-4 w-4 text-purple-600" />
-              </div>
+        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between pb-1">
+              <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Trial</p>
+              <Clock size={12} className="text-purple-500 opacity-50" />
             </div>
-            <div className="text-2xl font-bold mt-2 text-purple-600">{metrics.trialOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">Em fase de teste</p>
+            <div className="text-xl font-black text-purple-500">{metrics.trialOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Vencidas</p>
-              <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              </div>
+        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between pb-1">
+              <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Vencidos</p>
+              <AlertTriangle size={12} className="text-rose-500 opacity-50" />
             </div>
-            <div className="text-2xl font-bold mt-2 text-red-600">{metrics.blockedOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">Acesso bloqueado</p>
+            <div className="text-xl font-black text-rose-500">{metrics.blockedOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">MRR (Estimado)</p>
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-              </div>
+        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between pb-1">
+              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">MRR Estimado</p>
+              <TrendingUp size={12} className="text-blue-500 opacity-50" />
             </div>
-            <div className="text-2xl font-bold mt-2 text-blue-600">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.revenue)}
+            <div className="text-xl font-black text-blue-500">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(metrics.revenue)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              Recorrência mensal
-              <ArrowUpRight className="h-3 w-3 text-green-500" />
-            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabela de Controle */}
-      <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <div>
-            <CardTitle>Gestão de Assinaturas</CardTitle>
-            <CardDescription>Monitoramento global de pagamentos e prazos</CardDescription>
+      <Card className="border-muted/10 overflow-hidden bg-transparent">
+        <CardHeader className="border-b border-muted/5 pb-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <CreditCard className="text-primary h-5 w-5" />
+                Gestão Financeira
+              </CardTitle>
+              <CardDescription className="text-xs">Monitoramento de pagamentos e prazos em tempo real.</CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-8 hover:bg-muted/10">
+              <RefreshCw className={`h-3 w-3 mr-2 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
+            </Button>
           </div>
-          <Button onClick={refresh} variant="outline" size="sm" className="gap-2 h-9">
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? "Sincronizando..." : "Sincronizar Dados"}
-          </Button>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Filtros */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por escritório ou email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-10"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[220px] h-10">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="em_dia">Ativo (Em dia)</SelectItem>
-                  <SelectItem value="proximo_vencimento">Pendente (A vencer)</SelectItem>
-                  <SelectItem value="vencido">Bloqueado (Vencido)</SelectItem>
-                  <SelectItem value="trial">Em Trial</SelectItem>
-                </SelectContent>
-              </Select>
+        <CardContent className="p-0">
+          <div className="p-4 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/50" />
+              <Input
+                placeholder="Buscar escritório ou email de cobrança..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-9 bg-muted/5 border-muted/10"
+              />
             </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[200px] h-9 bg-muted/5 border-muted/10">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="em_dia">Ativo (Em dia)</SelectItem>
+                <SelectItem value="proximo_vencimento">Pendente</SelectItem>
+                <SelectItem value="vencido">Vencido</SelectItem>
+                <SelectItem value="trial">Em Trial</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="rounded-xl border border-border/40 overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="font-semibold">Escritório / Admin</TableHead>
-                    <TableHead className="font-semibold">Plano</TableHead>
-                    <TableHead className="font-semibold">Valor</TableHead>
-                    <TableHead className="font-semibold">Vencimento</TableHead>
-                    <TableHead className="font-semibold">Status</TableHead>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/5 hover:bg-muted/5 border-none">
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Escritório / Admin</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Plano</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Valor</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Vencimento</TableHead>
+                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest py-3 pr-6">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading && admins.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic text-xs">Aguardando dados financeiros...</TableCell></TableRow>
+                ) : filteredAdmins.map((admin) => (
+                  <TableRow key={admin.id} className="hover:bg-muted/5 border-muted/5 transition-colors">
+                    <TableCell className="py-4 pl-6">
+                      <div className="font-bold text-sm tracking-tight">{admin.office_name}</div>
+                      <div className="text-[10px] text-muted-foreground tracking-tight">{admin.office_email || admin.email}</div>
+                    </TableCell>
+                    <TableCell className="py-4 text-center">
+                      <Badge variant="outline" className="font-bold border-muted/20 text-[10px] uppercase">
+                        {admin.plan_name}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 text-center font-black text-sm">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(admin.price)}
+                    </TableCell>
+                    <TableCell className="py-4 text-center">
+                      <span className="text-sm">
+                        {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : 'N/A'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-4 text-right pr-6">
+                      {getStatusBadge(admin.payment_status, admin.is_trial, admin.is_lifetime)}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading && admins.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-10">
-                        <div className="flex flex-col items-center gap-2">
-                          <RefreshCw className="h-8 w-8 animate-spin text-primary/50" />
-                          <p className="text-muted-foreground">Buscando dados financeiros...</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredAdmins.map((admin) => (
-                    <TableRow key={admin.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell>
-                        <div className="font-medium text-foreground">{admin.office_name}</div>
-                        <div className="text-xs text-muted-foreground">{admin.email}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="font-normal capitalize border-border/60">
-                          {admin.plan_name}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(admin.price)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(admin.payment_status, admin.is_trial)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {!loading && filteredAdmins.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                        <div className="flex flex-col items-center gap-2 opacity-60">
-                          <Search className="h-8 w-8" />
-                          <p>Nenhum registro encontrado para esta busca.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

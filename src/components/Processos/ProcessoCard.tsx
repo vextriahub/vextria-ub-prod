@@ -29,13 +29,13 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Em andamento':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'border-blue-500/50 text-blue-500 bg-transparent font-bold';
       case 'Concluído':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'border-emerald-500/50 text-emerald-500 bg-transparent font-bold';
       case 'Suspenso':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
+        return 'border-orange-500/50 text-orange-500 bg-transparent font-bold';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'border-muted/30 text-muted-foreground bg-transparent';
     }
   };
 
@@ -77,7 +77,7 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
               <h3 className="font-semibold text-base leading-tight truncate">
                 {processo.titulo}
               </h3>
-              <Badge className={getStatusColor(processo.status)}>
+              <Badge variant="outline" className={getStatusColor(processo.status)}>
                 {processo.status}
               </Badge>
             </div>

@@ -244,12 +244,12 @@ export const OfficeControlPanel: React.FC = () => {
                   <TableRow key={admin.id} className="hover:bg-muted/5 border-muted/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm tracking-tight">{admin.full_name}</span>
-                        <span className="text-[10px] text-muted-foreground tracking-tight">{admin.email}</span>
+                        <span className="font-bold text-sm tracking-tight">{admin.office_name}</span>
+                        <span className="text-[10px] text-muted-foreground tracking-tight">{admin.office_email || admin.email}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
-                      <span className="text-sm font-medium">{admin.office_name}</span>
+                      <span className="text-sm font-medium text-muted-foreground/60">{admin.full_name}</span>
                     </TableCell>
                     <TableCell className="py-4 text-center">
                       <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
