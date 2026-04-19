@@ -39,7 +39,16 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export const OfficeControlPanel: React.FC = () => {
-  const { admins, loading, error, refresh, updateOfficeStatus, updateOfficeFull } = useSuperAdminOffices();
+  const { 
+    admins, 
+    loading, 
+    error, 
+    refresh, 
+    updateOfficeStatus, 
+    updateOfficeFull,
+    manageAccess, 
+    sendPaymentReminder 
+  } = useSuperAdminOffices();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedAdmin, setSelectedAdmin] = useState<AdminOffice | null>(null);
@@ -333,10 +342,63 @@ export const OfficeControlPanel: React.FC = () => {
                                     </div>
                                   </div>
                                                              <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Controle de Assinatura & Acesso</h4>
+                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Gestão de Faturamento & Stripe (A + B)</h4>
+                                  
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-4 bg-muted/10 rounded-2xl border border-muted/10 space-y-3">
+                                      <div className="space-y-0.5">
+                                        <Label className="text-[10px] font-bold uppercase text-amber-500">Cenário A: Desconto</Label>
+                                        <p className="text-[9px] text-muted-foreground leading-tight">Aplica cupom no Stripe</p>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Input 
+                                          type="number" 
+                                          placeholder="%" 
+                                          id="discount_input"
+                                          className="h-8 w-16 bg-background rounded-lg text-xs"
+                                        />
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          className="h-8 text-[10px] uppercase font-bold"
+                                          onClick={() => {
+                                            const val = (document.getElementById('discount_input') as HTMLInputElement).value;
+                                            if (val) manageAccess(admin.office_id!, 'apply_discount', { discount_percent: Number(val) });
+                                          }}
+                                        >
+                                          Aplicar
+                                        </Button>
+                                      </div>
+                                    </div>
+
+                                    <div className="p-4 bg-muted/10 rounded-2xl border border-muted/10 space-y-3">
+                                      <div className="space-y-0.5">
+                                        <Label className="text-[10px] font-bold uppercase text-emerald-500">Cenário B: Vitalício</Label>
+                                        <p className="text-[9px] text-muted-foreground leading-tight">Cancela Stripe + Libera</p>
+                                      </div>
+                                      <Button 
+                                        size="sm" 
+                                        className="w-full h-8 text-[10px] uppercase font-bold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20"
+                                        variant="outline"
+                                        onClick={() => manageAccess(admin.office_id!, 'grant_lifetime')}
+                                      >
+                                        Tornar Vitalício
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  {admin.manual_discount_percent > 0 && (
+                                    <div className="px-3 py-1.5 bg-amber-500/5 border border-amber-500/10 rounded-lg flex items-center justify-between">
+                                      <span className="text-[10px] font-bold text-amber-600 uppercase">Desconto Ativo: {admin.manual_discount_percent}%</span>
+                                      <Button variant="ghost" size="sm" className="h-4 text-[10px] text-amber-600/60" onClick={() => manageAccess(admin.office_id!, 'apply_discount', { discount_percent: 0 })}>Remover</Button>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="space-y-4 mt-6">
+                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Configurações Gerais</h4>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Plano Atual</Label>
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Plano UI (Dashboard)</Label>
                                         <Select 
                                           value={editFormData.plan_name} 
                                           onValueChange={(val) => setEditFormData({...editFormData, plan_name: val as any})}
@@ -345,38 +407,13 @@ export const OfficeControlPanel: React.FC = () => {
                                             <SelectValue placeholder="Selecione o plano" />
                                           </SelectTrigger>
                                           <SelectContent>
-                                            <SelectItem value="trial">Trial (7 dias)</SelectItem>
+                                            <SelectItem value="trial">Trial</SelectItem>
                                             <SelectItem value="starter">Starter</SelectItem>
                                             <SelectItem value="pro">Pro</SelectItem>
                                             <SelectItem value="business">Business</SelectItem>
-                                            <SelectItem value="lifetime">Vitalício</SelectItem>
                                           </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Desconto Manual (%)</Label>
-                                      <Input 
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        value={editFormData.manual_discount_percent || 0} 
-                                        onChange={(e) => setEditFormData({...editFormData, manual_discount_percent: Number(e.target.value)})}
-                                        className="h-10 bg-muted/20 border-none rounded-xl"
-                                        placeholder="Ex: 50"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  <div className="p-4 bg-muted/10 rounded-2xl flex items-center justify-between border border-muted/10">
-                                    <div className="space-y-0.5">
-                                      <Label className="text-xs font-bold italic text-amber-500">Status de Vitalício (Manual)</Label>
-                                      <p className="text-[9px] text-muted-foreground leading-tight uppercase">Ativa data de 2099 e ignora Stripe</p>
-                                    </div>
-                                    <Checkbox 
-                                      checked={editFormData.is_lifetime || false}
-                                      onCheckedChange={(checked) => setEditFormData({...editFormData, is_lifetime: !!checked})}
-                                      className="h-6 w-6 rounded-md border-primary/50"
-                                    />
                                   </div>
                                 </div>
        </div>

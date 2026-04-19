@@ -32,6 +32,7 @@ export interface UseSuperAdminOfficesResult {
   refresh: () => Promise<void>;
   updateOfficeStatus: (officeId: string, active: boolean) => Promise<boolean>;
   updateOfficeFull: (officeId: string, updates: Partial<AdminOffice>) => Promise<boolean>;
+  manageAccess: (officeId: string, action: 'apply_discount' | 'grant_lifetime' | 'revoke_lifetime', options?: { discount_percent?: number, reason?: string }) => Promise<boolean>;
   sendPaymentReminder: (email: string, officeName: string) => Promise<boolean>;
   isEmpty: boolean;
 }
@@ -261,12 +262,52 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       toast({ title: "Dados Sincronizados", description: "Configurações do escritório atualizadas com sucesso." });
       await fetchAdmins();
       return true;
-    } catch (err: any) {
-      console.error("Falha Crítica no updateOfficeFull:", JSON.stringify(err, null, 2));
-      toast({ title: "Falha na Atualização", description: err.message || "Erro desconhecido", variant: "destructive" });
+    } catch (error: any) {
+      console.error("Erro ao atualizar escritório:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: error.message || "Não foi possível atualizar os dados.",
+        variant: "destructive"
+      });
       return false;
     }
-  };
+  }, [toast, refresh]);
+
+  const manageAccess = useCallback(async (
+    officeId: string, 
+    action: 'apply_discount' | 'grant_lifetime' | 'revoke_lifetime', 
+    options?: { discount_percent?: number, reason?: string }
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-manage-access', {
+        body: { 
+          office_id: officeId, 
+          action, 
+          discount_percent: options?.discount_percent,
+          reason: options?.reason
+        }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      toast({
+        title: "Sucesso!",
+        description: action === 'apply_discount' ? "Desconto aplicado no Stripe." : "Acesso vitalício concedido.",
+      });
+      
+      await refresh();
+      return true;
+    } catch (error: any) {
+      console.error("Erro ao gerenciar acesso:", error);
+      toast({
+        title: "Falha na operação",
+        description: error.message || "Erro ao processar ação no Stripe.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [toast, refresh]);
 
   const sendPaymentReminder = async (email: string, officeName: string) => {
     toast({ title: "E-mail de lembrete enviado." });
