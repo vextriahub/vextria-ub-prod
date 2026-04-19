@@ -38,6 +38,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     }
 
     try {
+      console.log('🔍 fetchAdmins: Injetando busca de escritórios. isSuperAdmin:', isSuperAdmin);
       setLoading(true);
       setError(null);
 
@@ -65,7 +66,12 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         `)
         .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('❌ fetchError:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('📊 Dados brutos recebidos:', data?.length, 'escritórios');
 
       // Montando a resposta reconstruindo com a raiz segura
       const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
@@ -110,6 +116,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       console.error('Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados: ' + err.message);
     } finally {
+      console.log('🏁 fetchAdmins finalizado');
       setLoading(false);
     }
   }, [isSuperAdmin]);

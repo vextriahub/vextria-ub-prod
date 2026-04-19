@@ -375,6 +375,8 @@ const Subscriptions: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
     </div>
   );
 };
