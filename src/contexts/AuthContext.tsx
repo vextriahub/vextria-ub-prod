@@ -212,7 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Process user data after authentication
   const processUserData = useCallback(async (sessionUser: SupabaseUser) => {
-    if (!mountedRef.current || initializingRef.current) return;
+    if (!mountedRef.current) return;
     
     try {
       // 1. Fetch user profile
