@@ -234,27 +234,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
       }
       
-      if (!mountedRef.current) return;
-      
-      if (!profileData) {
-        console.error('❌ FAILED to load or create profile data for user:', sessionUser.id);
-        return;
-      }
-
-      console.log('📦 Profile data ready, fetching office info...');
-      
       // 3. Fetch office data
-      const { officeUser, office } = await fetchOfficeData(sessionUser.id);
+      let officeUser = null;
+      let office = null;
+      
+      if (profileData) {
+        console.log('📦 Profile data and SQL policies active. Fetching office info...');
+        const officeData = await fetchOfficeData(sessionUser.id);
+        officeUser = officeData.officeUser;
+        office = officeData.office;
+      } else {
+        console.warn('⚠️ No profile data found. Skipping office fetch but proceeding with session fallback.');
+      }
       
       if (!mountedRef.current) return;
       
-      // 4. Create user object
+      // 4. Create user object - MANDATORY (No more early returns)
       const userData: User = {
         id: sessionUser.id,
-        name: profileData.full_name || sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Usuário',
-        email: sessionUser.email || profileData.email || '',
-        role: profileData.role,
-        office_id: profileData.office_id,
+        name: profileData?.full_name || sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Usuário',
+        email: sessionUser.email || profileData?.email || '',
+        role: profileData?.role || 'user',
+        office_id: profileData?.office_id || null,
         office_role: officeUser?.role || null
       };
       
