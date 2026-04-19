@@ -15,23 +15,41 @@ import {
   Calendar,
   Award,
   Briefcase,
-  Edit,
-  Save
-} from "lucide-react";
-import { useState } from "react";
+import { Edit, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Perfil = () => {
+  const { user, profile } = useAuth();
+  const { toast } = useToast();
   const [editMode, setEditMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
   const [userInfo, setUserInfo] = useState({
-    nome: "Não informado",
-    email: "Não informado",
-    telefone: "Não informado",
+    nome: "Carregando...",
+    email: "Carregando...",
+    telefone: "(xx) xxxxx-xxxx",
     endereco: "Não informado",
     cargo: "Não informado",
     oab: "Não informado",
     especializacao: "Não informado",
     dataAdmissao: "Não informado"
   });
+
+  // Preenche dados reais da Sessão Pessoal logada assim que carregar
+  useEffect(() => {
+    if (user || profile) {
+      setUserInfo(prev => ({
+        ...prev,
+        nome: profile?.full_name || user?.name || "Usuário",
+        email: profile?.email || user?.email || "email@exemplo.com",
+        cargo: profile?.role === 'super_admin' ? 'CEO / Super Admin' : 
+               profile?.role === 'admin' ? 'Administrador' : 'Membro Comum'
+      }));
+    }
+  }, [user, profile]);
 
   const estatisticas = {
     processosAtivos: 0,
@@ -41,9 +59,33 @@ const Perfil = () => {
     ranking: "--"
   };
 
-  const handleSave = () => {
-    setEditMode(false);
-    // Aqui você salvaria as informações
+  const handleSave = async () => {
+    if (!user?.id) return;
+    
+    setIsSaving(true);
+    try {
+      // Salvar apenas o que criamos mapeado no sistema de profiles no DB
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: userInfo.nome })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Perfil atualizado",
+        description: "Seu nome foi alterado com sucesso! Atualize a aba para ver a mudança no menu.",
+      });
+      setEditMode(false);
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar",
+        description: err.message,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -65,22 +107,34 @@ const Perfil = () => {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Informações Pessoais</CardTitle>
                     <Button
-                      variant="outline"
+                      variant={editMode ? "default" : "outline"}
                       size="sm"
                       onClick={() => editMode ? handleSave() : setEditMode(true)}
+                      disabled={isSaving}
                     >
                       {editMode ? <Save className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
-                      {editMode ? "Salvar" : "Editar"}
+                      {editMode ? (isSaving ? "Salvando..." : "Salvar") : "Editar"}
                     </Button>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center space-x-4">
                       <Avatar className="h-20 w-20">
                         <AvatarImage src="/placeholder.svg" />
-                        <AvatarFallback className="text-lg">JS</AvatarFallback>
+                        <AvatarFallback className="text-lg bg-primary text-primary-foreground">
+                          {userInfo.nome?.substring(0, 2).toUpperCase() || "US"}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="text-xl font-semibold">{userInfo.nome}</h3>
+                        {editMode ? (
+                          <Input
+                            className="text-xl font-semibold mb-2 max-w-[300px]"
+                            value={userInfo.nome}
+                            onChange={(e) => setUserInfo({...userInfo, nome: e.target.value})}
+                            placeholder="Seu nome completo"
+                          />
+                        ) : (
+                          <h3 className="text-xl font-semibold">{userInfo.nome}</h3>
+                        )}
                         <p className="text-muted-foreground">{userInfo.cargo}</p>
                         <Badge variant="secondary" className="mt-1">
                           {userInfo.oab}
