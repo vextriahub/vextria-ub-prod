@@ -31,6 +31,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   const [error, setError] = useState<string | null>(null);
   const { isSuperAdmin, user } = useAuth();
 
+  const fetchAdmins = useCallback(async () => {
     const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
     
     if (!isSuperAdmin && !isMainSuperAdmin) {
@@ -40,11 +41,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     }
 
     try {
-      console.log('🔍 fetchAdmins: Injetando busca de escritórios. isSuperAdmin:', isSuperAdmin);
+      console.log('🔍 fetchAdmins: Buscando dados reais...');
       setLoading(true);
       setError(null);
 
-      // Usando 'offices' como raiz para garantir que nenhum escritório suma (mesmo sem admin ou em trial)
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
@@ -73,11 +73,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         throw fetchError;
       }
 
-      console.log('📊 Dados brutos recebidos:', data?.length, 'escritórios');
-
-      // Montando a resposta reconstruindo com a raiz segura
       const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
-        // Encontrar o administrador principal do escritório
         const mainAdmin = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
         const profileData = mainAdmin?.profiles;
         
@@ -88,7 +84,6 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           const sub = office.subscriptions[0];
           plan_name = sub.plan || 'Free/Nenhum';
 
-          // Correção: incluir 'trial' nos status ativos
           if (sub.status === 'active' || sub.status === 'trial' || sub.status === 'trialing') {
             payment_status = 'em_dia';
           } else if (sub.status === 'past_due' || sub.status === 'unpaid') {
@@ -119,19 +114,16 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       console.error('Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados: ' + err.message);
     } finally {
-      console.log('🏁 fetchAdmins finalizado');
       setLoading(false);
     }
-  }, [isSuperAdmin]);
+  }, [isSuperAdmin, user]);
 
   useEffect(() => {
     fetchAdmins();
 
-    // Ouvinte Mágico: Atualiza o painel do Admin REALTIME na hora que cair o PIX ou Cadastrar sem F5
     const webhookSubscription = supabase
       .channel('admin-dashboard-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => {
-         console.log("Recebendo Pagamento Webhook, atualizando a Dashboard!");
          fetchAdmins();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => {
