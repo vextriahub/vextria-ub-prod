@@ -15,7 +15,9 @@ import {
   Calendar,
   Award,
   Briefcase,
-import { Edit, Save } from "lucide-react";
+  Edit,
+  Save
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
