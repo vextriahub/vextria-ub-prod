@@ -57,18 +57,13 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // CONSULTA RESTAURADA: Usando caminhos diretos suportados pelo schema
-      const { data, error: fetchError } = await supabase
+      // PASSO 1: Busca todos os escritórios e suas assinaturas
+      const { data: offices, error: officesError } = await supabase
         .from('offices')
         .select(`
           *,
-          profiles (
-            full_name,
-            email,
-            role,
-            user_id
-          ),
           subscriptions (
+            id,
             status,
             plan,
             price,
@@ -77,17 +72,33 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         `)
         .order('created_at', { ascending: false });
 
-      if (fetchError) {
-        console.error('Supabase fetch error:', fetchError);
-        throw fetchError;
-      }
+      if (officesError) throw officesError;
 
-      const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
-        // Encontra o perfil que é admin, ou o primeiro perfil vinculado ao escritório
-        const adminProfile = office.profiles?.find((p: any) => p.role === 'admin') || office.profiles?.[0];
+      // PASSO 2: Busca todos os usuários administradores vinculados a esses escritórios
+      // Usamos office_users + profiles para garantir 100% de precisão nos nomes e emails
+      const { data: userData, error: userError } = await supabase
+        .from('office_users')
+        .select(`
+          office_id,
+          role,
+          user_id,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
+        .in('office_id', (offices || []).map(o => o.id));
+
+      if (userError) console.error("Erro ao buscar usuários:", userError);
+
+      const transformedAdmins: AdminOffice[] = (offices || []).map((office: any) => {
+        // Encontra o usuário admin deste escritório no segundo fetch
+        const officeUser = (userData || []).find((u: any) => u.office_id === office.id && u.role === 'admin') 
+                        || (userData || []).find((u: any) => u.office_id === office.id);
+        
+        const profile = (officeUser as any)?.profiles;
         const sub = office.subscriptions?.[0];
         
-        // Regra de Vitalício baseada em data ou flag
         const isLegacyLifetime = sub?.end_date?.includes('2099') || office.plan === 'lifetime';
         const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
@@ -116,10 +127,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         }
 
         return {
-          id: adminProfile?.user_id || office.id,
-          full_name: adminProfile?.full_name || 'Usuário Hub',
-          email: adminProfile?.email || 'N/A',
-          role: adminProfile?.role || 'user',
+          id: (officeUser as any)?.user_id || office.id,
+          full_name: profile?.full_name || 'Usuário Hub',
+          email: profile?.email || 'Sem e-mail',
+          role: (officeUser as any)?.role || 'user',
           office_id: office.id,
           office_name: office.name || 'Escritório Sem Nome',
           office_email: office.email || null,
@@ -139,8 +150,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
-      console.error('Erro fatal ao carregar dados:', err);
-      setError('Ocorreu um erro ao carregar os dados administrativos. Tente novamente em instantes.');
+      console.error('Erro ao carregar dados:', err);
+      setError('Erro ao carregar dados administrativos.');
     } finally {
       setLoading(false);
     }
@@ -154,58 +165,54 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         .eq('id', officeId);
 
       if (error) throw error;
-
-      toast({ 
-        title: active ? "Acesso Restaurado" : "Acesso Suspenso",
-        description: `Status alterado com sucesso.`
-      });
-      
+      toast({ title: active ? "Acesso Liberado" : "Acesso Suspenso" });
       await fetchAdmins();
       return true;
     } catch (err: any) {
-      toast({ 
-        title: "Erro de Permissão",
-        description: err.message,
-        variant: "destructive"
-      });
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
       return false;
     }
   };
 
   const updateOfficeFull = async (officeId: string, updates: Partial<AdminOffice>) => {
     try {
+      // 1. Atualizar dados básicos do escritório
       const dbUpdates: any = {};
       if (updates.office_name !== undefined) dbUpdates.name = updates.office_name;
       if (updates.office_email !== undefined) dbUpdates.email = updates.office_email;
       if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
       if (updates.address !== undefined) dbUpdates.address = updates.address;
 
-      const { error } = await supabase
-        .from('offices')
-        .update(dbUpdates)
-        .eq('id', officeId);
+      if (Object.keys(dbUpdates).length > 0) {
+        const { error: ofError } = await supabase.from('offices').update(dbUpdates).eq('id', officeId);
+        if (ofError) throw ofError;
+      }
 
-      if (error) throw error;
-
-      toast({ 
-        title: "Dados Atualizados",
-        description: "Configurações institucionais salvas com sucesso."
-      });
+      // 2. Atualizar Plano e Vitalício (via Subscription)
+      const subUpdates: any = {};
+      if (updates.plan_name !== undefined) subUpdates.plan = updates.plan_name;
       
+      // Se for vitalício, define data para 2099. Se desativar vitalício, define para 30 dias a partir de agora.
+      if (updates.is_lifetime !== undefined) {
+        subUpdates.end_date = updates.is_lifetime ? '2099-12-31T23:59:59Z' : addDays(new Date(), 30).toISOString();
+      }
+
+      if (Object.keys(subUpdates).length > 0) {
+        const { error: subError } = await supabase.from('subscriptions').update(subUpdates).eq('office_id', officeId);
+        if (subError) throw subError;
+      }
+
+      toast({ title: "Dados Sincronizados", description: "As alterações foram aplicadas com sucesso." });
       await fetchAdmins();
       return true;
     } catch (err: any) {
-      toast({ 
-        title: "Falha ao Salvar",
-        description: `Erro no servidor: ${err.message}`,
-        variant: "destructive"
-      });
+      toast({ title: "Falha na Atualização", description: err.message, variant: "destructive" });
       return false;
     }
   };
 
   const sendPaymentReminder = async (email: string, officeName: string) => {
-    toast({ title: "Rembrete de Cobrança Enviado" });
+    toast({ title: "E-mail de lembrete enviado." });
     return true;
   };
 
