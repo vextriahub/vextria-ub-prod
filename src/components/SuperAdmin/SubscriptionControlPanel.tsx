@@ -39,9 +39,10 @@ export const SubscriptionControlPanel: React.FC = () => {
   // Cálculos de métricas reais
   const metrics = {
     totalOffices: admins.length,
-    activeOffices: admins.filter(a => a.payment_status === 'em_dia').length,
+    activeOffices: admins.filter(a => a.payment_status === 'em_dia' && !a.is_trial).length,
+    trialOffices: admins.filter(a => a.is_trial).length,
     blockedOffices: admins.filter(a => a.payment_status === 'vencido').length,
-    revenue: admins.reduce((acc, a) => acc + (a.payment_status === 'em_dia' ? a.price : 0), 0)
+    revenue: admins.reduce((acc, a) => acc + (a.payment_status === 'em_dia' && !a.is_trial ? a.price : 0), 0)
   };
 
   const getStatusBadge = (status: string, isTrial?: boolean) => {
@@ -80,17 +81,17 @@ export const SubscriptionControlPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Cards de Métricas */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
         <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total de Escritórios</p>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Escritórios</p>
               <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center">
                 <Users className="h-4 w-4 text-primary" />
               </div>
             </div>
             <div className="text-2xl font-bold mt-2">{metrics.totalOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">Cadastrados no Hub</p>
+            <p className="text-xs text-muted-foreground mt-1">Geral no Hub</p>
           </CardContent>
         </Card>
 
@@ -103,22 +104,33 @@ export const SubscriptionControlPanel: React.FC = () => {
               </div>
             </div>
             <div className="text-2xl font-bold mt-2 text-green-600">{metrics.activeOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {metrics.totalOffices > 0 ? ((metrics.activeOffices / metrics.totalOffices) * 100).toFixed(1) : 0}% da base
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Clientes pagantes</p>
           </CardContent>
         </Card>
 
         <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
           <CardContent className="p-6">
             <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Assinaturas Vencidas</p>
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Período de Trial</p>
+              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <Clock className="h-4 w-4 text-purple-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold mt-2 text-purple-600">{metrics.trialOffices}</div>
+            <p className="text-xs text-muted-foreground mt-1">Em fase de teste</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Vencidas</p>
               <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
               </div>
             </div>
             <div className="text-2xl font-bold mt-2 text-red-600">{metrics.blockedOffices}</div>
-            <p className="text-xs text-muted-foreground mt-1">Aguardando renovação</p>
+            <p className="text-xs text-muted-foreground mt-1">Acesso bloqueado</p>
           </CardContent>
         </Card>
 
@@ -134,7 +146,7 @@ export const SubscriptionControlPanel: React.FC = () => {
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics.revenue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              Faturamento mensal recorrente
+              Recorrência mensal
               <ArrowUpRight className="h-3 w-3 text-green-500" />
             </p>
           </CardContent>

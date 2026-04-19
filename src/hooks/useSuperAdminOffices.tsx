@@ -14,6 +14,7 @@ export interface AdminOffice {
   plan_name: string;
   price: number;
   end_date: string | null;
+  is_trial: boolean;
 }
 
 export interface UseSuperAdminOfficesResult {
@@ -107,7 +108,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           payment_status,
           plan_name,
           price: office.subscriptions?.[0]?.price || 0,
-          end_date: office.subscriptions?.[0]?.end_date || null
+          end_date: office.subscriptions?.[0]?.end_date || null,
+          is_trial: office.subscriptions?.[0]?.status === 'trial' || office.subscriptions?.[0]?.status === 'trialing'
         };
       });
 
