@@ -387,6 +387,7 @@ export const OfficeManagement: React.FC = () => {
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Plano</TableHead>
+                  <TableHead>Validade</TableHead>
                   <TableHead>Usuários</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Criado em</TableHead>
@@ -396,7 +397,7 @@ export const OfficeManagement: React.FC = () => {
               <TableBody>
                 {filteredOffices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <Building2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
                       <p className="text-muted-foreground">
                         {searchTerm || statusFilter !== 'all' || planFilter !== 'all'
@@ -433,6 +434,13 @@ export const OfficeManagement: React.FC = () => {
                             -{office.manual_discount_percent}%
                           </Badge>
                         )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
+                        {(() => {
+                          const activeSub = (office as any).subscriptions?.find((s: any) => s.status === 'active' || s.status === 'trial');
+                          if (office.is_lifetime) return <span className="text-amber-500 font-medium whitespace-nowrap">Acesso Vitalício</span>;
+                          return activeSub?.end_date ? format(new Date(activeSub.end_date), 'dd/MM/yyyy', { locale: ptBR }) : '-';
+                        })()}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
