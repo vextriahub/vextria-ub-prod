@@ -12,6 +12,8 @@ export interface AdminOffice {
   created_at: string;
   payment_status: 'em_dia' | 'proximo_vencimento' | 'vencido' | 'pendente';
   plan_name: string;
+  price: number;
+  end_date: string | null;
 }
 
 export interface UseSuperAdminOfficesResult {
@@ -57,7 +59,9 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
             name,
             subscriptions (
               status,
-              plan
+              plan,
+              price,
+              end_date
             )
           )
         `)
@@ -96,7 +100,9 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           office_name: officeData?.name || 'Aguardando Cadastro...',
           created_at: profileData?.created_at || tenant.created_at,
           payment_status,
-          plan_name
+          plan_name,
+          price: officeData?.subscriptions?.[0]?.price || 0,
+          end_date: officeData?.subscriptions?.[0]?.end_date || null
         };
       });
 
