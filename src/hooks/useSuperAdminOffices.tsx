@@ -45,12 +45,13 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // Usando uma query mais flat e segura para evitar erros de join 400
+      // Buscando escritórios com a coluna 'plan' incluída
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
           id,
           name,
+          plan,
           created_at,
           office_users (
             role,
@@ -70,7 +71,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         throw fetchError;
       }
 
-      // Agora buscamos os perfis separadamente para evitar erros de relação de junção complexa (400)
+      // Buscamos os perfis separadamente para estabilidade do schema
       const userIds = (data || [])
         .flatMap((office: any) => office.office_users?.map((ou: any) => ou.user_id))
         .filter(Boolean);
@@ -91,15 +92,19 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
         const mainAdminUser = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
         const profileData = mainAdminUser ? profilesMap[mainAdminUser.user_id] : null;
+        const sub = office.subscriptions?.[0];
+        
+        // Regra de Trial de Duas Fontes: Tabela 'offices' OU Tabela 'subscriptions'
+        const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
-        let plan_name = 'Free/Nenhum';
+        let plan_display_name = office.plan || sub?.plan || 'Free/Nenhum';
 
-        if (office.subscriptions && office.subscriptions.length > 0) {
-          const sub = office.subscriptions[0];
-          plan_name = sub.plan || 'Free/Nenhum';
-
-          if (sub.status === 'active' || sub.status === 'trial' || sub.status === 'trialing') {
+        if (isTrial) {
+          payment_status = 'em_dia';
+          plan_display_name = 'Trial';
+        } else if (sub) {
+          if (sub.status === 'active') {
             payment_status = 'em_dia';
           } else if (sub.status === 'past_due' || sub.status === 'unpaid') {
             payment_status = 'proximo_vencimento';
@@ -117,17 +122,17 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           office_name: office.name || 'Aguardando Cadastro...',
           created_at: office.created_at,
           payment_status,
-          plan_name,
-          price: office.subscriptions?.[0]?.price || 0,
-          end_date: office.subscriptions?.[0]?.end_date || null,
-          is_trial: office.subscriptions?.[0]?.status === 'trial' || office.subscriptions?.[0]?.status === 'trialing'
+          plan_name: plan_display_name,
+          price: sub?.price || 0,
+          end_date: sub?.end_date || null,
+          is_trial: isTrial
         };
       });
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
       console.error('Erro inesperado:', err);
-      setError('Erro ao carregar dados: ' + (err.message || 'Verifique sua conexão'));
+      setError('Erro ao carregar dados: ' + (err.message || 'Erro de conexão'));
     } finally {
       setLoading(false);
     }
@@ -135,15 +140,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
   useEffect(() => {
     fetchAdmins();
-
-    const channel = supabase
-      .channel('db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => fetchAdmins())
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const ch = supabase.channel('adm-sync').on('postgres_changes', {event:'*', schema:'public', table:'offices'}, () => fetchAdmins()).subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [fetchAdmins]);
 
   return {
