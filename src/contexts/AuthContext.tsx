@@ -80,11 +80,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!mountedRef.current) return null;
     
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const { data, error } = await Promise.race([
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 20000)
+        )
+      ]) as any;
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
@@ -370,20 +375,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []); // Empty dependency array - only run once
 
   const login = async (email: string, password: string) => {
-    // Prevent concurrent login attempts
-    if (loginInProgressRef.current) {
-      console.log('🚫 Login already in progress, skipping duplicate attempt');
-      return { error: { message: 'Login já em andamento' } };
-    }
+    console.log('🔐 Login process started for:', email);
     
     try {
       loginInProgressRef.current = true;
       // Login attempt
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await Promise.race([
+        supabase.auth.signInWithPassword({
+          email,
+          password,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Login attempt timeout')), 20000))
+      ]) as any;
 
       console.log('🔐 Raw login response:', {
         data: data ? {
