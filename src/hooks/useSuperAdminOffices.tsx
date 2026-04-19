@@ -29,10 +29,11 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   const [admins, setAdmins] = useState<AdminOffice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, user } = useAuth();
 
-  const fetchAdmins = useCallback(async () => {
-    if (!isSuperAdmin) {
+    const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
+    
+    if (!isSuperAdmin && !isMainSuperAdmin) {
       setError('Acesso negado. Apenas super administradores podem acessar estes dados.');
       setLoading(false);
       return;
