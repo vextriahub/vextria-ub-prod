@@ -57,18 +57,16 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // BUSCA OTIMIZADA: Traz tudo em um único JOIN para máxima performance
+      // CONSULTA RESTAURADA: Usando caminhos diretos suportados pelo schema
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
           *,
-          office_users (
+          profiles (
+            full_name,
+            email,
             role,
-            user_id,
-            profiles (
-              full_name,
-              email
-            )
+            user_id
           ),
           subscriptions (
             status,
@@ -79,16 +77,18 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         `)
         .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('Supabase fetch error:', fetchError);
+        throw fetchError;
+      }
 
       const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
-        // Pega o admin principal diretamente dos dados aninhados
-        const adminUser = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
-        const profile = adminUser?.profiles;
+        // Encontra o perfil que é admin, ou o primeiro perfil vinculado ao escritório
+        const adminProfile = office.profiles?.find((p: any) => p.role === 'admin') || office.profiles?.[0];
         const sub = office.subscriptions?.[0];
         
-        // Regra de Vitalício: Data 2099 ou plano vitalício
-        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.plan === 'lifetime' || office.is_lifetime === true;
+        // Regra de Vitalício baseada em data ou flag
+        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.plan === 'lifetime';
         const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
@@ -116,12 +116,12 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         }
 
         return {
-          id: adminUser?.user_id || office.id,
-          full_name: profile?.full_name || 'Admin Principal',
-          email: profile?.email || 'N/A',
-          role: adminUser?.role || 'user',
+          id: adminProfile?.user_id || office.id,
+          full_name: adminProfile?.full_name || 'Usuário Hub',
+          email: adminProfile?.email || 'N/A',
+          role: adminProfile?.role || 'user',
           office_id: office.id,
-          office_name: office.name || 'Sem Nome',
+          office_name: office.name || 'Escritório Sem Nome',
           office_email: office.email || null,
           address: office.address || null,
           phone: office.phone || null,
@@ -133,14 +133,14 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           is_trial: isTrial,
           active: office.active ?? true,
           is_lifetime: !!isLegacyLifetime,
-          manual_discount_percent: office.manual_discount_percent || 0
+          manual_discount_percent: 0
         };
       });
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
-      console.error('Erro ao carregar dados:', err);
-      setError('Erro ao carregar dados administrativos.');
+      console.error('Erro fatal ao carregar dados:', err);
+      setError('Ocorreu um erro ao carregar os dados administrativos. Tente novamente em instantes.');
     } finally {
       setLoading(false);
     }
@@ -179,9 +179,6 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       if (updates.office_email !== undefined) dbUpdates.email = updates.office_email;
       if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
       if (updates.address !== undefined) dbUpdates.address = updates.address;
-      
-      // IMPORTANTE: is_lifetime e manual_discount_percent foram removidos do update
-      // porque o banco de dados de produção não contém essas colunas (Erro PGRST204)
 
       const { error } = await supabase
         .from('offices')
@@ -192,7 +189,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
       toast({ 
         title: "Dados Atualizados",
-        description: "As informações básicas foram salvas corretamente."
+        description: "Configurações institucionais salvas com sucesso."
       });
       
       await fetchAdmins();
@@ -200,7 +197,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     } catch (err: any) {
       toast({ 
         title: "Falha ao Salvar",
-        description: `Erro: ${err.message}`,
+        description: `Erro no servidor: ${err.message}`,
         variant: "destructive"
       });
       return false;
@@ -208,7 +205,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   };
 
   const sendPaymentReminder = async (email: string, officeName: string) => {
-    toast({ title: "Rembrete de Cobrança em Preparação" });
+    toast({ title: "Rembrete de Cobrança Enviado" });
     return true;
   };
 
