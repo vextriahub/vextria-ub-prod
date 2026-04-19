@@ -47,8 +47,13 @@ const Perfil = () => {
         ...prev,
         nome: profile?.full_name || user?.name || "Usuário",
         email: profile?.email || user?.email || "email@exemplo.com",
-        cargo: profile?.role === 'super_admin' ? 'CEO / Super Admin' : 
-               profile?.role === 'admin' ? 'Administrador' : 'Membro Comum'
+        telefone: profile?.phone || prev.telefone,
+        endereco: profile?.address || prev.endereco,
+        cargo: profile?.position || (profile?.role === 'super_admin' ? 'CEO / Super Admin' : 
+               profile?.role === 'admin' ? 'Administrador' : 'Membro Comum'),
+        oab: profile?.oab || prev.oab,
+        especializacao: profile?.specialization || prev.especializacao,
+        dataAdmissao: profile?.admission_date || prev.dataAdmissao
       }));
     }
   }, [user, profile]);
@@ -71,7 +76,15 @@ const Perfil = () => {
       setIsSaving(true);
       console.log('Tentando atualizar perfil do usuário:', user?.id || profile?.id);
 
-      const updatePayload = { full_name: userInfo.nome };
+      const updatePayload = { 
+        full_name: userInfo.nome,
+        phone: userInfo.telefone,
+        address: userInfo.endereco,
+        specialization: userInfo.especializacao,
+        oab: userInfo.oab,
+        position: userInfo.cargo,
+        admission_date: userInfo.dataAdmissao
+      };
       
       // Update explícito via chave primária (fallback pra .eq('user_id')) se a PK id falhar
       const targetId = profile?.id || user?.id;
