@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addDays } from 'date-fns';
 
 export interface AdminOffice {
-  id: string;
+  id: string; // User ID do admin principal
   full_name: string | null;
   email: string | null;
   role: string;
@@ -158,30 +158,24 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
   const updateOfficeStatus = async (officeId: string, active: boolean) => {
     try {
-      console.log(`🔐 [ADMIN ACTION]: Alterando status para ${officeId} -> ativo: ${active}`);
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('offices')
         .update({ active })
-        .eq('id', officeId)
-        .select();
+        .eq('id', officeId);
 
       if (error) throw error;
-      
-      console.log('✅ [ADMIN ACTION]: Resultado do banco:', data);
 
       toast({ 
         title: active ? "Acesso Restaurado" : "Acesso Suspenso",
-        description: `O escritório foi ${active ? 'ativado' : 'bloqueado'} com sucesso.`
+        description: `Status alterado com sucesso.`
       });
       
       await fetchAdmins();
       return true;
     } catch (err: any) {
-      console.error('❌ [ADMIN ACTION ERROR]: Falha ao atualizar status:', err);
       toast({ 
         title: "Erro ao suspender",
-        description: err.message || "Não foi possível salvar a alteração no banco de dados.",
+        description: err.message || "Erro de permissão no banco.",
         variant: "destructive"
       });
       return false;
@@ -190,9 +184,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
   const updateOfficeFull = async (officeId: string, updates: Partial<AdminOffice>) => {
     try {
-      console.log(`🔐 [ADMIN ACTION]: Edição completa de ${officeId}`, updates);
+      console.log(`🔐 [SAVE ATTEMPT] Office: ${officeId}`, updates);
       
-      // Mapear campos da interface para colunas do banco
       const dbUpdates: any = {};
       if (updates.office_name !== undefined) dbUpdates.name = updates.office_name;
       if (updates.office_email !== undefined) dbUpdates.email = updates.office_email;
@@ -201,25 +194,29 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       if (updates.is_lifetime !== undefined) dbUpdates.is_lifetime = updates.is_lifetime;
       if (updates.manual_discount_percent !== undefined) dbUpdates.manual_discount_percent = updates.manual_discount_percent;
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('offices')
         .update(dbUpdates)
-        .eq('id', officeId);
+        .eq('id', officeId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ [SUPABASE ERROR]:', error);
+        throw error;
+      };
 
       toast({ 
         title: "Dados Atualizados",
-        description: "As informações do escritório foram salvas com sucesso."
+        description: "As informações foram salvas com sucesso."
       });
       
       await fetchAdmins();
       return true;
     } catch (err: any) {
-      console.error('❌ [ADMIN ACTION ERROR]: Falha na edição:', err);
+      console.error('❌ [CATCH ERROR]:', err);
       toast({ 
         title: "Erro ao salvar",
-        description: "Ocorreu um problema ao persistir os dados no servidor.",
+        description: `Motivo: ${err.message || 'Erro desconhecido'} (Código: ${err.code || 'N/A'})`,
         variant: "destructive"
       });
       return false;

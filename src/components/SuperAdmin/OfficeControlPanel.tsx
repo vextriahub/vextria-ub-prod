@@ -33,7 +33,6 @@ import {
   Star,
   MapPin,
   Phone,
-  Tag,
   Mail,
   Save,
   Percent
@@ -50,7 +49,6 @@ export const OfficeControlPanel: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Inicializa o formulário de edição quando um administrador é selecionado
   useEffect(() => {
     if (selectedAdmin) {
       setEditFormData({
@@ -91,12 +89,11 @@ export const OfficeControlPanel: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Função para obter badge de status - Visual Clean (sem bordas pesadas)
   const getStatusBadge = (status: string, isTrial?: boolean, isLifetime?: boolean) => {
     if (isLifetime) {
       return (
-        <Badge variant="secondary" className="bg-amber-100/80 text-amber-700 border-none px-2 py-0.5 font-medium">
-          <Star className="w-3 h-3 mr-1 fill-amber-500" />
+        <Badge variant="secondary" className="bg-[#FEF3C7] text-[#92400E] border-none px-2 py-0.5 font-bold uppercase text-[10px]">
+          <Star className="w-3 h-3 mr-1 fill-[#F59E0B]" />
           Vitalício
         </Badge>
       );
@@ -104,7 +101,7 @@ export const OfficeControlPanel: React.FC = () => {
     
     if (isTrial) {
       return (
-        <Badge variant="secondary" className="bg-purple-100/80 text-purple-700 border-none px-2 py-0.5 font-medium">
+        <Badge variant="secondary" className="bg-[#F3E8FF] text-[#6B21A8] border-none px-2 py-0.5 font-bold uppercase text-[10px]">
           <Clock className="w-3 h-3 mr-1" />
           Trial
         </Badge>
@@ -114,21 +111,21 @@ export const OfficeControlPanel: React.FC = () => {
     switch (status) {
       case 'em_dia':
         return (
-          <Badge variant="secondary" className="bg-emerald-100/80 text-emerald-700 border-none px-2 py-0.5 font-medium">
+          <Badge variant="secondary" className="bg-[#DCFCE7] text-[#166534] border-none px-2 py-0.5 font-bold uppercase text-[10px]">
             <CheckCircle className="w-3 h-3 mr-1" />
             Ativo
           </Badge>
         );
       case 'vencido':
         return (
-          <Badge variant="secondary" className="bg-rose-100/80 text-rose-700 border-none px-2 py-0.5 font-medium">
+          <Badge variant="secondary" className="bg-[#FEE2E2] text-[#991B1B] border-none px-2 py-0.5 font-bold uppercase text-[10px]">
             <AlertCircle className="w-3 h-3 mr-1" />
             Vencido
           </Badge>
         );
       default:
         return (
-          <Badge variant="secondary" className="bg-slate-100/80 text-slate-700 border-none px-2 py-0.5 font-medium">
+          <Badge variant="secondary" className="bg-slate-200 text-slate-700 border-none px-2 py-0.5 font-bold uppercase text-[10px]">
             Pendente
           </Badge>
         );
@@ -153,12 +150,11 @@ export const OfficeControlPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Cards de Estatísticas */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
           <CardContent className="p-5">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Escritórios</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-[#94a3b8]">Total Escritórios</p>
               <Users size={14} className="text-primary" />
             </div>
             <div className="text-2xl font-black">{stats.total}</div>
@@ -167,28 +163,28 @@ export const OfficeControlPanel: React.FC = () => {
         <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
           <CardContent className="p-5">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Ativos</p>
-              <CheckCircle size={14} className="text-emerald-500" />
+              <p className="text-xs font-bold text-[#166534] uppercase tracking-widest">Ativos</p>
+              <CheckCircle size={14} className="text-[#166534]" />
             </div>
-            <div className="text-2xl font-black text-emerald-600">{stats.emDia}</div>
+            <div className="text-2xl font-black text-[#166534]">{stats.emDia}</div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
           <CardContent className="p-5">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Trials</p>
-              <Clock size={14} className="text-purple-500" />
+              <p className="text-xs font-bold text-[#6B21A8] uppercase tracking-widest">Trials</p>
+              <Clock size={14} className="text-[#6B21A8]" />
             </div>
-            <div className="text-2xl font-black text-purple-600">{stats.trial}</div>
+            <div className="text-2xl font-black text-[#6B21A8]">{stats.trial}</div>
           </CardContent>
         </Card>
         <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
           <CardContent className="p-5">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Vencidos</p>
-              <AlertCircle size={14} className="text-rose-500" />
+              <p className="text-xs font-bold text-[#991B1B] uppercase tracking-widest">Vencidos</p>
+              <AlertCircle size={14} className="text-[#991B1B]" />
             </div>
-            <div className="text-2xl font-black text-rose-600">{stats.vencidos}</div>
+            <div className="text-2xl font-black text-[#991B1B]">{stats.vencidos}</div>
           </CardContent>
         </Card>
       </div>
@@ -199,33 +195,33 @@ export const OfficeControlPanel: React.FC = () => {
             <div className="space-y-0.5">
               <CardTitle className="text-lg font-black flex items-center gap-2">
                 <Building2 className="text-primary h-5 w-5" />
-                Painel Administrativo
+                Administração Global
               </CardTitle>
-              <CardDescription className="text-xs">Edite dados e controle acessos globais</CardDescription>
+              <CardDescription className="text-xs">Gerencie o sistema, escritórios e assinaturas em tempo real.</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="rounded-full h-8 px-3 text-[10px] font-bold uppercase tracking-tighter">
-              <RefreshCw className={`h-3 w-3 mr-2 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-2">
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
             </Button>
           </div>
         </CardHeader>
         
-        <CardContent className="p-0">
-          <div className="p-4 flex flex-col sm:flex-row gap-3">
+        <CardContent className="p-0 pb-6">
+          <div className="p-4 flex flex-col sm:flex-row gap-4 mb-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/50" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50" />
               <Input
-                placeholder="Escritório ou Administrador..."
+                placeholder="Buscar por escritório ou administrador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-9 bg-muted/20 border-none rounded-lg"
+                className="pl-10 h-10 bg-muted/20 border-none rounded-lg"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[160px] h-9 bg-muted/20 border-none rounded-lg">
+              <SelectTrigger className="w-full sm:w-[200px] h-10 bg-muted/20 border-none rounded-lg">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="all">Todos os status</SelectItem>
                 <SelectItem value="em_dia">Ativos</SelectItem>
                 <SelectItem value="trial">Trials</SelectItem>
                 <SelectItem value="vencido">Vencidos</SelectItem>
@@ -235,42 +231,39 @@ export const OfficeControlPanel: React.FC = () => {
 
           <div className="overflow-x-auto scrollbar-hide">
             <Table>
-              <TableHeader className="bg-muted/30">
+              <TableHeader className="bg-muted/10">
                 <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground py-2">Administrador</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground py-2">Escritório</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground py-2">Status Pagamento</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground py-2">Data Vencimento</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest text-muted-foreground py-2 px-6">Edição</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Administrador</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3">Escritório</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3">Status Pagamento</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3">Data Vencimento</TableHead>
+                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest py-3 pr-6">Edição</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading && admins.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-20 text-muted-foreground/40 text-xs italic font-medium tracking-tight">Solicitando autorização ao banco...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-20 text-muted-foreground text-xs italic">Carregando dados globais...</TableCell></TableRow>
                 ) : filteredAdmins.map((admin) => (
-                  <TableRow key={admin.id} className="hover:bg-muted/10 border-muted/10 transition-colors">
-                    <TableCell className="py-3">
+                  <TableRow key={admin.id} className="hover:bg-muted/10 border-muted/5">
+                    <TableCell className="py-4 pl-6">
                       <div className="flex flex-col">
                         <span className="font-bold text-sm tracking-tight">{admin.full_name}</span>
-                        <span className="text-[10px] text-muted-foreground/60 leading-none">{admin.email}</span>
+                        <span className="text-[10px] text-muted-foreground/80">{admin.email}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 font-medium text-sm">
-                      <div className="flex items-center gap-2">
-                        <span>{admin.office_name}</span>
-                        {admin.manual_discount_percent > 0 && <Badge variant="outline" className="text-[9px] h-4 px-1 border-blue-200 text-blue-500 font-bold">-{admin.manual_discount_percent}%</Badge>}
-                      </div>
+                    <TableCell className="py-4">
+                      <span className="font-medium text-sm">{admin.office_name}</span>
                     </TableCell>
-                    <TableCell className="py-3">
+                    <TableCell className="py-4">
                       <div className="flex items-center gap-2">
                         {getStatusBadge(admin.payment_status, admin.is_trial, admin.is_lifetime)}
-                        {!admin.active && <Badge className="bg-rose-500 text-[9px] px-1 h-4 rounded-sm">SUSPENSO</Badge>}
+                        {!admin.active && <Badge className="bg-rose-600 text-[10px] font-bold px-1.5 h-5">SUSPENSO</Badge>}
                       </div>
                     </TableCell>
-                    <TableCell className="py-3 text-sm font-bold opacity-80">
-                      {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : <span className="text-muted-foreground italic text-xs font-normal">Pendente</span>}
+                    <TableCell className="py-4 font-bold text-sm">
+                      {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : <span className="text-muted-foreground italic font-normal text-xs">Pendente</span>}
                     </TableCell>
-                    <TableCell className="py-3 text-right pr-6">
+                    <TableCell className="py-4 text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
                         <Dialog open={dialogOpen && selectedAdmin?.office_id === admin.office_id} onOpenChange={(open) => {
                           if (open) {
@@ -278,17 +271,16 @@ export const OfficeControlPanel: React.FC = () => {
                             setDialogOpen(true);
                           } else {
                             setDialogOpen(false);
-                            // Limpar o cache após fechar se não salvou
                           }
                         }}>
                           <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted/80 rounded-full">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
                               <Eye size={16} className="text-muted-foreground" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[550px] border-none shadow-2xl p-0 overflow-hidden bg-card/60 backdrop-blur-2xl">
+                          <DialogContent className="sm:max-w-[550px] border-none shadow-2xl p-0 overflow-hidden bg-background">
                             <form onSubmit={handleSave}>
-                              <div className="p-6 pb-2">
+                              <div className="p-6 bg-muted/20">
                                 <DialogHeader>
                                   <DialogTitle className="flex items-center gap-2 text-xl font-black">
                                     <Building2 className="text-primary" /> Editar Escritório
@@ -298,64 +290,62 @@ export const OfficeControlPanel: React.FC = () => {
                               </div>
                               
                               <div className="p-6 space-y-6">
-                                {/* Dados Institucionais */}
                                 <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-primary/10 pb-1">Perfil Institucional</h4>
+                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Perfil Institucional</h4>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nome do Escritório</Label>
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nome do Escritório</Label>
                                       <Input 
                                         value={editFormData.office_name || ''} 
                                         onChange={(e) => setEditFormData({...editFormData, office_name: e.target.value})}
-                                        className="h-9 bg-muted/30 border-none rounded-lg focus-visible:ring-primary/40"
+                                        className="h-10 bg-muted/30 border-none rounded-lg"
                                       />
                                     </div>
                                     <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">E-mail Institucional</Label>
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">E-mail Institucional</Label>
                                       <Input 
                                         type="email"
                                         value={editFormData.office_email || ''} 
                                         onChange={(e) => setEditFormData({...editFormData, office_email: e.target.value})}
-                                        className="h-9 bg-muted/30 border-none rounded-lg focus-visible:ring-primary/40"
+                                        className="h-10 bg-muted/30 border-none rounded-lg"
                                       />
                                     </div>
                                     <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Telefone</Label>
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Telefone</Label>
                                       <Input 
                                         value={editFormData.phone || ''} 
                                         onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
-                                        className="h-9 bg-muted/30 border-none rounded-lg focus-visible:ring-primary/40"
+                                        className="h-10 bg-muted/30 border-none rounded-lg"
                                       />
                                     </div>
                                     <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Endereço Completo</Label>
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Endereço Completo</Label>
                                       <Input 
                                         value={editFormData.address || ''} 
                                         onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
-                                        className="h-9 bg-muted/30 border-none rounded-lg focus-visible:ring-primary/40"
+                                        className="h-10 bg-muted/30 border-none rounded-lg"
                                       />
                                     </div>
                                   </div>
                                 </div>
 
-                                {/* Regras Financeiras */}
                                 <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-primary/10 pb-1">Faturamento e Cobrança</h4>
+                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Faturamento e Cobrança</h4>
                                   <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-3 bg-primary/5 rounded-xl flex items-center justify-between border border-primary/10">
+                                    <div className="p-4 bg-muted/20 rounded-xl flex items-center justify-between border border-muted/10">
                                       <div className="space-y-0.5">
-                                        <Label className="text-xs font-bold leading-tight">Plano Vitalício</Label>
-                                        <p className="text-[9px] text-muted-foreground">Ignora bloqueios de assinatura.</p>
+                                        <Label className="text-sm font-bold">Plano Vitalício</Label>
+                                        <p className="text-[10px] text-muted-foreground">Ignora bloqueios de assinatura.</p>
                                       </div>
                                       <Checkbox 
                                         checked={editFormData.is_lifetime || false}
                                         onCheckedChange={(checked) => setEditFormData({...editFormData, is_lifetime: !!checked})}
-                                        className="border-primary/40"
+                                        className="h-5 w-5"
                                       />
                                     </div>
-                                    <div className="p-3 bg-muted/20 rounded-xl space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Desconto (%)</Label>
-                                      <div className="relative">
+                                    <div className="p-4 bg-muted/20 rounded-xl space-y-2 border border-muted/10">
+                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground">Desconto (%)</Label>
+                                      <div className="flex items-center gap-2">
                                         <Input 
                                           type="number"
                                           min="0"
@@ -364,16 +354,16 @@ export const OfficeControlPanel: React.FC = () => {
                                           onChange={(e) => setEditFormData({...editFormData, manual_discount_percent: parseFloat(e.target.value) || 0})}
                                           className="h-8 bg-transparent border-none p-0 text-sm focus-visible:ring-0"
                                         />
-                                        <Percent size={12} className="absolute right-0 top-1.5 text-muted-foreground opacity-50" />
+                                        <span className="text-muted-foreground text-xs">%</span>
                                       </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
 
-                              <DialogFooter className="p-6 pt-2 bg-muted/10">
-                                <Button type="submit" disabled={isSubmitting} className="w-full h-10 rounded-xl font-bold gap-2">
-                                  {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={16} />}
+                              <DialogFooter className="p-6 pt-2">
+                                <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground gap-2">
+                                  {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={18} />}
                                   {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                                 </Button>
                               </DialogFooter>
@@ -385,7 +375,7 @@ export const OfficeControlPanel: React.FC = () => {
                           variant="ghost" 
                           size="sm" 
                           onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} 
-                          className="h-8 w-8 p-0 text-blue-500/60 hover:text-blue-500 hover:bg-blue-50/10 rounded-full"
+                          className="h-8 w-8 p-0 text-blue-500/80 hover:text-blue-500"
                         >
                           <CreditCard size={15} />
                         </Button>
@@ -394,7 +384,7 @@ export const OfficeControlPanel: React.FC = () => {
                           variant="ghost" 
                           size="sm"
                           onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
-                          className={`h-8 w-8 p-0 rounded-full ${admin.active ? 'hover:bg-rose-50/10 text-rose-500/60 hover:text-rose-500' : 'hover:bg-emerald-50/10 text-emerald-500/60 hover:text-emerald-500'}`}
+                          className={`h-8 w-8 p-0 rounded-full ${admin.active ? 'text-rose-500/80 hover:text-rose-500' : 'text-emerald-500/80 hover:text-emerald-500'}`}
                         >
                           {admin.active ? <UserX size={15} /> : <UserCheck size={15} />}
                         </Button>
@@ -407,9 +397,6 @@ export const OfficeControlPanel: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      <div className="footer-meta text-[9px] font-bold text-muted-foreground/30 text-center uppercase tracking-[0.3em] pb-10">
-        Vextria Panel Stable v1.3 • Data Sync: {format(new Date(), 'HH:mm')}
-      </div>
     </div>
   );
 };
