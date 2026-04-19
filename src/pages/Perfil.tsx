@@ -62,28 +62,45 @@ const Perfil = () => {
   };
 
   const handleSave = async () => {
-    if (!user?.id) return;
-    
-    setIsSaving(true);
     try {
-      // Salvar apenas o que criamos mapeado no sistema de profiles no DB
-      const { error } = await supabase
+      if (!user?.id && !profile?.id) {
+        toast({ title: "Aviso", description: "Dados da sessão ainda carregando. Tente novamente." });
+        return;
+      }
+      
+      setIsSaving(true);
+      console.log('Tentando atualizar perfil do usuário:', user?.id || profile?.id);
+
+      const updatePayload = { full_name: userInfo.nome };
+      
+      // Update explícito via chave primária (fallback pra .eq('user_id')) se a PK id falhar
+      const targetId = profile?.id || user?.id;
+      const targetColumn = profile?.id ? 'id' : 'user_id';
+      
+      const { data, error } = await supabase
         .from('profiles')
-        .update({ full_name: userInfo.nome })
-        .eq('user_id', user.id);
+        .update(updatePayload)
+        .eq(targetColumn, targetId)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erro do supabase:", error);
+        throw error;
+      }
 
+      console.log("Sucesso ao atualizar:", data);
       toast({
         title: "Perfil atualizado",
-        description: "Seu nome foi alterado com sucesso! Atualize a aba para ver a mudança no menu.",
+        description: "Seu nome foi alterado com sucesso! Atualize a página com F5 para ver no menu superior.",
       });
       setEditMode(false);
     } catch (err: any) {
+      console.error("Erro no catch do update:", err);
       toast({
         variant: "destructive",
         title: "Erro ao atualizar",
-        description: err.message,
+        description: err?.message || "Houve uma falha oculta ao se comunicar com o banco de dados.",
       });
     } finally {
       setIsSaving(false);
