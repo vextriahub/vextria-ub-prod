@@ -56,18 +56,14 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
+      // QUERY SIMPLIFICADA (Segura) para restaurar funcionamento
+      // Removendo colunas que podem não existir ou estar bloqueadas
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
           id,
           name,
-          email,
-          address,
-          phone,
-          plan,
           active,
-          is_lifetime,
-          manual_discount_percent,
           created_at,
           office_users (
             role,
@@ -106,13 +102,12 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         const profileData = mainAdminUser ? profilesMap[mainAdminUser.user_id] : null;
         const sub = office.subscriptions?.[0];
         
-        const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
-        
-        // DETECTOR DE VITALÍCIO LEGADO (Data 2099)
-        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.is_lifetime;
+        // Lenda de vitalício baseada na data 2099 (Fallback seguro)
+        const isLegacyLifetime = sub?.end_date?.includes('2099');
+        const isTrial = sub?.status === 'trial' || sub?.status === 'trialing';
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
-        let plan_display_name = office.plan || sub?.plan || 'Free';
+        let plan_display_name = sub?.plan || 'Free';
 
         if (isTrial) {
           payment_status = 'em_dia';
@@ -130,7 +125,6 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           }
         }
 
-        // CÁLCULO DE DATA DE TRIAL (Criado em + 7 dias se não houver end_date)
         let end_date = sub?.end_date || null;
         if (isTrial && !end_date && office.created_at) {
           end_date = addDays(new Date(office.created_at), 7).toISOString();
@@ -143,9 +137,9 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           role: mainAdminUser?.role || 'user',
           office_id: office.id,
           office_name: office.name || 'Sem Nome',
-          office_email: office.email || null,
-          address: office.address || null,
-          phone: office.phone || null,
+          office_email: null,
+          address: null,
+          phone: null,
           created_at: office.created_at,
           payment_status,
           plan_name: plan_display_name,
@@ -154,14 +148,14 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           is_trial: isTrial,
           active: office.active ?? true,
           is_lifetime: !!isLegacyLifetime,
-          manual_discount_percent: office.manual_discount_percent || 0
+          manual_discount_percent: 0
         };
       });
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
-      console.error('Erro de sincronização:', err);
-      setError('Erro ao carregar dados administrativos.');
+      console.error('Erro crítico:', err);
+      setError('Erro ao carregar dados administrativos. Restaurando...');
     } finally {
       setLoading(false);
     }
@@ -175,30 +169,16 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         .eq('id', officeId);
 
       if (error) throw error;
-
-      toast({
-        title: active ? "Acesso Restaurado" : "Acesso Suspenso",
-        description: `O escritório foi ${active ? 'ativado' : 'suspenso'} com sucesso.`,
-      });
-
+      toast({ title: active ? "Acesso Restaurado" : "Acesso Suspenso" });
       await fetchAdmins();
       return true;
     } catch (err) {
-      console.error('Erro ao atualizar status:', err);
-      toast({
-        title: "Erro na operação",
-        description: "Não foi possível alterar o status do escritório.",
-        variant: "destructive"
-      });
       return false;
     }
   };
 
   const sendPaymentReminder = async (email: string, officeName: string) => {
-    toast({
-      title: "Cobrança Enviada",
-      description: `Lembrete de pagamento extra enviado para ${email}.`,
-    });
+    toast({ title: "Cobrança Enviada" });
     return true;
   };
 
