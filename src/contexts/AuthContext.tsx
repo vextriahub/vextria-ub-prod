@@ -392,10 +392,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         // Login process completed
-        
-        if (paymentResult.needsPayment) {
-          setShowPaymentModal(true);
-        }
       }
 
       return { error: null };
