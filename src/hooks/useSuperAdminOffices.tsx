@@ -53,7 +53,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           created_at,
           office_users (
             role,
-            profiles:user_id (
+            profiles (
               id,
               full_name,
               email
