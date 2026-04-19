@@ -37,7 +37,6 @@ const Perfil = () => {
     cargo: "Não informado",
     oab: "Não informado",
     especializacao: "Não informado",
-    dataAdmissao: "Não informado"
   });
 
   // Preenche dados reais da Sessão Pessoal logada assim que carregar
@@ -52,8 +51,7 @@ const Perfil = () => {
         cargo: profile?.position || (profile?.role === 'super_admin' ? 'CEO / Super Admin' : 
                profile?.role === 'admin' ? 'Administrador' : 'Membro Comum'),
         oab: profile?.oab || prev.oab,
-        especializacao: profile?.specialization || prev.especializacao,
-        dataAdmissao: profile?.admission_date || prev.dataAdmissao
+        especializacao: profile?.specialization || prev.especializacao
       }));
     }
   }, [user, profile]);
@@ -82,8 +80,7 @@ const Perfil = () => {
         address: userInfo.endereco,
         specialization: userInfo.especializacao,
         oab: userInfo.oab,
-        position: userInfo.cargo,
-        admission_date: userInfo.dataAdmissao
+        position: userInfo.cargo
       };
       
       // Update explícito via chave primária (fallback pra .eq('user_id')) se a PK id falhar
@@ -246,12 +243,6 @@ const Perfil = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>Data de Admissão</Label>
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{userInfo.dataAdmissao}</span>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
