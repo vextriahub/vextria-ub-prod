@@ -9,9 +9,7 @@ import { usePaymentValidation, type PaymentValidationResult } from '@/hooks/useP
 import { officeService } from '@/services/officeService';
 
 export const SUPER_ADMIN_EMAILS = [
-  'contato@vextriahub.com.br',
-  '1266jp@gmail.com',
-  'joao.pedro@vextriahub.com.br'
+  'contato@vextriahub.com.br'
 ].map(e => e.toLowerCase().trim());
 
 interface User {

@@ -84,7 +84,7 @@ const Subscriptions: React.FC = () => {
   };
 
   // Verificação de acesso com fallback por email
-  const superAdminEmails = ['contato@vextriahub.com.br', '1266jp@gmail.com', 'joao.pedro@vextriahub.com.br'];
+  const superAdminEmails = ['contato@vextriahub.com.br'];
   const hasAccess = isSuperAdmin || 
                    user?.role === 'super_admin' || 
                    (user?.email && superAdminEmails.includes(user.email));
