@@ -35,16 +35,17 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
     
     if (!isSuperAdmin && !isMainSuperAdmin) {
-      setError('Acesso negado. Apenas super administradores podem acessar estes dados.');
+      setError('Acesso negado.');
       setLoading(false);
       return;
     }
 
     try {
-      console.log('🔍 fetchAdmins: Buscando dados reais...');
+      console.log('🔍 fetchAdmins: Carregando dados da plataforma...');
       setLoading(true);
       setError(null);
 
+      // Usando uma query mais flat e segura para evitar erros de join 400
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
@@ -53,11 +54,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           created_at,
           office_users (
             role,
-            profiles (
-              id,
-              full_name,
-              email
-            )
+            user_id
           ),
           subscriptions (
             status,
@@ -73,9 +70,27 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         throw fetchError;
       }
 
+      // Agora buscamos os perfis separadamente para evitar erros de relação de junção complexa (400)
+      const userIds = (data || [])
+        .flatMap((office: any) => office.office_users?.map((ou: any) => ou.user_id))
+        .filter(Boolean);
+
+      let profilesMap: Record<string, any> = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds);
+          
+        profilesData?.forEach(p => {
+          profilesMap[p.user_id] = p;
+        });
+      }
+
       const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
-        const mainAdmin = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
-        const profileData = mainAdmin?.profiles;
+        const mainAdminUser = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
+        const profileData = mainAdminUser ? profilesMap[mainAdminUser.user_id] : null;
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
         let plan_name = 'Free/Nenhum';
@@ -94,10 +109,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         }
 
         return {
-          id: profileData?.id || office.id,
-          full_name: profileData?.full_name || 'Sem Admin',
+          id: mainAdminUser?.user_id || office.id,
+          full_name: profileData?.full_name || 'Admin',
           email: profileData?.email || 'N/A',
-          role: mainAdmin?.role || 'user',
+          role: mainAdminUser?.role || 'user',
           office_id: office.id,
           office_name: office.name || 'Aguardando Cadastro...',
           created_at: office.created_at,
@@ -112,7 +127,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setAdmins(transformedAdmins);
     } catch (err: any) {
       console.error('Erro inesperado:', err);
-      setError('Erro inesperado ao carregar dados: ' + err.message);
+      setError('Erro ao carregar dados: ' + (err.message || 'Verifique sua conexão'));
     } finally {
       setLoading(false);
     }
@@ -121,18 +136,13 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   useEffect(() => {
     fetchAdmins();
 
-    const webhookSubscription = supabase
-      .channel('admin-dashboard-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => {
-         fetchAdmins();
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => {
-         fetchAdmins();
-      })
+    const channel = supabase
+      .channel('db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => fetchAdmins())
       .subscribe();
 
     return () => {
-      supabase.removeChannel(webhookSubscription);
+      supabase.removeChannel(channel);
     };
   }, [fetchAdmins]);
 
