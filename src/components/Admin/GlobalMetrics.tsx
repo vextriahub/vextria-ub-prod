@@ -170,10 +170,10 @@ export const GlobalMetrics: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {totalOffices > 0 ? ((activeOffices / totalOffices) * 100).toFixed(1) : 0}%
+              {totalOffices > 0 ? ((offices.filter(office => office.plan !== 'trial').length / totalOffices) * 100).toFixed(1) : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              escritórios ativos
+              convertidos em planos pagos
             </p>
           </CardContent>
         </Card>
