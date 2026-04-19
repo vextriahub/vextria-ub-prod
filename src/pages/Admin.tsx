@@ -11,11 +11,10 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useOfficeManagement } from "@/hooks/useOfficeManagement";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { Shield, Check, X, Clock, User, FileText, AlertCircle, Building2, CreditCard, Users, TrendingUp, Activity } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { OfficeManagement } from "@/components/Admin/OfficeManagement";
-import { SubscriptionManagement } from "@/components/Admin/SubscriptionManagement";
+import { OfficeControlPanel } from "@/components/SuperAdmin/OfficeControlPanel";
+import { SubscriptionControlPanel } from "@/components/SuperAdmin/SubscriptionControlPanel";
 import { GlobalMetrics } from "@/components/Admin/GlobalMetrics";
+import { useAuth } from "@/contexts/AuthContext";
 
 const getTabelaDisplayName = (tabela: string) => {
   const nomes: Record<string, string> = {
@@ -49,9 +48,12 @@ import { useSearchParams } from "react-router-dom";
 
 const Admin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') || "dashboard";
+  const initialTab = searchParams.get('tab') || "requests";
   const [activeTab, setActiveTab] = useState(initialTab);
   const { canViewAdminFeatures, isSuperAdmin, isLoading: authLoading } = useUserRole();
+  const { user } = useAuth();
+  
+  const isMainSuperAdmin = user?.email === 'contato@vextriahub.com.br';
 
   // Sync activeTab when URL changes (from sidebar clicks)
   useEffect(() => {
@@ -131,31 +133,31 @@ const Admin = () => {
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
                   <Shield className="h-6 w-6 text-primary" />
-                  {isSuperAdmin ? 'Administração Global' : 'Painel do Administrador'}
+                  {isMainSuperAdmin ? 'Administração Global' : 'Painel do Administrador'}
                 </h1>
                 <p className="text-sm md:text-base text-muted-foreground">
-                  {isSuperAdmin 
-                    ? 'Gerencie todo o sistema, escritórios e assinaturas.'
+                  {isMainSuperAdmin 
+                    ? 'Gerencie todo o sistema, escritórios e assinaturas em tempo real.'
                     : 'Gerencie solicitações de exclusão de registros.'
                   }
                 </p>
               </div>
             </div>
 
-            {isSuperAdmin ? (
+            {isMainSuperAdmin ? (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-                {/* TabsList removido: a navegação agora é feita exclusivamente pela sidebar */}
+                {/* Abas exclusivas para o Super Admin principal */}
 
                 <TabsContent value="dashboard" className="space-y-6">
                   <GlobalMetrics />
                 </TabsContent>
 
                 <TabsContent value="offices" className="space-y-6">
-                  <OfficeManagement />
+                  <OfficeControlPanel />
                 </TabsContent>
 
                 <TabsContent value="subscriptions" className="space-y-6">
-                  <SubscriptionManagement />
+                  <SubscriptionControlPanel />
                 </TabsContent>
 
                 <TabsContent value="requests" className="space-y-6">

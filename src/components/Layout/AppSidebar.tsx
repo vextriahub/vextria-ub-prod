@@ -122,17 +122,19 @@ export function AppSidebar() {
     }
   });
 
-  // Itens da Plataforma exclusivos para Super Admin
+  // Itens da Plataforma exclusivos para Super Admin principal
+  const isMainSuperAdmin = user?.email === 'contato@vextriahub.com.br';
+  
   const platformItems = [
-    { title: "Dashboard", url: "/super-admin", icon: BarChart3 },
-    { title: "Escritórios", url: "/super-admin?tab=offices", icon: Building2 },
-    { title: "Assinaturas", url: "/super-admin?tab=subscriptions", icon: CreditCard },
-    { title: "Solicitações", url: "/super-admin", icon: AlertCircle },
+    { title: "Dashboard", url: "/admin?tab=dashboard", icon: BarChart3 },
+    { title: "Escritórios", url: "/admin?tab=offices", icon: Building2 },
+    { title: "Assinaturas", url: "/admin?tab=subscriptions", icon: CreditCard },
+    { title: "Solicitações", url: "/admin?tab=requests", icon: AlertCircle },
   ];
 
   // Combinar itens do menu baseado no papel do usuário
-  // Se for super_admin, mostra APENAS os itens da plataforma
-  const allMenuItems = isSuperAdmin ? platformItems : [...menuItems, ...filteredAdminItems];
+  // Se for o super_admin principal, mostra APENAS os itens da plataforma
+  const allMenuItems = isMainSuperAdmin ? platformItems : [...menuItems, ...filteredAdminItems];
 
   const handleLogout = () => {
     console.log("Logout clicado - AppSidebar");

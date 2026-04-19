@@ -44,7 +44,15 @@ export const SubscriptionControlPanel: React.FC = () => {
     revenue: admins.reduce((acc, a) => acc + (a.payment_status === 'em_dia' ? a.price : 0), 0)
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, isTrial?: boolean) => {
+    if (isTrial) {
+      return (
+        <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-purple-200">
+          <Clock className="w-3 h-3 mr-1" /> Trial
+        </Badge>
+      );
+    }
+
     switch (status) {
       case 'em_dia':
         return (
@@ -167,6 +175,7 @@ export const SubscriptionControlPanel: React.FC = () => {
                   <SelectItem value="em_dia">Ativo (Em dia)</SelectItem>
                   <SelectItem value="proximo_vencimento">Pendente (A vencer)</SelectItem>
                   <SelectItem value="vencido">Bloqueado (Vencido)</SelectItem>
+                  <SelectItem value="trial">Em Trial</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -212,7 +221,7 @@ export const SubscriptionControlPanel: React.FC = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getStatusBadge(admin.payment_status)}
+                        {getStatusBadge(admin.payment_status, admin.is_trial)}
                       </TableCell>
                     </TableRow>
                   ))}
