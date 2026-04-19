@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .eq('user_id', userId)
           .single(),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
         )
       ]) as any;
 
@@ -332,7 +332,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session: currentSession } } = await Promise.race([
           supabase.auth.getSession(),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Session fetch timeout')), 3000)
+            setTimeout(() => reject(new Error('Session fetch timeout')), 10000)
           )
         ]) as any;
         
@@ -620,11 +620,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     console.log('Logging out user');
     try {
-      // Tentar o signOut oficial do Supabase
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.warn('⚠️ Supabase signOut returned error, but we will force local logout anyway:', error.message);
-      }
+      // Tentar o signOut oficial do Supabase com timeout de 2s para não travar o usuário
+      await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Logout timeout')), 2000))
+      ]);
+      console.log('✅ Supabase signOut call finished');
     } catch (err) {
       console.error('❌ Exception during supabase.auth.signOut:', err);
     } finally {
