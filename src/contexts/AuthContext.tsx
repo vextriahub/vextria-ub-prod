@@ -251,13 +251,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 4. Create user object
       const userData: User = {
         id: sessionUser.id,
-        name: profileData.full_name || sessionUser.email?.split('@')[0] || 'Usuário',
-        email: sessionUser.email || '',
+        name: profileData.full_name || sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Usuário',
+        email: sessionUser.email || profileData.email || '',
         role: profileData.role,
         office_id: profileData.office_id,
         office_role: officeUser?.role || null
       };
       
+      console.log('✅ Final user data prepared:', userData);
+
       // Set state
       setProfile(profileData);
       setOfficeUser(officeUser);
@@ -270,7 +272,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsFirstLogin(isNewProfile && profileData.role !== 'super_admin');
       
     } catch (error) {
-      console.error('Error processing user data:', error);
+      console.error('❌ Error processing user data:', error);
+      
+      // FALLBACK: Mesmo com erro no BD, vamos tentar setar um usuário mínimo baseado na sessão
+      // Isso evita que a interface trave em "NULL"
+      const fallbackUser: User = {
+        id: sessionUser.id,
+        name: sessionUser.user_metadata?.full_name || sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0] || 'Usuário',
+        email: sessionUser.email || '',
+        role: 'user' // Default safe role
+      };
+      console.warn('⚠️ Using fallback user data due to processing error');
+      setUser(fallbackUser);
+    } finally {
+      if (mountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [fetchProfile, createProfile, fetchOfficeData]);
 
@@ -601,15 +618,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     console.log('Logging out user');
-    const { error } = await supabase.auth.signOut();
-    
-    if (!error) {
+    try {
+      // Tentar o signOut oficial do Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.warn('⚠️ Supabase signOut returned error, but we will force local logout anyway:', error.message);
+      }
+    } catch (err) {
+      console.error('❌ Exception during supabase.auth.signOut:', err);
+    } finally {
+      // FORÇAR LIMPEZA - Não importa o que aconteça acima
       setUser(null);
       setProfile(null);
       setSession(null);
       setOffice(null);
       setOfficeUser(null);
       setIsFirstLogin(false);
+      
+      console.log('✅ Local state cleared, redirecting to login');
+      
+      // Limpar tokens residuais do localStorage (Double security)
+      for (const key in localStorage) {
+        if (key.includes('supabase.auth.token') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      }
+
       navigate('/login', { replace: true });
     }
   };
