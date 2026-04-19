@@ -188,8 +188,8 @@ export const GlobalMetrics: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
-            {['basico', 'intermediario', 'avancado', 'premium', 'vitalicio'].map((plan) => {
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            {['trial', 'basico', 'intermediario', 'avancado', 'premium', 'vitalicio'].map((plan) => {
               let planCount = 0;
               let planRevenue = 0;
 
@@ -204,6 +204,7 @@ export const GlobalMetrics: React.FC = () => {
               }
               
               const planNames: Record<string, string> = {
+                trial: 'Trial',
                 basico: 'Básico',
                 intermediario: 'Intermediário',
                 avancado: 'Avançado',
@@ -218,7 +219,7 @@ export const GlobalMetrics: React.FC = () => {
                   </div>
                   <p className="text-sm font-medium">{planNames[plan] || plan}</p>
                   <p className="text-xs text-muted-foreground">
-                    {plan === 'vitalicio' ? 'Acesso Permanente' : `R$ ${planRevenue.toLocaleString('pt-BR')}/mês`}
+                    {plan === 'vitalicio' ? 'Acesso Permanente' : plan === 'trial' ? 'Acesso Grátis' : `R$ ${planRevenue.toLocaleString('pt-BR')}/mês`}
                   </p>
                 </div>
               );
