@@ -236,17 +236,13 @@ export const OfficeControlPanel: React.FC = () => {
                       {!admin.active && <Badge variant="destructive" className="ml-2 text-[8px] py-0 px-1">SUSPENSO</Badge>}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 font-medium text-sm">
-                        {admin.is_lifetime ? (
-                          <span className="text-amber-600 flex items-center gap-1">
-                            <Star size={12} className="fill-amber-600" /> Vitalício
-                          </span>
-                        ) : admin.end_date ? (
+                      <div className="flex items-center gap-1.5 font-medium text-sm text-foreground">
+                        {admin.end_date ? (
                           <span className={admin.is_trial ? 'text-purple-600' : ''}>
                             {format(new Date(admin.end_date), "dd/MM/yyyy")}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground italic text-xs">A definir</span>
+                          <span className="text-muted-foreground italic text-xs">Pendente</span>
                         )}
                       </div>
                     </TableCell>
