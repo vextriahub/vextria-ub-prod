@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface AdminOffice {
+export interface AdminOffice {
   id: string;
   full_name: string | null;
   email: string | null;
@@ -10,11 +10,11 @@ interface AdminOffice {
   office_id: string | null;
   office_name: string | null;
   created_at: string;
-  stripe_customer_id?: string | null;
-  payment_status: 'em_dia' | 'proximo_vencimento' | 'vencido'; // Mock status
+  payment_status: 'em_dia' | 'proximo_vencimento' | 'vencido' | 'pendente';
+  plan_name: string;
 }
 
-interface UseSuperAdminOfficesResult {
+export interface UseSuperAdminOfficesResult {
   admins: AdminOffice[];
   loading: boolean;
   error: string | null;
@@ -39,7 +39,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // Buscar perfis de administradores com informações do escritório
+      // Usando relacionamentos diretos do Supabase para aninhar: profiles -> offices -> subscriptions
       const { data, error: fetchError } = await supabase
         .from('profiles')
         .select(`
@@ -51,23 +51,37 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           created_at,
           offices:office_id (
             id,
-            name
+            name,
+            subscriptions (
+              status,
+              plan
+            )
           )
         `)
-        .eq('role', 'admin')
+        .eq('role', 'admin') // Traz apenas os advogados donos de escritórios
         .order('created_at', { ascending: false });
 
-      if (fetchError) {
-        console.error('Erro ao buscar administradores:', fetchError);
-        setError('Erro ao carregar dados dos administradores.');
-        return;
-      }
+      if (fetchError) throw fetchError;
 
-      // Transformar dados e adicionar status mockado
-      const transformedAdmins: AdminOffice[] = (data || []).map((admin) => {
-        // Mock de status de pagamento baseado no ID (para demonstração)
-        const statusOptions: AdminOffice['payment_status'][] = ['em_dia', 'proximo_vencimento', 'vencido'];
-        const mockStatus = statusOptions[admin.id.length % 3];
+      // Montando a resposta de forma segura tirando de MOCK e jogando pra REAL, assim o Trial da Stripe cai aqui dentro certinho!
+      const transformedAdmins: AdminOffice[] = (data || []).map((admin: any) => {
+        const officeData = admin.offices;
+        let payment_status: AdminOffice['payment_status'] = 'pendente';
+        let plan_name = 'Free/Nenhum';
+
+        if (officeData && officeData.subscriptions && officeData.subscriptions.length > 0) {
+          // Pega a assinatura mais recente/atrelada
+          const sub = officeData.subscriptions[0];
+          plan_name = sub.plan || 'Free/Nenhum';
+
+          if (sub.status === 'active' || sub.status === 'trialing') {
+            payment_status = 'em_dia';
+          } else if (sub.status === 'past_due' || sub.status === 'unpaid') {
+            payment_status = 'proximo_vencimento';
+          } else {
+            payment_status = 'vencido';
+          }
+        }
 
         return {
           id: admin.id,
@@ -75,17 +89,17 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           email: admin.email,
           role: admin.role,
           office_id: admin.office_id,
-          office_name: (admin.offices as any)?.name || null,
+          office_name: officeData?.name || 'Aguardando Cadastro...',
           created_at: admin.created_at,
-          stripe_customer_id: null,
-          payment_status: mockStatus,
+          payment_status,
+          plan_name
         };
       });
 
       setAdmins(transformedAdmins);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro inesperado:', err);
-      setError('Erro inesperado ao carregar dados.');
+      setError('Erro inesperado ao carregar dados: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -93,17 +107,29 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
   useEffect(() => {
     fetchAdmins();
-  }, [fetchAdmins]);
 
-  const refresh = useCallback(async () => {
-    await fetchAdmins();
+    // Ouvinte Mágico: Atualiza o painel do Admin REALTIME na hora que cair o PIX ou Cadastrar sem F5
+    const webhookSubscription = supabase
+      .channel('admin-dashboard-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => {
+         console.log("Recebendo Pagamento Webhook, atualizando a Dashboard!");
+         fetchAdmins();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => {
+         fetchAdmins();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(webhookSubscription);
+    };
   }, [fetchAdmins]);
 
   return {
     admins,
     loading,
     error,
-    refresh,
+    refresh: fetchAdmins,
     isEmpty: admins.length === 0,
   };
 };

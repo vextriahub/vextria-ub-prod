@@ -79,6 +79,9 @@ serve(async (req) => {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 7,
+      },
       success_url: `${origin}/dashboard?success=true`,
       cancel_url: `${origin}/register?canceled=true`,
       metadata: { user_id: user.id, plan_name: planName }
