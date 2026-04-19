@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, SUPER_ADMIN_EMAILS } from '@/contexts/AuthContext';
 import { usePlanFeatures } from './usePlanFeatures';
 import { FeaturePermissions } from '@/types/permissions';
 
@@ -31,16 +31,9 @@ export const usePermissions = (): FeaturePermissions => {
     }
 
     // Fallback para super admins baseado no email enquanto user não carrega
-    const superAdminEmails = [
-      'contato@vextriahub.com.br', 
-      '1266jp@gmail.com', 
-      'joao.pedro@vextriahub.com.br', 
-      'dev.jp.991@gmail.com'
-    ].map(e => e.toLowerCase().trim());
-
     const sessionEmail = session?.user?.email?.toLowerCase().trim();
 
-    if (!user && sessionEmail && superAdminEmails.includes(sessionEmail)) {
+    if (!user && sessionEmail && SUPER_ADMIN_EMAILS.includes(sessionEmail)) {
       console.log('🔐 Fallback: Super admin detected by email', sessionEmail);
       return createSuperAdminPermissions();
     }

@@ -8,6 +8,10 @@ import { useStripe } from '@/hooks/useStripe';
 import { usePaymentValidation, type PaymentValidationResult } from '@/hooks/usePaymentValidation';
 import { officeService } from '@/services/officeService';
 
+export const SUPER_ADMIN_EMAILS = [
+  'contato@vextriahub.com.br'
+].map(e => e.toLowerCase().trim());
+
 interface User {
   id: string;
   name: string;
@@ -133,17 +137,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Profile creation logic (simplified logs for production)
       
-      // Lista de emails que devem ter role super_admin
-      const superAdminEmails = [
-        'contato@vextriahub.com.br',
-        '1266jp@gmail.com',
-        'joao.pedro@vextriahub.com.br',
-        'dev.jp.991@gmail.com',
-        'vextriahubv1@gmail.com',
-        'ceo@gustavodantas.adv.br'
-      ];
-      
-      const role = superAdminEmails.includes(email) ? 'super_admin' : 'user';
+      // Verifica se o email deve ter role de super_admin baseado na lista global
+      const role = SUPER_ADMIN_EMAILS.includes(email.toLowerCase().trim()) ? 'super_admin' : 'user';
       console.log('🔧 Assigning role:', role, 'for email:', email);
       
       const { data, error } = await supabase
@@ -543,13 +538,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log('🔄 Determining redirect path:', { userRole, userEmail });
     
     // Verificar se é admin do sistema (baseado em email)
-    const systemAdminEmails = [
-      'contato@vextriahub.com.br', 
-      '1266jp@gmail.com', 
-      'joao.pedro@vextriahub.com.br', 
-      'dev.jp.991@gmail.com'
-    ];
-    const isSystemAdmin = userEmail && systemAdminEmails.map(e => e.toLowerCase().trim()).includes(userEmail.toLowerCase().trim());
+    const isSystemAdmin = userEmail && SUPER_ADMIN_EMAILS.includes(userEmail.toLowerCase().trim());
     
     if (isSystemAdmin) {
       console.log('🔄 Redirecting to global admin panel');
@@ -589,7 +578,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isUserSuperAdmin = Boolean(
     user?.role === 'super_admin' || 
-    profile?.role === 'super_admin'
+    profile?.role === 'super_admin' ||
+    (user?.email && SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase().trim())) ||
+    (session?.user?.email && SUPER_ADMIN_EMAILS.includes(session.user.email.toLowerCase().trim()))
   );
 
   const value = {
@@ -602,7 +593,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     isFirstLogin,
     isSuperAdmin: isUserSuperAdmin,
-    isAdmin: user?.role === 'admin' || user?.role === 'super_admin' || profile?.role === 'admin' || profile?.role === 'super_admin',
+    isAdmin: user?.role === 'admin' || user?.role === 'super_admin' || profile?.role === 'admin' || profile?.role === 'super_admin' || isUserSuperAdmin,
     isOfficeAdmin: user?.office_role === 'admin' || user?.office_role === 'super_admin' || user?.role === 'super_admin' || profile?.role === 'super_admin',
     paymentValidation,
     showPaymentModal,

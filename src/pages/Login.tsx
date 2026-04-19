@@ -69,7 +69,8 @@ const Login = () => {
       }
 
       // Caso contrário, usar redirecionamento automático baseado no role
-      const redirectPath = getRedirectPath(user?.role, user?.email);
+      const userEmail = user?.email || session?.user?.email;
+      const redirectPath = getRedirectPath(user?.role, userEmail);
       console.log('🔄 Auto-redirecting based on role to:', redirectPath);
       navigate(redirectPath, {
         replace: true
@@ -109,7 +110,8 @@ const Login = () => {
         }
 
         // Caso contrário, usar redirecionamento automático baseado no role
-        const redirectPath = getRedirectPath(user?.role, user?.email);
+        const userEmail = user?.email || session?.user?.email;
+        const redirectPath = getRedirectPath(user?.role, userEmail);
         console.log('🔄 Auto-redirecting after login based on role to:', redirectPath);
         navigate(redirectPath, {
           replace: true
