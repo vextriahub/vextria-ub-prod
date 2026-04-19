@@ -21,7 +21,7 @@ import {
 export function AppHeader() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { logout, user } = useAuth();
+  const { logout, user, session } = useAuth();
 
   const handleLogout = () => {
     console.log("Logout clicado - AppHeader");
@@ -85,8 +85,8 @@ export function AppHeader() {
           <DropdownMenuContent align="end" className="w-48 md:w-56">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-xs md:text-sm font-medium">{user?.name || "Usuário"}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground">{user?.email || "email@exemplo.com"}</p>
+                <p className="text-xs md:text-sm font-medium">{user?.name || session?.user?.user_metadata?.full_name || session?.user?.user_metadata?.name || "Usuário"}</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground">{user?.email || session?.user?.email || "email@exemplo.com"}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
