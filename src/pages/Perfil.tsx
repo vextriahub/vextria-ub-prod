@@ -12,7 +12,6 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  Calendar,
   Award,
   Briefcase,
   Edit,
@@ -241,8 +240,6 @@ const Perfil = () => {
                           )}
                         </div>
                       </div>
-                    </div>
-
                     </div>
                   </CardContent>
                 </Card>
