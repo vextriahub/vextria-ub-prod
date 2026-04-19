@@ -93,61 +93,31 @@ const SystemSubscriptions: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo/Título */}
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/system-admin')}
-                className="mr-2"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Button>
-              <div className="flex items-center space-x-2">
-                <CreditCard className="h-8 w-8 text-primary" />
-                <div>
-                  <h1 className="text-xl font-bold text-foreground">Controle de Assinaturas</h1>
-                  <p className="text-xs text-muted-foreground">VextriaHub Payment Management</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Info do usuário e ações */}
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:block text-right">
-                <p className="text-sm font-medium text-foreground">
-                  {user?.name}
-                </p>
-                <p className="text-xs text-muted-foreground">Sistema Administrativo</p>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Button onClick={refresh} variant="outline" size="sm" className="gap-2">
-                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                  {loading ? "Carregando..." : "Atualizar"}
-                </Button>
-                <Button onClick={() => navigate('/dashboard')} variant="outline" size="sm">
-                  <Home className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-                <Button onClick={handleLogout} variant="outline" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </div>
-            </div>
-          </div>
+  return (
+    <div className="space-y-6 p-6 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <CreditCard className="h-8 w-8 text-primary shrink-0" />
+            Controle de Assinaturas (Sistema)
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
+            Gestão administrativa global de pagamentos e acessos.
+          </p>
         </div>
-      </header>
-
-      {/* Conteúdo Principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <div className="flex items-center gap-2">
+          <Button onClick={refresh} variant="outline" size="sm" className="gap-2 h-9">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? "Carregando..." : "Sincronizar"}
+          </Button>
+          
+          <Button onClick={() => navigate('/system-admin')} variant="outline" size="sm" className="h-9">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
+      </div>
         <div className="space-y-8">
           {/* Cards de Métricas */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -354,7 +324,6 @@ const SystemSubscriptions: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-      </main>
     </div>
   );
 };
