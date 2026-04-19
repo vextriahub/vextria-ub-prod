@@ -211,6 +211,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Process user data after authentication
+  const processUserData = useCallback(async (sessionUser: SupabaseUser) => {
+    if (!mountedRef.current) return;
+    
     try {
       // 1. SET FALLBACK USER IMMEDIATELY to unlock UI
       // Use session metadata for the fastest possible UI response
@@ -290,6 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('❌ Critical error in processUserData:', error);
       setIsLoading(false);
     }
+  }, [fetchProfile, createProfile, fetchOfficeData]);
 
   // Handle auth state change
   const handleAuthStateChange = useCallback(async (event: string, newSession: Session | null) => {
