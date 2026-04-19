@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSuperAdminOffices, AdminOffice } from '@/hooks/useSuperAdminOffices';
@@ -30,18 +29,16 @@ import {
   Clock,
   RefreshCw,
   Users,
-  Star,
   MapPin,
   Phone,
   Mail,
   Save,
-  Percent
+  Star
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export const OfficeControlPanel: React.FC = () => {
-  const { admins, loading, error, refresh, updateOfficeStatus, updateOfficeFull, sendPaymentReminder, isEmpty } = useSuperAdminOffices();
+  const { admins, loading, error, refresh, updateOfficeStatus, updateOfficeFull } = useSuperAdminOffices();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedAdmin, setSelectedAdmin] = useState<AdminOffice | null>(null);
@@ -55,9 +52,7 @@ export const OfficeControlPanel: React.FC = () => {
         office_name: selectedAdmin.office_name,
         office_email: selectedAdmin.office_email,
         phone: selectedAdmin.phone,
-        address: selectedAdmin.address,
-        is_lifetime: selectedAdmin.is_lifetime,
-        manual_discount_percent: selectedAdmin.manual_discount_percent
+        address: selectedAdmin.address
       });
     }
   }, [selectedAdmin]);
@@ -92,8 +87,8 @@ export const OfficeControlPanel: React.FC = () => {
   const getStatusBadge = (status: string, isTrial?: boolean, isLifetime?: boolean) => {
     if (isLifetime) {
       return (
-        <Badge variant="secondary" className="bg-[#FEF3C7] text-[#92400E] border-none px-2 py-0.5 font-bold uppercase text-[10px] shadow-sm">
-          <Star className="w-3 h-3 mr-1 fill-[#F59E0B]" />
+        <Badge variant="outline" className="border-amber-500 text-amber-600 bg-amber-50/50">
+          <Star className="w-3 h-3 mr-1 fill-amber-500" />
           Vitalício
         </Badge>
       );
@@ -101,7 +96,7 @@ export const OfficeControlPanel: React.FC = () => {
     
     if (isTrial) {
       return (
-        <Badge variant="secondary" className="bg-[#F3E8FF] text-[#6B21A8] border-none px-2 py-0.5 font-bold uppercase text-[10px] shadow-sm">
+        <Badge variant="outline" className="border-purple-500 text-purple-600 bg-purple-50/50">
           <Clock className="w-3 h-3 mr-1" />
           Trial
         </Badge>
@@ -111,23 +106,21 @@ export const OfficeControlPanel: React.FC = () => {
     switch (status) {
       case 'em_dia':
         return (
-          <Badge variant="secondary" className="bg-[#DCFCE7] text-[#166534] border-none px-2 py-0.5 font-bold uppercase text-[10px] shadow-sm">
+          <Badge variant="outline" className="border-emerald-500 text-emerald-600 bg-emerald-50/50">
             <CheckCircle className="w-3 h-3 mr-1" />
             Ativo
           </Badge>
         );
       case 'vencido':
         return (
-          <Badge variant="secondary" className="bg-[#FEE2E2] text-[#991B1B] border-none px-2 py-0.5 font-bold uppercase text-[10px] shadow-sm">
+          <Badge variant="outline" className="border-rose-500 text-rose-600 bg-rose-50/50">
             <AlertCircle className="w-3 h-3 mr-1" />
             Vencido
           </Badge>
         );
       default:
         return (
-          <Badge variant="secondary" className="bg-slate-300 text-slate-800 border-none px-2 py-0.5 font-bold uppercase text-[10px]">
-            Pendente
-          </Badge>
+          <Badge variant="outline">Pendente</Badge>
         );
     }
   };
@@ -151,77 +144,77 @@ export const OfficeControlPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
-          <CardContent className="p-5">
+        <Card className="border-muted/20">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-[#94a3b8]">Escritórios</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase">Escritórios</p>
               <Users size={14} className="text-primary" />
             </div>
-            <div className="text-2xl font-black">{stats.total}</div>
+            <div className="text-xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
-          <CardContent className="p-5">
+        <Card className="border-muted/20">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-[#166534] uppercase tracking-widest">Ativos</p>
-              <CheckCircle size={14} className="text-[#166534]" />
+              <p className="text-xs font-bold text-emerald-600 uppercase">Ativos</p>
+              <CheckCircle size={14} className="text-emerald-500" />
             </div>
-            <div className="text-2xl font-black text-[#166534]">{stats.emDia}</div>
+            <div className="text-xl font-bold text-emerald-600">{stats.emDia}</div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
-          <CardContent className="p-5">
+        <Card className="border-muted/20">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-[#6B21A8] uppercase tracking-widest">Trials</p>
-              <Clock size={14} className="text-[#6B21A8]" />
+              <p className="text-xs font-bold text-purple-600 uppercase">Trials</p>
+              <Clock size={14} className="text-purple-500" />
             </div>
-            <div className="text-2xl font-black text-[#6B21A8]">{stats.trial}</div>
+            <div className="text-xl font-bold text-purple-600">{stats.trial}</div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md">
-          <CardContent className="p-5">
+        <Card className="border-muted/20">
+          <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-xs font-bold text-[#991B1B] uppercase tracking-widest">Vencidos</p>
-              <AlertCircle size={14} className="text-[#991B1B]" />
+              <p className="text-xs font-bold text-rose-600 uppercase">Vencidos</p>
+              <AlertCircle size={14} className="text-rose-500" />
             </div>
-            <div className="text-2xl font-black text-[#991B1B]">{stats.vencidos}</div>
+            <div className="text-xl font-bold text-rose-600">{stats.vencidos}</div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md overflow-hidden">
-        <CardHeader className="border-b border-muted/20 pb-4">
+      <Card className="border-muted/20 overflow-hidden">
+        <CardHeader className="border-b border-muted/10 pb-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <CardTitle className="text-xl font-black flex items-center gap-2">
-                <Building2 className="text-primary h-6 w-6" />
-                GESTÃO VEXTRIA HUB (V1.4)
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Shield className="text-primary h-5 w-5" />
+                Gestão de Escritórios
               </CardTitle>
-              <CardDescription className="text-xs">Controle total de escritórios e faturamento.</CardDescription>
+              <CardDescription className="text-xs">Visualize e edite os dados cadastrais.</CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-2">
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
+            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-8">
+              <RefreshCw className={`h-3 w-3 mr-2 ${loading ? 'animate-spin' : ''}`} /> Atualizar
             </Button>
           </div>
         </CardHeader>
         
-        <CardContent className="p-0 pb-6">
-          <div className="p-4 flex flex-col sm:flex-row gap-4 mb-2">
+        <CardContent className="p-0">
+          <div className="p-4 flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/50" />
               <Input
-                placeholder="Buscar por escritório ou administrador..."
+                placeholder="Escritório ou Administrador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 bg-muted/20 border-none rounded-lg"
+                className="pl-10 h-9"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] h-10 bg-muted/20 border-none rounded-lg">
+              <SelectTrigger className="w-full sm:w-[180px] h-9">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="em_dia">Ativos</SelectItem>
                 <SelectItem value="trial">Trials</SelectItem>
                 <SelectItem value="vencido">Vencidos</SelectItem>
@@ -229,41 +222,41 @@ export const OfficeControlPanel: React.FC = () => {
             </Select>
           </div>
 
-          <div className="overflow-x-auto scrollbar-hide">
+          <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/10">
-                <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Administrador</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3">Escritório</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Status Pagamento</TableHead>
-                  <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Vencimento</TableHead>
-                  <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest py-3 pr-6">Gerenciar</TableHead>
+              <TableHeader>
+                <TableRow className="bg-muted/5">
+                  <TableHead className="text-[10px] font-bold uppercase py-2 pl-6">Administrador</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase py-2">Escritório</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase py-2 text-center">Pagamento</TableHead>
+                  <TableHead className="text-[10px] font-bold uppercase py-2 text-center">Vencimento</TableHead>
+                  <TableHead className="text-right text-[10px] font-bold uppercase py-2 pr-6">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading && admins.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="text-center py-20 text-muted-foreground text-xs italic">Sincronizando dados...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-20 text-muted-foreground italic">Processando informações...</TableCell></TableRow>
                 ) : filteredAdmins.map((admin) => (
-                  <TableRow key={admin.id} className="hover:bg-muted/10 border-muted/5 transition-colors">
-                    <TableCell className="py-4 pl-6">
+                  <TableRow key={admin.id} className="hover:bg-muted/5 transition-colors">
+                    <TableCell className="py-3 pl-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm tracking-tight">{admin.full_name}</span>
-                        <span className="text-[10px] text-muted-foreground/80">{admin.email}</span>
+                        <span className="font-bold text-sm">{admin.full_name}</span>
+                        <span className="text-[10px] text-muted-foreground">{admin.email}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4">
-                      <span className="font-medium text-sm">{admin.office_name}</span>
+                    <TableCell className="py-3">
+                      <span className="text-sm">{admin.office_name}</span>
                     </TableCell>
-                    <TableCell className="py-4 text-center">
+                    <TableCell className="py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
                         {getStatusBadge(admin.payment_status, admin.is_trial, admin.is_lifetime)}
-                        {!admin.active && <Badge className="bg-rose-600 text-[10px] font-bold px-1.5 h-5 shadow-sm">SUSPENSO</Badge>}
+                        {!admin.active && <Badge variant="destructive" className="text-[9px] px-1 h-4">SUSPENSO</Badge>}
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 font-bold text-sm text-center">
-                      {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : <span className="text-muted-foreground italic font-normal text-xs">---</span>}
+                    <TableCell className="py-3 text-center font-medium text-sm">
+                      {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy") : "---"}
                     </TableCell>
-                    <TableCell className="py-4 text-right pr-6">
+                    <TableCell className="py-3 text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
                         <Dialog open={dialogOpen && selectedAdmin?.office_id === admin.office_id} onOpenChange={(open) => {
                           if (open) {
@@ -274,97 +267,63 @@ export const OfficeControlPanel: React.FC = () => {
                           }
                         }}>
                           <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-muted/50 transition-colors">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
                               <Eye size={16} className="text-muted-foreground" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[550px] border-none shadow-2xl p-0 overflow-hidden bg-background">
+                          <DialogContent className="sm:max-w-[500px]">
                             <form onSubmit={handleSave}>
-                              <div className="p-6 bg-muted/20 border-b border-muted/10">
-                                <DialogHeader>
-                                  <DialogTitle className="flex items-center gap-2 text-xl font-black">
-                                    <Building2 className="text-primary" /> Editar Escritório
-                                  </DialogTitle>
-                                  <DialogDescription className="text-xs">Atualize os parâmetros institucionais e financeiros do escritório.</DialogDescription>
-                                </DialogHeader>
-                              </div>
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <Building2 className="text-primary" /> Dados do Escritório
+                                </DialogTitle>
+                                <DialogDescription className="text-xs">Edite as informações cadastrais abaixo.</DialogDescription>
+                              </DialogHeader>
                               
-                              <div className="p-6 space-y-6">
-                                <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Perfil Institucional</h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nome do Escritório</Label>
-                                      <Input 
-                                        value={editFormData.office_name || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, office_name: e.target.value})}
-                                        className="h-10 bg-muted/30 border-none rounded-xl focus-visible:ring-primary/30"
-                                      />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">E-mail de Contato</Label>
-                                      <Input 
-                                        type="email"
-                                        value={editFormData.office_email || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, office_email: e.target.value})}
-                                        className="h-10 bg-muted/30 border-none rounded-xl focus-visible:ring-primary/30"
-                                      />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Telefone</Label>
-                                      <Input 
-                                        value={editFormData.phone || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
-                                        className="h-10 bg-muted/30 border-none rounded-xl focus-visible:ring-primary/30"
-                                      />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Endereço</Label>
-                                      <Input 
-                                        value={editFormData.address || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
-                                        className="h-10 bg-muted/30 border-none rounded-xl focus-visible:ring-primary/30"
-                                      />
-                                    </div>
+                              <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs font-bold uppercase text-muted-foreground">Nome</Label>
+                                    <Input 
+                                      value={editFormData.office_name || ''} 
+                                      onChange={(e) => setEditFormData({...editFormData, office_name: e.target.value})}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs font-bold uppercase text-muted-foreground">E-mail</Label>
+                                    <Input 
+                                      type="email"
+                                      value={editFormData.office_email || ''} 
+                                      onChange={(e) => setEditFormData({...editFormData, office_email: e.target.value})}
+                                      className="h-9"
+                                    />
                                   </div>
                                 </div>
-
-                                <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Gestão Financeira</h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-muted/10 rounded-2xl flex items-center justify-between border border-muted/10">
-                                      <div className="space-y-0.5">
-                                        <Label className="text-xs font-bold">Plano Vitalício</Label>
-                                        <p className="text-[9px] text-muted-foreground uppercase font-medium">Bypassa travas de pagamento</p>
-                                      </div>
-                                      <Checkbox 
-                                        checked={editFormData.is_lifetime || false}
-                                        onCheckedChange={(checked) => setEditFormData({...editFormData, is_lifetime: !!checked})}
-                                        className="h-5 w-5 rounded-md border-primary/50"
-                                      />
-                                    </div>
-                                    <div className="p-4 bg-muted/10 rounded-2xl space-y-2 border border-muted/10">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Desconto Manual (%)</Label>
-                                      <div className="flex items-center gap-2">
-                                        <Input 
-                                          type="number"
-                                          min="0"
-                                          max="100"
-                                          value={editFormData.manual_discount_percent || 0}
-                                          onChange={(e) => setEditFormData({...editFormData, manual_discount_percent: parseFloat(e.target.value) || 0})}
-                                          className="h-8 bg-transparent border-none p-0 text-sm font-black focus-visible:ring-0"
-                                        />
-                                        <Percent size={14} className="text-muted-foreground opacity-50" />
-                                      </div>
-                                    </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                    <Label className="text-xs font-bold uppercase text-muted-foreground">Telefone</Label>
+                                    <Input 
+                                      value={editFormData.phone || ''} 
+                                      onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
+                                      className="h-9"
+                                    />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs font-bold uppercase text-muted-foreground">Endereço</Label>
+                                    <Input 
+                                      value={editFormData.address || ''} 
+                                      onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
+                                      className="h-9"
+                                    />
                                   </div>
                                 </div>
                               </div>
 
-                              <DialogFooter className="p-6 pt-2 bg-muted/10">
-                                <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-2xl font-black bg-primary text-primary-foreground gap-2 shadow-lg shadow-primary/20">
-                                  {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={18} />}
-                                  {isSubmitting ? 'PERSISTINDO NO BANCO...' : 'SALVAR ALTERAÇÕES'}
+                              <DialogFooter>
+                                <Button type="submit" disabled={isSubmitting} className="w-full gap-2 font-bold">
+                                  {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={16} />}
+                                  {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
                                 </Button>
                               </DialogFooter>
                             </form>
@@ -374,8 +333,7 @@ export const OfficeControlPanel: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} 
-                          className="h-8 w-8 p-0 text-blue-500/80 hover:text-blue-500 hover:bg-blue-500/5 transition-colors"
+                          className="h-8 w-8 p-0 text-muted-foreground"
                         >
                           <CreditCard size={15} />
                         </Button>
@@ -384,7 +342,7 @@ export const OfficeControlPanel: React.FC = () => {
                           variant="ghost" 
                           size="sm"
                           onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
-                          className={`h-8 w-8 p-0 rounded-full transition-colors ${admin.active ? 'text-rose-500/80 hover:text-rose-500 hover:bg-rose-500/5' : 'text-emerald-500/80 hover:text-emerald-500 hover:bg-emerald-500/5'}`}
+                          className={`h-8 w-8 p-0 rounded-full ${admin.active ? 'text-rose-500' : 'text-emerald-500'}`}
                         >
                           {admin.active ? <UserX size={15} /> : <UserCheck size={15} />}
                         </Button>
@@ -400,3 +358,5 @@ export const OfficeControlPanel: React.FC = () => {
     </div>
   );
 };
+
+import { Shield } from "lucide-react";

@@ -57,13 +57,18 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
+      // BUSCA OTIMIZADA: Traz tudo em um único JOIN para máxima performance
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
           *,
           office_users (
             role,
-            user_id
+            user_id,
+            profiles (
+              full_name,
+              email
+            )
           ),
           subscriptions (
             status,
@@ -76,29 +81,14 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
       if (fetchError) throw fetchError;
 
-      const userIds = (data || [])
-        .flatMap((office: any) => office.office_users?.map((ou: any) => ou.user_id))
-        .filter(Boolean);
-
-      let profilesMap: Record<string, any> = {};
-      
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, email')
-          .in('user_id', userIds);
-          
-        profilesData?.forEach(p => {
-          profilesMap[p.user_id] = p;
-        });
-      }
-
       const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
-        const mainAdminUser = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
-        const profileData = mainAdminUser ? profilesMap[mainAdminUser.user_id] : null;
+        // Pega o admin principal diretamente dos dados aninhados
+        const adminUser = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
+        const profile = adminUser?.profiles;
         const sub = office.subscriptions?.[0];
         
-        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.is_lifetime === true || office.is_lifetime === 1;
+        // Regra de Vitalício: Data 2099 ou plano vitalício
+        const isLegacyLifetime = sub?.end_date?.includes('2099') || office.plan === 'lifetime' || office.is_lifetime === true;
         const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
@@ -126,10 +116,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         }
 
         return {
-          id: mainAdminUser?.user_id || office.id,
-          full_name: profileData?.full_name || 'Admin Principal',
-          email: profileData?.email || 'N/A',
-          role: mainAdminUser?.role || 'user',
+          id: adminUser?.user_id || office.id,
+          full_name: profile?.full_name || 'Admin Principal',
+          email: profile?.email || 'N/A',
+          role: adminUser?.role || 'user',
           office_id: office.id,
           office_name: office.name || 'Sem Nome',
           office_email: office.email || null,
@@ -149,7 +139,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
-      console.error('Erro de sincronização resiliênte:', err);
+      console.error('Erro ao carregar dados:', err);
       setError('Erro ao carregar dados administrativos.');
     } finally {
       setLoading(false);
@@ -174,8 +164,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       return true;
     } catch (err: any) {
       toast({ 
-        title: "Erro ao suspender",
-        description: err.message || "Erro de permissão no banco.",
+        title: "Erro de Permissão",
+        description: err.message,
         variant: "destructive"
       });
       return false;
@@ -184,39 +174,33 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
   const updateOfficeFull = async (officeId: string, updates: Partial<AdminOffice>) => {
     try {
-      console.log(`🔐 [SAVE ATTEMPT] Office: ${officeId}`, updates);
-      
       const dbUpdates: any = {};
       if (updates.office_name !== undefined) dbUpdates.name = updates.office_name;
       if (updates.office_email !== undefined) dbUpdates.email = updates.office_email;
       if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
       if (updates.address !== undefined) dbUpdates.address = updates.address;
-      if (updates.is_lifetime !== undefined) dbUpdates.is_lifetime = updates.is_lifetime;
-      if (updates.manual_discount_percent !== undefined) dbUpdates.manual_discount_percent = updates.manual_discount_percent;
+      
+      // IMPORTANTE: is_lifetime e manual_discount_percent foram removidos do update
+      // porque o banco de dados de produção não contém essas colunas (Erro PGRST204)
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('offices')
         .update(dbUpdates)
-        .eq('id', officeId)
-        .select();
+        .eq('id', officeId);
 
-      if (error) {
-        console.error('❌ [SUPABASE ERROR]:', error);
-        throw error;
-      };
+      if (error) throw error;
 
       toast({ 
         title: "Dados Atualizados",
-        description: "As informações foram salvas com sucesso."
+        description: "As informações básicas foram salvas corretamente."
       });
       
       await fetchAdmins();
       return true;
     } catch (err: any) {
-      console.error('❌ [CATCH ERROR]:', err);
       toast({ 
-        title: "Erro ao salvar",
-        description: `Motivo: ${err.message || 'Erro desconhecido'} (Código: ${err.code || 'N/A'})`,
+        title: "Falha ao Salvar",
+        description: `Erro: ${err.message}`,
         variant: "destructive"
       });
       return false;
@@ -224,7 +208,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   };
 
   const sendPaymentReminder = async (email: string, officeName: string) => {
-    toast({ title: "Cobrança Enviada" });
+    toast({ title: "Rembrete de Cobrança em Preparação" });
     return true;
   };
 
