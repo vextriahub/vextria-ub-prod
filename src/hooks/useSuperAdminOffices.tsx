@@ -10,13 +10,18 @@ export interface AdminOffice {
   role: string;
   office_id: string | null;
   office_name: string | null;
+  office_email: string | null; // E-mail institucional do escritório
+  address: string | null;
+  phone: string | null;
   created_at: string;
   payment_status: 'em_dia' | 'proximo_vencimento' | 'vencido' | 'pendente';
   plan_name: string;
   price: number;
   end_date: string | null;
   is_trial: boolean;
-  active: boolean; // Adicionado para controle de suspensão
+  active: boolean;
+  is_lifetime: boolean; // Flag de plano vitalício
+  manual_discount_percent: number; // Porcentagem de desconto manual
 }
 
 export interface UseSuperAdminOfficesResult {
@@ -50,13 +55,19 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
+      // Buscando escritórios com todas as colunas de perfil e faturamento
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
           id,
           name,
+          email,
+          address,
+          phone,
           plan,
           active,
+          is_lifetime,
+          manual_discount_percent,
           created_at,
           office_users (
             role,
@@ -103,6 +114,9 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         if (isTrial) {
           payment_status = 'em_dia';
           plan_display_name = 'Trial';
+        } else if (office.is_lifetime) {
+          payment_status = 'em_dia';
+          plan_display_name = 'Vitalício';
         } else if (sub) {
           if (sub.status === 'active') {
             payment_status = 'em_dia';
@@ -120,13 +134,18 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
           role: mainAdminUser?.role || 'user',
           office_id: office.id,
           office_name: office.name || 'Sem Nome',
+          office_email: office.email || null,
+          address: office.address || null,
+          phone: office.phone || null,
           created_at: office.created_at,
           payment_status,
           plan_name: plan_display_name,
           price: sub?.price || 0,
           end_date: sub?.end_date || null,
           is_trial: isTrial,
-          active: office.active ?? true
+          active: office.active ?? true,
+          is_lifetime: office.is_lifetime ?? false,
+          manual_discount_percent: office.manual_discount_percent || 0
         };
       });
 
@@ -167,7 +186,6 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   };
 
   const sendPaymentReminder = async (email: string, officeName: string) => {
-    // Simulação de envio de cobrança
     toast({
       title: "Cobrança Enviada",
       description: `Lembrete de pagamento extra enviado para ${email}.`,

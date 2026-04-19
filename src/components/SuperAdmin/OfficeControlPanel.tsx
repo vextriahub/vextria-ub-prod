@@ -27,9 +27,12 @@ import {
   Clock,
   RefreshCw,
   Users,
-  Mail,
+  Star,
+  MapPin,
+  Phone,
+  Tag,
   Calendar,
-  DollarSign
+  Percent
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -56,7 +59,16 @@ export const OfficeControlPanel: React.FC = () => {
   });
 
   // Função para obter badge de status
-  const getStatusBadge = (status: string, isTrial?: boolean) => {
+  const getStatusBadge = (status: string, isTrial?: boolean, isLifetime?: boolean) => {
+    if (isLifetime) {
+      return (
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+          <Star className="w-3 h-3 mr-1 fill-amber-500" />
+          Vitalício
+        </Badge>
+      );
+    }
+    
     if (isTrial) {
       return (
         <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
@@ -71,14 +83,14 @@ export const OfficeControlPanel: React.FC = () => {
         return (
           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
             <CheckCircle className="w-3 h-3 mr-1" />
-            Em dia
+            Ativo
           </Badge>
         );
       case 'proximo_vencimento':
         return (
           <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
             <Clock className="w-3 h-3 mr-1" />
-            Próximo do vencimento
+            Pendente
           </Badge>
         );
       case 'vencido':
@@ -118,75 +130,66 @@ export const OfficeControlPanel: React.FC = () => {
     <div className="space-y-6">
       {/* Cards de Estatísticas */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total de Escritórios</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Escritórios</p>
+              <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                <Users size={16} />
               </div>
             </div>
+            <div className="text-2xl font-bold mt-2">{stats.total}</div>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Clientes Ativos</p>
-                <p className="text-2xl font-bold text-green-600">{stats.emDia}</p>
+        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Clientes Ativos</p>
+              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                <CheckCircle size={16} />
               </div>
             </div>
+            <div className="text-2xl font-bold mt-2 text-green-600">{stats.emDia}</div>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-purple-600" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Em Trial</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.trial}</p>
+        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Em Trial</p>
+              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+                <Clock size={16} />
               </div>
             </div>
+            <div className="text-2xl font-bold mt-2 text-purple-600">{stats.trial}</div>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Vencidos</p>
-                <p className="text-2xl font-bold text-red-600">{stats.vencidos}</p>
+        <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Vencidos</p>
+              <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center text-red-600">
+                <AlertCircle size={16} />
               </div>
             </div>
+            <div className="text-2xl font-bold mt-2 text-red-600">{stats.vencidos}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Controles de Filtro */}
-      <Card>
+      <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Building2 className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                <Building2 className="h-5 w-5 text-primary" />
                 Controle de Escritórios
               </CardTitle>
-              <CardDescription>
-                Gerencie o status de pagamento e acesso dos escritórios em tempo real
-              </CardDescription>
+              <CardDescription>Gerenciamento completo de acessos e perfil institucional</CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={refresh}
-              disabled={loading}
-              className="flex items-center gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="gap-2">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>
@@ -194,12 +197,11 @@ export const OfficeControlPanel: React.FC = () => {
         </CardHeader>
         
         <CardContent className="space-y-4">
-          {/* Filtros */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome, email ou escritório..."
+                placeholder="Buscar por escritório ou administrador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-10"
@@ -207,170 +209,170 @@ export const OfficeControlPanel: React.FC = () => {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[200px] h-10">
-                <SelectValue placeholder="Filtrar por status" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="em_dia">Clientes Ativos</SelectItem>
-                <SelectItem value="trial">Em Trial</SelectItem>
+                <SelectItem value="em_dia">Ativos</SelectItem>
+                <SelectItem value="trial">Trials</SelectItem>
                 <SelectItem value="vencido">Vencidos</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Tabela */}
-          {loading && admins.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">Carregando dados reais...</span>
-            </div>
-          ) : isEmpty ? (
-            <div className="text-center py-12 border-2 border-dashed rounded-lg">
-              <Building2 className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2 text-muted-foreground">Nenhum escritório cadastrado</h3>
-            </div>
-          ) : (
-            <div className="border rounded-xl bg-card/60 backdrop-blur-sm overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="font-semibold">Administrador</TableHead>
-                    <TableHead className="font-semibold">Escritório</TableHead>
-                    <TableHead className="font-semibold">Status Pagamento</TableHead>
-                    <TableHead className="font-semibold">Data Vencimento</TableHead>
-                    <TableHead className="font-semibold">Cadastrado em</TableHead>
-                    <TableHead className="text-right font-semibold">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAdmins.map((admin) => (
-                    <TableRow key={admin.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-foreground">{admin.full_name || 'Admin Principal'}</span>
-                          <span className="text-xs text-muted-foreground">{admin.email}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium text-foreground">{admin.office_name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(admin.payment_status, admin.is_trial)}
-                        {!admin.active && (
-                          <Badge variant="destructive" className="ml-2 text-[10px] py-0">SUSPENSO</Badge>
+          <div className="border rounded-xl overflow-hidden scrollbar-hide">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow>
+                  <TableHead className="font-bold">Administrador</TableHead>
+                  <TableHead className="font-bold">Escritório</TableHead>
+                  <TableHead className="font-bold">Status</TableHead>
+                  <TableHead className="font-bold">Vencimento</TableHead>
+                  <TableHead className="text-right font-bold">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading && admins.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="text-center py-10 opacity-60">Sincronizando dados...</TableCell></TableRow>
+                ) : filteredAdmins.map((admin) => (
+                  <TableRow key={admin.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-sm">{admin.full_name}</span>
+                        <span className="text-[11px] text-muted-foreground">{admin.email}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">{admin.office_name}</span>
+                        {admin.manual_discount_percent > 0 && (
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <Tag size={10} className="text-blue-500" />
+                            <span className="text-[10px] font-bold text-blue-500">{admin.manual_discount_percent}% de desconto</span>
+                          </div>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm font-medium">
-                          {admin.end_date ? format(new Date(admin.end_date), "dd/MM/yyyy", { locale: ptBR }) : 'Permanente'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(admin.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setSelectedAdmin(admin)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            {selectedAdmin && (
-                              <DialogContent className="sm:max-w-[425px]">
-                                <DialogHeader>
-                                  <DialogTitle className="flex items-center gap-2">
-                                    <Building2 className="h-5 w-5 text-primary" />
-                                    Detalhes do Escritório
-                                  </DialogTitle>
-                                  <DialogDescription>
-                                    Visão completa dos dados de {selectedAdmin.office_name}
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                  <div className="flex items-center gap-4 p-3 bg-muted/40 rounded-lg">
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                      <Users className="h-5 w-5 text-primary" />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(admin.payment_status, admin.is_trial, admin.is_lifetime)}
+                      {!admin.active && <Badge variant="destructive" className="ml-2 text-[9px] py-0">SUSPENSO</Badge>}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5 font-medium text-sm">
+                        {admin.is_lifetime ? (
+                          <span className="text-amber-600 flex items-center gap-1">
+                            <Star size={12} className="fill-amber-600" /> Vitalício
+                          </span>
+                        ) : admin.end_date ? (
+                          <span>{format(new Date(admin.end_date), "dd/MM/yyyy")}</span>
+                        ) : admin.is_trial ? (
+                            <span className="text-purple-600 italic">Trial Ativo</span>
+                        ) : (
+                          <span className="text-muted-foreground italic">Pendente</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="ghost" size="sm" onClick={() => setSelectedAdmin(admin)} className="h-8 w-8 p-0">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          {selectedAdmin && (
+                            <DialogContent className="sm:max-w-[500px]">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-xl">
+                                  <Building2 className="h-6 w-6 text-primary" />
+                                  Perfil do Escritório
+                                </DialogTitle>
+                                <DialogDescription>Dados institucionais e financeiros</DialogDescription>
+                              </DialogHeader>
+                              
+                              <div className="space-y-5 mt-4">
+                                <div className="p-4 bg-muted/40 rounded-xl space-y-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                      <Users size={20} />
                                     </div>
                                     <div>
-                                      <p className="text-sm font-semibold">{selectedAdmin.full_name}</p>
+                                      <p className="text-sm font-bold">{selectedAdmin.full_name}</p>
                                       <p className="text-xs text-muted-foreground">{selectedAdmin.email}</p>
                                     </div>
                                   </div>
                                   
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div className="p-3 border rounded-lg bg-background">
-                                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Plano Atual</p>
-                                      <p className="text-sm font-medium mt-1">{selectedAdmin.plan_name}</p>
+                                  <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Mail size={14} className="text-muted-foreground" />
+                                      <span>{selectedAdmin.office_email || 'E-mail não cadastrado'}</span>
                                     </div>
-                                    <div className="p-3 border rounded-lg bg-background">
-                                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Valor Mensal</p>
-                                      <p className="text-sm font-medium mt-1">
-                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedAdmin.price)}
-                                      </p>
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Phone size={14} className="text-muted-foreground" />
+                                      <span>{selectedAdmin.phone || 'Telefone não cadastrado'}</span>
                                     </div>
-                                    <div className="p-3 border rounded-lg bg-background">
-                                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Vencimento</p>
-                                      <p className="text-sm font-medium mt-1">
-                                        {selectedAdmin.end_date ? format(new Date(selectedAdmin.end_date), "dd/MM/yyyy") : 'N/A'}
-                                      </p>
-                                    </div>
-                                    <div className="p-3 border rounded-lg bg-background">
-                                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Status</p>
-                                      <div className="mt-1">{getStatusBadge(selectedAdmin.payment_status, selectedAdmin.is_trial)}</div>
+                                    <div className="flex items-center gap-2 text-sm col-span-2">
+                                      <MapPin size={14} className="text-muted-foreground shrink-0" />
+                                      <span className="line-clamp-1">{selectedAdmin.address || 'Endereço não informado'}</span>
                                     </div>
                                   </div>
+                                </div>
 
-                                  {!selectedAdmin.active && (
-                                    <Alert variant="destructive" className="py-2">
-                                      <AlertCircle className="h-4 w-4" />
-                                      <AlertDescription className="text-xs">
-                                        Acesso suspenso pelo administrador.
-                                      </AlertDescription>
-                                    </Alert>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="p-3 border rounded-xl bg-card space-y-1">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                                      <DollarSign size={10} /> Plano e Valor
+                                    </p>
+                                    <p className="text-sm font-bold">{selectedAdmin.plan_name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(selectedAdmin.price)}
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="p-3 border rounded-xl bg-card space-y-1">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                                      <Calendar size={10} /> Ciclo de Vida
+                                    </p>
+                                    <p className="text-sm font-bold">
+                                      {selectedAdmin.is_lifetime ? 'Vitalício' : format(new Date(selectedAdmin.created_at), 'dd/MM/yyyy')}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground italic">Data de adesão</p>
+                                  </div>
+
+                                  {selectedAdmin.manual_discount_percent > 0 && (
+                                    <div className="p-3 border-blue-200 bg-blue-50/50 rounded-xl col-span-2 flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <Percent size={14} className="text-blue-600" />
+                                        <span className="text-xs font-bold text-blue-800 uppercase tracking-tighter">Desconto Especial Aplicado</span>
+                                      </div>
+                                      <Badge className="bg-blue-600">{selectedAdmin.manual_discount_percent}%</Badge>
+                                    </div>
                                   )}
                                 </div>
-                              </DialogContent>
-                            )}
-                          </Dialog>
+                              </div>
+                            </DialogContent>
+                          )}
+                        </Dialog>
 
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            title="Enviar Cobrança"
-                            onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')}
-                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
-                          >
-                            <CreditCard className="h-4 w-4" />
-                          </Button>
+                        <Button variant="ghost" size="sm" onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700">
+                          <CreditCard className="h-4 w-4" />
+                        </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            title={admin.active ? "Suspender Acesso" : "Retomar Acesso"}
-                            onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
-                            className={`h-8 w-8 p-0 ${admin.active ? 'text-red-500 hover:text-red-600' : 'text-green-500 hover:text-green-600'}`}
-                          >
-                            {admin.active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+                        <Button
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
+                          className={`h-8 w-8 p-0 ${admin.active ? 'text-red-500 hover:text-red-600' : 'text-green-500 hover:text-green-600'}`}
+                        >
+                          {admin.active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
