@@ -80,16 +80,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!mountedRef.current) return null;
     
     try {
-      const { data, error } = await Promise.race([
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .single(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
-        )
-      ]) as any;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
@@ -329,12 +324,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         // Initializing auth
         
-        const { data: { session: currentSession } } = await Promise.race([
-          supabase.auth.getSession(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Session fetch timeout')), 10000)
-          )
-        ]) as any;
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
         
         if (!mountedRef.current) return;
         
@@ -344,7 +336,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('Session found:', currentSession.user.email);
           await processUserData(currentSession.user);
         } else {
-          console.log('No session found');
+          console.log('No session found during init');
         }
         
         if (mountedRef.current) {
