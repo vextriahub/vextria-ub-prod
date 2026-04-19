@@ -415,6 +415,9 @@ export const OfficeManagement: React.FC = () => {
                           {office.name}
                         </div>
                       </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {office.email || '-'}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={getPlanBadgeVariant(office.plan)}>
                           {getPlanDisplayName(office.plan)}
