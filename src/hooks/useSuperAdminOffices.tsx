@@ -32,7 +32,9 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
   const { isSuperAdmin, user } = useAuth();
 
   const fetchAdmins = useCallback(async () => {
-    const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
+    // PADRONIZAÇÃO DE E-MAIL (Case-Insensitive)
+    const normalizedEmail = user?.email?.toLowerCase().trim();
+    const isMainSuperAdmin = normalizedEmail === 'contato@vextriahub.com.br';
     
     if (!isSuperAdmin && !isMainSuperAdmin) {
       setError('Acesso negado.');
@@ -41,11 +43,10 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     }
 
     try {
-      console.log('🔍 fetchAdmins: Carregando dados da plataforma...');
+      console.log('🔍 fetchAdmins: Sincronizando dados via Offices.plan...');
       setLoading(true);
       setError(null);
 
-      // Buscando escritórios com a coluna 'plan' incluída
       const { data, error: fetchError } = await supabase
         .from('offices')
         .select(`
@@ -71,7 +72,6 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         throw fetchError;
       }
 
-      // Buscamos os perfis separadamente para estabilidade do schema
       const userIds = (data || [])
         .flatMap((office: any) => office.office_users?.map((ou: any) => ou.user_id))
         .filter(Boolean);
@@ -94,7 +94,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         const profileData = mainAdminUser ? profilesMap[mainAdminUser.user_id] : null;
         const sub = office.subscriptions?.[0];
         
-        // Regra de Trial de Duas Fontes: Tabela 'offices' OU Tabela 'subscriptions'
+        // REGRAS DE TRIAL ROBUSTAS:
+        // Considera Trial se office.plan === 'trial' OU se status da subscription for trial
         const isTrial = office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
@@ -115,11 +116,11 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
         return {
           id: mainAdminUser?.user_id || office.id,
-          full_name: profileData?.full_name || 'Admin',
+          full_name: profileData?.full_name || 'Admin Principal',
           email: profileData?.email || 'N/A',
           role: mainAdminUser?.role || 'user',
           office_id: office.id,
-          office_name: office.name || 'Aguardando Cadastro...',
+          office_name: office.name || 'Escritório em Cadastro',
           created_at: office.created_at,
           payment_status,
           plan_name: plan_display_name,
@@ -131,8 +132,8 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
       setAdmins(transformedAdmins);
     } catch (err: any) {
-      console.error('Erro inesperado:', err);
-      setError('Erro ao carregar dados: ' + (err.message || 'Erro de conexão'));
+      console.error('Erro de sincronização:', err);
+      setError('Erro ao carregar dados: ' + (err.message || 'Verifique sua conexão'));
     } finally {
       setLoading(false);
     }
@@ -140,7 +141,7 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
   useEffect(() => {
     fetchAdmins();
-    const ch = supabase.channel('adm-sync').on('postgres_changes', {event:'*', schema:'public', table:'offices'}, () => fetchAdmins()).subscribe();
+    const ch = supabase.channel('adm-realtime').on('postgres_changes', {event:'*', schema:'public', table:'offices'}, () => fetchAdmins()).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [fetchAdmins]);
 

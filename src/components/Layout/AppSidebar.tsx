@@ -123,7 +123,7 @@ export function AppSidebar() {
   });
 
   // Itens da Plataforma exclusivos para Super Admin principal
-  const isMainSuperAdmin = user?.email === 'contato@vextriahub.com.br';
+  const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
   
   const platformItems = [
     { title: "Dashboard", url: "/admin?tab=dashboard", icon: BarChart3 },

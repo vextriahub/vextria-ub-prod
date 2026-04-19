@@ -53,7 +53,7 @@ const Admin = () => {
   const { canViewAdminFeatures, isSuperAdmin, isLoading: authLoading } = useUserRole();
   const { user } = useAuth();
   
-  const isMainSuperAdmin = user?.email === 'contato@vextriahub.com.br';
+  const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
 
   // Sync activeTab when URL changes (from sidebar clicks)
   useEffect(() => {

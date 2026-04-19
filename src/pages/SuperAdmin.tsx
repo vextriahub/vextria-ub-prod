@@ -6,7 +6,7 @@ import { RefreshCw } from 'lucide-react';
 const SuperAdmin: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isMainSuperAdmin = user?.email === 'contato@vextriahub.com.br';
+  const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
 
   useEffect(() => {
     if (isMainSuperAdmin) {
