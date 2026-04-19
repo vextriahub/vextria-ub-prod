@@ -41,48 +41,47 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
-      // Usando relacionamentos diretos do Supabase pela tabela pivô office_users
+      // Usando 'offices' como raiz para garantir que nenhum escritório suma (mesmo sem admin ou em trial)
       const { data, error: fetchError } = await supabase
-        .from('office_users')
+        .from('offices')
         .select(`
           id,
-          role,
+          name,
           created_at,
-          profiles:user_id (
-            id,
-            full_name,
-            email,
-            created_at
-          ),
-          offices:office_id (
-            id,
-            name,
-            subscriptions (
-              status,
-              plan,
-              price,
-              end_date
+          office_users (
+            role,
+            profiles:user_id (
+              id,
+              full_name,
+              email
             )
+          ),
+          subscriptions (
+            status,
+            plan,
+            price,
+            end_date
           )
         `)
-        .eq('role', 'admin') // O admin originário do Escritório
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
 
       // Montando a resposta reconstruindo com a raiz segura
-      const transformedAdmins: AdminOffice[] = (data || []).map((tenant: any) => {
-        const profileData = tenant.profiles;
-        const officeData = tenant.offices;
+      const transformedAdmins: AdminOffice[] = (data || []).map((office: any) => {
+        // Encontrar o administrador principal do escritório
+        const mainAdmin = office.office_users?.find((ou: any) => ou.role === 'admin') || office.office_users?.[0];
+        const profileData = mainAdmin?.profiles;
         
         let payment_status: AdminOffice['payment_status'] = 'pendente';
         let plan_name = 'Free/Nenhum';
 
-        if (officeData && officeData.subscriptions && officeData.subscriptions.length > 0) {
-          const sub = officeData.subscriptions[0];
+        if (office.subscriptions && office.subscriptions.length > 0) {
+          const sub = office.subscriptions[0];
           plan_name = sub.plan || 'Free/Nenhum';
 
-          if (sub.status === 'active' || sub.status === 'trialing') {
+          // Correção: incluir 'trial' nos status ativos
+          if (sub.status === 'active' || sub.status === 'trial' || sub.status === 'trialing') {
             payment_status = 'em_dia';
           } else if (sub.status === 'past_due' || sub.status === 'unpaid') {
             payment_status = 'proximo_vencimento';
@@ -92,17 +91,17 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         }
 
         return {
-          id: profileData?.id || tenant.id,
-          full_name: profileData?.full_name,
-          email: profileData?.email,
-          role: profileData?.role || 'user',
-          office_id: officeData?.id,
-          office_name: officeData?.name || 'Aguardando Cadastro...',
-          created_at: profileData?.created_at || tenant.created_at,
+          id: profileData?.id || office.id,
+          full_name: profileData?.full_name || 'Sem Admin',
+          email: profileData?.email || 'N/A',
+          role: mainAdmin?.role || 'user',
+          office_id: office.id,
+          office_name: office.name || 'Aguardando Cadastro...',
+          created_at: office.created_at,
           payment_status,
           plan_name,
-          price: officeData?.subscriptions?.[0]?.price || 0,
-          end_date: officeData?.subscriptions?.[0]?.end_date || null
+          price: office.subscriptions?.[0]?.price || 0,
+          end_date: office.subscriptions?.[0]?.end_date || null
         };
       });
 
