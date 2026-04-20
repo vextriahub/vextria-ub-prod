@@ -30,6 +30,29 @@ const UF_TO_TRIBUNAL: Record<string, string> = {
   "SP": "tjsp", "TO": "tjtq"
 };
 
+const mapProcess = (hit: any, tribunalSigla?: string) => {
+  const source = hit._source;
+  const autores = source.partes?.filter((p: any) => p.tipo === 'Ativa' || p.tipo === 'Requerente')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
+  const reus = source.partes?.filter((p: any) => p.tipo === 'Passiva' || p.tipo === 'Requerido')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
+  const lastMovement = source.movimentacoes?.[0] || null;
+
+  return {
+    id: hit._id,
+    numeroProcesso: source.numeroProcesso,
+    titulo: `${autores} x ${reus}`,
+    partes: `${autores} x ${reus}`,
+    tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
+    ultimoAndamento: lastMovement ? {
+      descricao: lastMovement.descricao,
+      data: lastMovement.dataHora
+    } : null,
+    faseProcessual: source.classe?.nome || 'Não identificada',
+    valorCausa: source.valorCausa,
+    vara: source.orgaoJulgador?.nome || '',
+    comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '', // Poderia ser mapeado melhor se houvesse tabela de IBGE
+  };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -95,26 +118,7 @@ serve(async (req) => {
       const rawData = await response.json();
       console.log(`[FETCH-PROCESSO-OAB] Resultados encontrados para OAB ${oab}: ${rawData.hits?.total?.value || 0}`);
       
-      const processes = (rawData.hits?.hits || []).map((hit: any) => {
-          const source = hit._source;
-          const autores = source.partes?.filter((p: any) => p.tipo === 'Ativa' || p.tipo === 'Requerente')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
-          const reus = source.partes?.filter((p: any) => p.tipo === 'Passiva' || p.tipo === 'Requerido')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
-          const lastMovement = source.movimentacoes?.[0] || null;
-
-          return {
-              id: hit._id,
-              numeroProcesso: source.numeroProcesso,
-              titulo: `${autores} x ${reus}`,
-              partes: `${autores} x ${reus}`,
-              tribunal: source.tribunal || tribunalSigla.toUpperCase(),
-              ultimoAndamento: lastMovement ? {
-                  descricao: lastMovement.descricao,
-                  data: lastMovement.dataHora
-              } : null,
-              faseProcessual: source.classe?.nome || 'Não identificada',
-              valorCausa: source.valorCausa
-          };
-      });
+      const processes = (rawData.hits?.hits || []).map((hit: any) => mapProcess(hit, tribunalSigla));
 
       return new Response(JSON.stringify(processes), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -156,11 +160,31 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      return new Response(JSON.stringify(data), {
+      const hits = data.hits?.hits || [];
+      
+      if (hits.length === 0) {
+        return new Response(JSON.stringify({ error: "Processo não encontrado no DataJud." }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404,
+        });
+      }
+
+      // Retorna apenas o primeiro resultado mapeado
+      return new Response(JSON.stringify(mapProcess(hits[0], tribunalSigla)), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
+
+    throw new Error("Parâmetros inválidos.");
+  } catch (error) {
+    console.error(`[FETCH-PROCESSO-CRITICAL-ERROR] ${error.message}`);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
+});
 
     throw new Error("Parâmetros inválidos.");
   } catch (error) {
