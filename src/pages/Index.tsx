@@ -7,10 +7,11 @@ import { HearingsCard } from "@/components/Dashboard/HearingsCard";
 import { ScoreCard } from "@/components/Gamification/ScoreCard";
 import { CalendarWidget } from "@/components/Dashboard/CalendarWidget";
 import { DashboardHero } from "@/components/Dashboard/DashboardHero";
+import { QuickStatsBar } from "@/components/Dashboard/QuickStatsBar";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -71,62 +72,71 @@ const Index = () => {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-10 space-y-10 md:space-y-14 overflow-x-hidden animate-in fade-in duration-1000">
-      
-      {/* 1. Hero Section */}
+    <div className="flex-1 p-4 md:p-8 space-y-6 md:space-y-8 overflow-x-hidden animate-in fade-in duration-700">
+
+      {/* 1. Hero compacto */}
       <DashboardHero />
 
-      {/* 2. Trial Alert (If applicable) */}
+      {/* 2. Trial Alert */}
       {trialInfo?.isTrial && trialInfo.daysLeft > 0 && (
-        <Alert className="bg-primary/5 border-primary/20 text-foreground py-6 rounded-[2rem] shadow-lg relative overflow-hidden group">
+        <Alert className="bg-primary/5 border-primary/20 text-foreground py-4 rounded-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
-          <Clock className="h-5 w-5 text-primary" />
-          <AlertTitle className="text-lg font-bold">Período de Teste Ativo</AlertTitle>
-          <AlertDescription className="text-muted-foreground mt-1 text-base">
-            Você tem <span className="font-bold text-primary">{trialInfo.daysLeft} dia{trialInfo.daysLeft > 1 ? 's' : ''}</span> restante{trialInfo.daysLeft > 1 ? 's' : ''} no seu período premium. 
+          <Clock className="h-4 w-4 text-primary" />
+          <AlertTitle className="font-bold">Período de Teste Ativo</AlertTitle>
+          <AlertDescription className="text-muted-foreground text-sm">
+            Você tem <span className="font-bold text-primary">{trialInfo.daysLeft} dia{trialInfo.daysLeft > 1 ? 's' : ''}</span> restante{trialInfo.daysLeft > 1 ? 's' : ''} no seu período premium.
           </AlertDescription>
         </Alert>
       )}
 
-      {/* 3. Strategy KPIs Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight">Panorama Estratégico</h2>
-        </div>
+      {/* 3. Barra de controle rápido (estilo eLaw mas premium) */}
+      <QuickStatsBar />
+
+      {/* 4. KPIs financeiros e estratégicos */}
+      <div className="space-y-3">
+        <h2 className="text-base font-black tracking-tight text-muted-foreground uppercase text-[11px] tracking-widest">
+          Panorama Financeiro
+        </h2>
         <StatsCards />
       </div>
 
-      {/* 4. Main Operative Grid (Bento Style) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
-        
-        {/* Left Column: Feed & Operations (8 cols) */}
-        <div className="lg:col-span-8 space-y-10">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
-            <div className="h-full hover-lift">
+      {/* 5. Grid Bento Principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Coluna esquerda (8 cols) */}
+        <div className="lg:col-span-8 space-y-6">
+
+          {/* Audiências + Prazos lado a lado */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="hover-lift">
               <HearingsCard />
             </div>
-            <div className="h-full hover-lift">
+            <div className="hover-lift">
               <DeadlinesCard />
             </div>
           </div>
 
+          {/* Atividades Recentes */}
           <div className="hover-lift">
             <RecentActivity />
           </div>
-          
+
+          {/* Tarefas Prioritárias */}
           <div className="hover-lift">
             <PriorityTasks />
           </div>
         </div>
 
-        {/* Right Column: Management & Stats (4 cols) */}
-        <div className="lg:col-span-4 space-y-10">
-          <div className="sticky top-24 space-y-10">
+        {/* Coluna direita (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="sticky top-24 space-y-6">
+
+            {/* Calendário */}
             <div className="hover-lift glass-morphism rounded-[2rem] overflow-hidden shadow-premium">
               <CalendarWidget />
             </div>
-            
+
+            {/* Score de gamificação */}
             <div className="hover-lift">
               <ScoreCard
                 userName="Membro"
@@ -139,21 +149,27 @@ const Index = () => {
               />
             </div>
 
-            {/* AI Assistant Insight Card */}
-            <Card className="bg-gradient-to-br from-primary/20 to-secondary/10 border-primary/20 rounded-[2rem] p-8 shadow-xl relative overflow-hidden group">
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-              <div className="relative z-10 space-y-4">
-                <div className="p-3 bg-primary text-white rounded-2xl w-fit shadow-lg px-4 font-bold text-xs">VEXTRIA AI</div>
-                <h3 className="text-xl font-black leading-tight">Insight de Hoje</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+            {/* AI Insight Card */}
+            <Card className="bg-gradient-to-br from-primary/20 to-secondary/10 border-primary/20 rounded-[2rem] p-6 shadow-xl relative overflow-hidden group hover-lift">
+              <div className="absolute -top-8 -right-8 w-28 h-28 bg-primary/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
+              <div className="relative z-10 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-primary text-white rounded-xl w-fit shadow-lg">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary">Vextria AI</span>
+                </div>
+                <h3 className="text-lg font-black leading-tight">Insight de Hoje</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   "Detectamos um padrão de produtividade alto nas manhãs de terça. Que tal agendar seus peticionamentos mais complexos para esse período?"
                 </p>
-                <Button variant="link" className="p-0 text-primary font-bold h-auto hover:no-underline flex items-center gap-2 group/btn">
-                  Ver Análise Completa 
+                <Button variant="link" className="p-0 text-primary font-bold h-auto hover:no-underline flex items-center gap-1.5 text-sm group/btn">
+                  Ver Análise Completa
                   <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
                 </Button>
               </div>
             </Card>
+
           </div>
         </div>
       </div>

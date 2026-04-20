@@ -1,66 +1,60 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Plus, Users, FileText, Calendar, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Sparkles } from "lucide-react";
+
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return "Bom dia";
+  if (h < 18) return "Boa tarde";
+  return "Boa noite";
+};
+
+const getTodayStr = () =>
+  new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 
 export function DashboardHero() {
   const { profile } = useAuth();
-  const navigate = useNavigate();
-  
-  const firstName = profile?.full_name ? profile.full_name.split(' ')[0] : 'Doutor(a)';
+  const firstName = profile?.full_name ? profile.full_name.split(" ")[0] : "Doutor(a)";
+  const greeting = getGreeting();
+  const today = getTodayStr();
 
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-card/80 via-card/40 to-background border border-white/10 p-8 md:p-12 shadow-premium animate-in fade-in slide-in-from-bottom-4 duration-1000">
-      {/* Background patterns */}
-      <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px] animate-pulse" />
-      <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-60 h-60 bg-secondary/10 rounded-full blur-[80px]" />
-      
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div className="space-y-4 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest animate-bounce">
+    <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-card/80 via-card/40 to-background border border-white/10 px-8 py-7 shadow-premium animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Background orbs */}
+      <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary/10 rounded-full blur-[80px] animate-pulse pointer-events-none" />
+      <div className="absolute bottom-0 left-0 -mb-12 -ml-12 w-48 h-48 bg-secondary/10 rounded-full blur-[60px] pointer-events-none" />
+
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Left: greeting */}
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest">
             <Sparkles className="h-3 w-3" />
-            Vextria AI Hub Ativo
+            Vextria AI Hub
           </div>
-          
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.1]">
-            Bem-vindo de volta,<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-secondary drop-shadow-sm">
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
+            {greeting},{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-secondary">
               {firstName}!
             </span>
           </h1>
-          
-          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-lg leading-relaxed">
-            Seu escritório está operando em alta performance hoje. Organizamos suas prioridades para que você foque no que importa: <span className="text-foreground font-semibold">a vitória dos seus clientes.</span>
-          </p>
+          <p className="text-sm text-muted-foreground font-medium capitalize">{today}</p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <Button 
-            onClick={() => navigate('/processos')}
-            className="rounded-2xl h-14 px-6 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold"
-          >
-            <Plus className="h-5 w-5" />
-            Novo Processo
-          </Button>
-          
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/clientes')}
-            className="rounded-2xl h-14 px-6 glass-morphism border-white/10 hover:bg-white/5 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold"
-          >
-            <Users className="h-5 w-5" />
-            Cadastrar Cliente
-          </Button>
-          
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/agenda')}
-            className="rounded-2xl h-14 px-6 glass-morphism border-white/10 hover:bg-white/5 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 font-bold"
-          >
-            <Calendar className="h-5 w-5" />
-            Agenda
-          </Button>
+        {/* Right: motivational badge */}
+        <div className="hidden md:flex flex-col items-end gap-1 text-right">
+          <div className="text-xs text-muted-foreground font-medium">Seu escritório está</div>
+          <div className="text-lg font-black text-emerald-500 flex items-center gap-1.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            Operando normalmente
+          </div>
+          <div className="text-[10px] text-muted-foreground/60">Todos os sistemas ativos</div>
         </div>
       </div>
     </div>
