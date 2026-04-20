@@ -15,7 +15,8 @@ import { NovaTarefaDialog } from "@/components/Tarefas/NovaTarefaDialog";
 import { DeleteConfirmDialog } from "@/components/ui/DeleteConfirmDialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Calendar, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Target, Plus } from "lucide-react";
 
 // Dados de exemplo
 const initialTasks: Tarefa[] = [
