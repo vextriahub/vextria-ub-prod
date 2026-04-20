@@ -149,6 +149,8 @@ const Processos = React.memo(() => {
     ].filter(Boolean).length + (cnjSearch !== '' ? 1 : 0);
   }, [filters, cnjSearch]);
 
+  const [isNovoProcessoOpen, setIsNovoProcessoOpen] = useState(false);
+
   // Handlers - todos usando useCallback para evitar re-criações
   const handleAddProcesso = useCallback(async (novoProcesso: any) => {
     const success = await create({
@@ -371,7 +373,7 @@ const Processos = React.memo(() => {
           <div className="flex items-center gap-3 h-12">
             <ProcessoViewSwitcher view={view} onViewChange={setView} />
             <div className="h-6 w-px bg-white/10 mx-1 hidden md:block" />
-            <NovoProcessoDialog onAddProcesso={handleAddProcesso} />
+            <NovoProcessoDialog onAddProcesso={handleAddProcesso} open={isNovoProcessoOpen} onOpenChange={setIsNovoProcessoOpen} />
           </div>
         </div>
       </div>
@@ -383,7 +385,7 @@ const Processos = React.memo(() => {
           title="Nenhum processo cadastrado"
           description="Seu escritório ainda não possui processos no banco de dados. Comece importando processos via OAB ou cadastrando-os manualmente."
           actionLabel="Criar Primeiro Processo"
-          onAction={() => {}} // O diálogo já lida com o trigger, mas manteremos o componente
+          onAction={() => setIsNovoProcessoOpen(true)}
         />
       ) : (
         <>

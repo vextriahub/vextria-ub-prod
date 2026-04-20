@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -35,11 +36,15 @@ import { JudicialSyncDialog } from './JudicialSyncDialog';
 interface NovoProcessoDialogProps {
   onAddProcesso: (processo: any) => void;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
   onAddProcesso,
-  trigger
+  trigger,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -47,7 +52,9 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
   const { users: teamMembers } = useOfficeUsers();
   const isLimitReached = limits.processes.isReached;
   
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = setControlledOpen ?? setInternalOpen;
   const [step, setStep] = useState<'choice' | 'oab' | 'cnj' | 'form'>('choice');
   const [isLoading, setIsLoading] = useState(false);
   const [cnjInput, setCnjInput] = useState('');
