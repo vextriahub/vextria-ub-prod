@@ -108,22 +108,29 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       const items = data.items || [];
       
       const toProperCase = (str: string) => {
-        return str.toLowerCase().replace(/(^|\s)\S/g, (L) => L.toUpperCase());
+        if (!str) return '';
+        return str.toLowerCase().trim().replace(/(^|\s)\S/g, (L) => L.toUpperCase());
       };
 
       const mappedResults = items.map((item: any) => {
-        const dests = item.destinatarios || [];
-        const ativos = dests.filter((d: any) => d.polo === 'AT').map((d: any) => toProperCase(d.nome));
-        const passivos = dests.filter((d: any) => d.polo === 'PA').map((d: any) => toProperCase(d.nome));
-        
         let constructedTitle = '';
-        if (ativos.length > 0 && passivos.length > 0) {
-          constructedTitle = `${ativos.join(', ')} vs ${passivos.join(', ')}`;
-        } else if (ativos.length > 0) {
-          constructedTitle = ativos.join(', ');
-        } else if (passivos.length > 0) {
-          constructedTitle = passivos.join(', ');
+        
+        // Tentativa 1: Extrair do Texto (Regex)
+        const text = item.texto || '';
+        const autorMatch = text.match(/AUTOR(?:A)?:\s*([^<]+)/i);
+        const reuMatch = text.match(/R(?:É|E)U:\s*([^<]+)/i);
+
+        if (autorMatch && reuMatch) {
+          constructedTitle = `${toProperCase(autorMatch[1])} vs ${toProperCase(reuMatch[1])}`;
+        } else if (autorMatch) {
+          constructedTitle = toProperCase(autorMatch[1]);
+        } else if (reuMatch) {
+          constructedTitle = toProperCase(reuMatch[1]);
+        } else if (item.destinatarios?.[0]?.nome) {
+          // Tentativa 2: Fallback para o destinatário da OAB
+          constructedTitle = toProperCase(item.destinatarios[0].nome);
         } else {
+          // Tentativa 3: Tipo da comunicação
           constructedTitle = toProperCase(item.tipoComunicacao || 'Processo sem título');
         }
 
@@ -268,7 +275,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           )}
         </div>
         
-        <ScrollArea className="flex-1 min-h-[200px] w-full">
+        <ScrollArea className="h-[400px] w-full">
           {results.length > 0 ? (
             <Table>
               <TableHeader className="bg-white/5 sticky top-0 z-10">
