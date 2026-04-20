@@ -50,7 +50,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         .from('processos')
         .select(`
           *,
-          cliente:clientes(nome),
+          cliente:clientes!cliente_id(nome),
           responsavel:profiles(full_name)
         `)
         .eq('office_id', user.office_id)
