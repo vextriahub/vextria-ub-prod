@@ -97,45 +97,55 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     setSelectedIds(new Set());
 
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-processo', {
-        body: { oab, uf }
-      });
-
-      if (error) {
-        console.error("DEBUG - Erro na Function:", error);
-        
-        let msg = "Não foi possível conectar ao serviço de busca.";
-        
-        // Se for erro de rede/CORS
-        if (error.message?.includes("Failed to fetch") || !error.status) {
-          msg = "Erro de conexão ou bloqueio de segurança (CORS). Verifique sua rede ou tente novamente.";
-        } else if (error.status === 403) {
-          msg = "Acesso negado pelo tribunal (TJDFT). O tribunal restringiu buscas automáticas por esta OAB.";
-        } else if (error.message) {
-          msg = error.message;
-        }
-        
-        throw new Error(msg);
+      console.log(`🔍 Iniciando busca direta no PJe Communica: OAB ${oab}-${uf}`);
+      const response = await fetch(`https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${oab}&ufOab=${uf}`);
+      
+      if (!response.ok) {
+        throw new Error(`Erro na API do PJe (${response.status})`);
       }
 
-      if (!data || data.length === 0) {
+      const data = await response.json();
+      const items = data.items || [];
+      
+      const mappedResults = items.map((item: any) => ({
+        id: item.id || item.numeroProcesso,
+        numeroProcesso: item.numeroProcesso,
+        titulo: item.tituloProcesso || `Processo ${item.numeroProcesso}`,
+        partes: item.partes?.map((p: any) => p.nome).join(' x ') || item.tituloProcesso || 'Não identificado',
+        tribunal: item.nomeTribunal || 'PJE',
+        ultimoAndamento: {
+          descricao: (item.textoComunicacao || '').substring(0, 200) + '...',
+          data: item.dataDisponibilizacao
+        },
+        faseProcessual: 'Comunicado PJe',
+        valorCausa: 0,
+        vara: item.nomeOrgao || '',
+        comarca: uf
+      }));
+
+      // Remover duplicados
+      const uniqueProcesses = mappedResults.filter((p: any, index: number, self: any[]) => 
+        index === self.findIndex((t) => t.numeroProcesso === p.numeroProcesso)
+      );
+
+      if (uniqueProcesses.length === 0) {
         toast({
           title: "Nenhum processo encontrado",
-          description: `Não encontramos processos públicos para a OAB ${oab}-${uf} no TJ local.`,
+          description: `Não encontramos comunicações recentes no PJe para a OAB ${oab}-${uf}.`,
         });
       } else {
-        setResults(data);
+        setResults(uniqueProcesses);
         toast({
           title: "Busca concluída",
-          description: `Encontramos ${data.length} processos vinculados à sua OAB.`,
+          description: `Encontramos ${uniqueProcesses.length} processos vinculados à sua OAB no PJe.`,
         });
       }
     } catch (error: any) {
-      console.error('Erro na busca por OAB:', error);
+      console.error("DEBUG - Erro na Busca Direta:", error);
       toast({
         title: "Erro na sincronização",
-        description: error.message || "Não foi possível conectar ao tribunal nacional. Tente novamente.",
-        variant: "destructive"
+        description: "Não foi possível conectar ao serviço nacional do PJe. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
