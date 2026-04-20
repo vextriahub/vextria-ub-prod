@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -11,32 +11,64 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const fetchData = async () => {
-    if (!user) {
-      setData([]);
+  const mapDatabaseToProcesso = (dbRecord: any): Processo => {
+    return {
+      id: dbRecord.id,
+      titulo: dbRecord.titulo,
+      cliente: dbRecord.cliente?.nome || 'Sem cliente',
+      clienteId: dbRecord.cliente_id,
+      status: dbRecord.status,
+      dataInicio: dbRecord.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      proximoPrazo: dbRecord.proximo_prazo,
+      descricao: dbRecord.descricao,
+      valorCausa: dbRecord.valor_causa,
+      numeroProcesso: dbRecord.numero_processo,
+      tipoProcesso: dbRecord.tipo_processo,
+      faseProcessual: dbRecord.fase_processual,
+      responsavelId: dbRecord.responsavel_id,
+      responsavelNome: dbRecord.responsavel?.full_name || 'Desconhecido',
+      ultimaMovimentacao: dbRecord.updated_at?.split('T')[0] || dbRecord.created_at?.split('T')[0],
+      tribunal: dbRecord.tribunal,
+      vara: dbRecord.vara,
+      comarca: dbRecord.comarca,
+      requerido: dbRecord.requerido,
+      segredoJustica: dbRecord.segredo_justica,
+      justicaGratuita: dbRecord.justica_gratuita
+    };
+  };
+
+  const fetchData = useCallback(async () => {
+    if (!user || !user.office_id) {
+      if (!user) setData([]);
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      const { data: result, error } = await supabase
+      const { data: result, error: fetchError } = await supabase
         .from('processos')
         .select(`
           *,
-          cliente:clientes(nome)
+          cliente:clientes(nome),
+          responsavel:profiles(full_name)
         `)
         .eq('office_id', user.office_id)
         .eq('deletado', false)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      setData(result || []);
+      if (fetchError) {
+        console.error('Erro detalhado Supabase (Processos):', fetchError);
+        setError(`Erro: ${fetchError.message}`);
+        return;
+      }
+
+      const mappedData = (result || []).map(mapDatabaseToProcesso);
+      setData(mappedData);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao buscar processos:', err);
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      setError(err.message || 'Erro desconhecido');
       toast({
         title: 'Erro ao carregar processos',
         description: 'Não foi possível carregar a lista de processos.',
@@ -45,7 +77,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const create = async (newRecord: NovoProcesso): Promise<Processo | null> => {
     if (!user) return null;
@@ -55,23 +87,39 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         .from('processos')
         .insert([
           {
-            ...newRecord,
-            user_id: user.id,
             office_id: user.office_id,
+            user_id: user.id,
+            titulo: newRecord.titulo,
+            cliente_id: newRecord.clienteId,
+            status: newRecord.status,
+            numero_processo: newRecord.numeroProcesso,
+            tipo_processo: newRecord.tipoProcesso,
+            fase_processual: newRecord.faseProcessual,
+            responsavel_id: newRecord.responsavelId || user.id,
+            proximo_prazo: newRecord.proximoPrazo,
+            valor_causa: newRecord.valorCausa,
+            descricao: newRecord.descricao,
+            tribunal: newRecord.tribunal,
+            vara: newRecord.vara,
+            comarca: newRecord.comarca,
+            requerido: newRecord.requerido,
+            segredo_justica: newRecord.segredoJustica,
+            justica_gratuita: newRecord.justicaGratuita
           }
         ])
-        .select()
+        .select(`
+          *,
+          cliente:clientes(nome),
+          responsavel:profiles(full_name)
+        `)
         .single();
 
       if (error) throw error;
 
-      setData(prev => [result, ...prev]);
-      toast({
-        title: 'Processo criado',
-        description: 'O processo foi criado com sucesso.',
-      });
+      const mapped = mapDatabaseToProcesso(result);
+      setData(prev => [mapped, ...prev]);
       
-      return result;
+      return mapped;
     } catch (err) {
       console.error('Erro ao criar processo:', err);
       toast({
@@ -89,16 +137,39 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     try {
       const { data: result, error } = await supabase
         .from('processos')
-        .update(updates)
+        .update({
+          titulo: updates.titulo,
+          cliente_id: updates.clienteId,
+          status: updates.status,
+          numero_processo: updates.numeroProcesso,
+          tipo_processo: updates.tipoProcesso,
+          fase_processual: updates.faseProcessual,
+          responsavel_id: updates.responsavelId,
+          proximo_prazo: updates.proximoPrazo,
+          valor_causa: updates.valorCausa,
+          descricao: updates.descricao,
+          tribunal: updates.tribunal,
+          vara: updates.vara,
+          comarca: updates.comarca,
+          requerido: updates.requerido,
+          segredo_justica: updates.segredoJustica,
+          justica_gratuita: updates.justicaGratuita,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', id)
         .eq('office_id', user.office_id)
-        .select()
+        .select(`
+          *,
+          cliente:clientes(nome),
+          responsavel:profiles(full_name)
+        `)
         .single();
 
       if (error) throw error;
 
+      const mapped = mapDatabaseToProcesso(result);
       setData(prev => prev.map(item => 
-        item.id === id ? { ...item, ...result } : item
+        item.id === id ? mapped : item
       ));
 
       toast({
@@ -106,7 +177,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         description: 'O processo foi atualizado com sucesso.',
       });
       
-      return result;
+      return mapped;
     } catch (err) {
       console.error('Erro ao atualizar processo:', err);
       toast({

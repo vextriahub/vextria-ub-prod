@@ -31,12 +31,12 @@ const Audiencias = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "agendada": return "bg-blue-500";
-      case "confirmada": return "bg-green-500";
-      case "pendente": return "bg-yellow-500";
-      case "realizada": return "bg-gray-500";
-      case "cancelada": return "bg-red-500";
-      default: return "bg-gray-500";
+      case "agendada": return "border-blue-500/50 text-blue-500 bg-blue-500/10 font-bold";
+      case "confirmada": return "border-emerald-500/50 text-emerald-500 bg-emerald-500/10 font-bold";
+      case "pendente": return "border-yellow-500/50 text-yellow-500 bg-yellow-500/10 font-bold";
+      case "realizada": return "border-muted/30 text-muted-foreground bg-muted/10";
+      case "cancelada": return "border-red-500/50 text-red-500 bg-red-500/10 font-bold";
+      default: return "border-muted/30 text-muted-foreground bg-muted/10";
     }
   };
 
@@ -103,72 +103,79 @@ const Audiencias = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-            <div className="flex justify-between items-start">
-              <div className="space-y-2">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Audiências</h1>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  Gerencie suas audiências e compromissos judiciais
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {!multiSelect.isNoneSelected && (
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteSelected}
-                    className="flex items-center gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Excluir Selecionadas ({multiSelect.selectedCount})
-                  </Button>
-                )}
-                <NovaAudienciaDialog onAddAudiencia={handleAddAudiencia} />
-              </div>
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+              Audiências
+            </h1>
+          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+            Gerencie seus compromissos judiciais e sustentações orais.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+          {!multiSelect.isNoneSelected && (
+            <Button
+              variant="destructive"
+              onClick={handleDeleteSelected}
+              className="rounded-xl h-10 md:h-12 px-4 md:px-6"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Excluir ({multiSelect.selectedCount})
+            </Button>
+          )}
+          <NovaAudienciaDialog onAddAudiencia={handleAddAudiencia} />
+        </div>
+      </div>
 
-            {/* Filtros */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Buscar audiências..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todas">Todas</SelectItem>
-                      <SelectItem value="agendada">Agendada</SelectItem>
-                      <SelectItem value="confirmada">Confirmada</SelectItem>
-                      <SelectItem value="pendente">Pendente</SelectItem>
-                      <SelectItem value="realizada">Realizada</SelectItem>
-                      <SelectItem value="cancelada">Cancelada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={tipoFilter} onValueChange={setTipoFilter}>
-                    <SelectTrigger className="w-full md:w-48">
-                      <SelectValue placeholder="Tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="Trabalhista">Trabalhista</SelectItem>
-                      <SelectItem value="Família">Família</SelectItem>
-                      <SelectItem value="Previdenciário">Previdenciário</SelectItem>
-                      <SelectItem value="Cível">Cível</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Filtros */}
+      <Card className="border-white/5 bg-card/40 backdrop-blur-sm">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
+              <Input
+                placeholder="Buscar por título ou cliente..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 bg-muted/20 border-white/5 rounded-xl"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-44 h-11 bg-muted/20 border-white/5 rounded-xl font-medium">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="todas">Todos Status</SelectItem>
+                  <SelectItem value="agendada">Agendada</SelectItem>
+                  <SelectItem value="confirmada">Confirmada</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="realizada">Realizada</SelectItem>
+                  <SelectItem value="cancelada">Cancelada</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={tipoFilter} onValueChange={setTipoFilter}>
+                <SelectTrigger className="w-full md:w-44 h-11 bg-muted/20 border-white/5 rounded-xl font-medium">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="todos">Todos Tipos</SelectItem>
+                  <SelectItem value="Trabalhista">Trabalhista</SelectItem>
+                  <SelectItem value="Família">Família</SelectItem>
+                  <SelectItem value="Previdenciário">Previdenciário</SelectItem>
+                  <SelectItem value="Cível">Cível</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
             <Tabs defaultValue="lista" className="space-y-4">
               <TabsList>

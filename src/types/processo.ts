@@ -1,4 +1,3 @@
-// Tipos simplificados para Processos
 export interface Processo {
   id: string;
   titulo: string;
@@ -11,8 +10,17 @@ export interface Processo {
   valorCausa?: number;
   numeroProcesso?: string;
   tipoProcesso?: string;
+  faseProcessual?: string;
+  responsavelId?: string;
+  responsavelNome?: string;
   ultimaMovimentacao?: string; // Data da última movimentação
   area?: string; // Área jurídica do processo
+  tribunal?: string;
+  vara?: string;
+  comarca?: string;
+  requerido?: string; // Parte contrária
+  segredoJustica?: boolean;
+  justicaGratuita?: boolean;
 }
 
 export interface NovoProcessoForm {
@@ -25,7 +33,23 @@ export interface NovoProcessoForm {
   valorCausa?: number;
   numeroProcesso?: string;
   tipoProcesso?: string;
+  faseProcessual?: string;
+  responsavelId?: string;
+  tribunal?: string;
+  vara?: string;
+  comarca?: string;
+  requerido?: string;
+  segredoJustica?: boolean;
+  justicaGratuita?: boolean;
 }
+
+export const fasesProcessuais = [
+  'Fase Inicial',
+  'Fase Instrutória',
+  'Fase de Julgamento',
+  'Fase Recursal',
+  'Fase de Execução'
+];
 
 export interface ProcessoFilters {
   search: string;

@@ -62,46 +62,59 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
       setLoading(true);
       setError(null);
 
+      // Carregar escritórios com assinaturas
       const { data: offices, error: officesError } = await supabase
         .from('offices')
-        .select('*')
+        .select(`
+          *,
+          subscriptions (
+            id,
+            status,
+            plan,
+            price,
+            end_date,
+            manual_discount_percent
+          )
+        `)
         .order('created_at', { ascending: false });
+      
       if (officesError) throw officesError;
 
       const officeIds = (offices || []).map((o: any) => o.id);
 
+      // Carregar administradores de cada escritório
       const { data: userData, error: userError } = await supabase
         .from('office_users')
         .select('office_id, role, user_id')
         .in('office_id', officeIds);
+      
       if (userError) throw userError;
 
       const userIds = [...new Set((userData || []).map((u: any) => u.user_id))];
+      
+      // Carregar perfis dos usuários
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, full_name, email')
         .in('id', userIds);
+      
       if (profileError) {
         console.warn('Aviso: Falha ao carregar perfis.', profileError);
       }
-
-      const { data: subscriptions, error: subError } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .in('office_id', officeIds);
-      if (subError) throw subError;
 
       const adminList: AdminOffice[] = (offices || []).map((office: any) => {
         const officeUser =
           (userData || []).find((u: any) => u.office_id === office.id && u.role === 'admin') ||
           (userData || []).find((u: any) => u.office_id === office.id);
+        
         const profile = (profileData || []).find((p: any) => p.id === officeUser?.user_id);
-        const sub = (subscriptions || []).find((s: any) => s.office_id === office.id);
+        const sub = office.subscriptions && office.subscriptions.length > 0 ? office.subscriptions[0] : null;
 
         const isLegacyLifetime =
           office.is_lifetime === true ||
           sub?.end_date?.includes('2099') ||
           office.plan === 'lifetime';
+        
         const isTrial =
           office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
 
@@ -168,150 +181,145 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
     }
   }, [isSuperAdmin, user]);
 
-  const updateOfficeStatus = useCallback(
-    async (officeId: string, active: boolean) => {
-      try {
-        const { error } = await supabase
+  const updateOfficeStatus = useCallback(async (officeId: string, active: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('offices')
+        .update({ active })
+        .eq('id', officeId);
+      
+      if (error) throw error;
+      toast({ title: active ? 'Acesso Liberado' : 'Acesso Suspenso' });
+      await fetchAdmins();
+      return true;
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+      return false;
+    }
+  }, [toast, fetchAdmins]);
+
+  const updateOfficeFull = useCallback(async (office_id: string, updates: Partial<AdminOffice>) => {
+    try {
+      const planMap: Record<string, string> = {
+        trial: 'trial',
+        starter: 'basico',
+        pro: 'intermediario',
+        business: 'avancado',
+        lifetime: 'premium',
+      };
+      
+      const dbPlan = updates.plan_name
+        ? planMap[updates.plan_name] || updates.plan_name
+        : undefined;
+
+      const officeUpdates: any = {};
+      if (updates.office_name !== undefined) officeUpdates.name = updates.office_name;
+      if (updates.office_email !== undefined) officeUpdates.email = updates.office_email;
+      if (updates.phone !== undefined) officeUpdates.phone = updates.phone;
+      if (updates.address !== undefined) officeUpdates.address = updates.address;
+      if (dbPlan) officeUpdates.plan = dbPlan;
+      if (updates.is_lifetime !== undefined) officeUpdates.is_lifetime = updates.is_lifetime;
+
+      if (Object.keys(officeUpdates).length > 0) {
+        const { error: ofError } = await supabase
           .from('offices')
-          .update({ active })
-          .eq('id', officeId);
-        if (error) throw error;
-        toast({ title: active ? 'Acesso Liberado' : 'Acesso Suspenso' });
-        await fetchAdmins();
-        return true;
-      } catch (err: any) {
-        toast({ title: 'Erro', description: err.message, variant: 'destructive' });
-        return false;
+          .update(officeUpdates)
+          .eq('id', office_id);
+        if (ofError) throw ofError;
       }
-    },
-    [toast, fetchAdmins]
-  );
 
-  const updateOfficeFull = useCallback(
-    async (office_id: string, updates: Partial<AdminOffice>) => {
-      try {
-        const planMap: Record<string, string> = {
-          trial: 'trial',
-          starter: 'basico',
-          pro: 'intermediario',
-          business: 'avancado',
-          lifetime: 'premium',
-        };
-        const dbPlan = updates.plan_name
-          ? planMap[updates.plan_name] || updates.plan_name
-          : undefined;
+      const subUpdates: any = {};
+      if (dbPlan) subUpdates.plan = dbPlan;
+      if (updates.is_lifetime !== undefined) {
+        subUpdates.end_date = updates.is_lifetime
+          ? '2099-12-31T23:59:59Z'
+          : addDays(new Date(), 30).toISOString();
+        subUpdates.status = 'active';
+      }
 
-        const officeUpdates: any = {};
-        if (updates.office_name !== undefined) officeUpdates.name = updates.office_name;
-        if (updates.office_email !== undefined) officeUpdates.email = updates.office_email;
-        if (updates.phone !== undefined) officeUpdates.phone = updates.phone;
-        if (updates.address !== undefined) officeUpdates.address = updates.address;
-        if (dbPlan) officeUpdates.plan = dbPlan;
-        if (updates.is_lifetime !== undefined) officeUpdates.is_lifetime = updates.is_lifetime;
+      if (Object.keys(subUpdates).length > 0) {
+        const { data: existingSub, error: checkError } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('office_id', office_id)
+          .maybeSingle();
+        
+        if (checkError) throw checkError;
 
-        if (Object.keys(officeUpdates).length > 0) {
-          const { error: ofError } = await supabase
-            .from('offices')
-            .update(officeUpdates)
-            .eq('id', office_id);
-          if (ofError) throw ofError;
-        }
-
-        const subUpdates: any = {};
-        if (dbPlan) subUpdates.plan = dbPlan;
-        if (updates.is_lifetime !== undefined) {
-          subUpdates.end_date = updates.is_lifetime
-            ? '2099-12-31T23:59:59Z'
-            : addDays(new Date(), 30).toISOString();
-          subUpdates.status = 'active';
-        }
-
-        if (Object.keys(subUpdates).length > 0) {
-          const { data: existingSub, error: checkError } = await supabase
+        if (existingSub) {
+          const { error: subUpdateError } = await supabase
             .from('subscriptions')
-            .select('id')
-            .eq('office_id', office_id)
-            .maybeSingle();
-          if (checkError) throw checkError;
-
-          if (existingSub) {
-            const { error: subUpdateError } = await supabase
-              .from('subscriptions')
-              .update(subUpdates)
-              .eq('id', existingSub.id);
-            if (subUpdateError) throw subUpdateError;
-          } else {
-            const { error: subInsertError } = await supabase
-              .from('subscriptions')
-              .insert({
-                office_id,
-                ...subUpdates,
-                start_date: new Date().toISOString(),
-              });
-            if (subInsertError) throw subInsertError;
-          }
+            .update(subUpdates)
+            .eq('id', existingSub.id);
+          if (subUpdateError) throw subUpdateError;
+        } else {
+          const { error: subInsertError } = await supabase
+            .from('subscriptions')
+            .insert({
+              office_id,
+              ...subUpdates,
+              start_date: new Date().toISOString(),
+            });
+          if (subInsertError) throw subInsertError;
         }
-
-        toast({
-          title: 'Dados Sincronizados',
-          description: 'Configurações do escritório atualizadas com sucesso.',
-        });
-        await fetchAdmins();
-        return true;
-      } catch (err: any) {
-        console.error('Erro ao atualizar escritório:', err);
-        toast({
-          title: 'Erro ao salvar',
-          description: err.message || 'Não foi possível atualizar os dados.',
-          variant: 'destructive',
-        });
-        return false;
       }
-    },
-    [toast, fetchAdmins]
-  );
 
-  const manageAccess = useCallback(
-    async (
-      officeId: string,
-      action: 'apply_discount' | 'grant_lifetime' | 'revoke_lifetime',
-      options?: { discount_percent?: number; reason?: string }
-    ) => {
-      try {
-        const { data, error } = await supabase.functions.invoke('admin-manage-access', {
-          body: {
-            office_id: officeId,
-            action,
-            discount_percent: options?.discount_percent,
-            reason: options?.reason,
-          },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+      toast({
+        title: 'Dados Sincronizados',
+        description: 'Configurações do escritório atualizadas com sucesso.',
+      });
+      await fetchAdmins();
+      return true;
+    } catch (err: any) {
+      console.error('Erro ao atualizar escritório:', err);
+      toast({
+        title: 'Erro ao salvar',
+        description: err.message || 'Não foi possível atualizar os dados.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [toast, fetchAdmins]);
 
-        toast({
-          title: 'Sucesso!',
-          description:
-            action === 'apply_discount'
-              ? 'Desconto aplicado no Stripe.'
-              : action === 'grant_lifetime'
-              ? 'Acesso vitalício concedido.'
-              : 'Vitalício revertido.',
-        });
-        await fetchAdmins();
-        return true;
-      } catch (err: any) {
-        console.error('Erro ao gerenciar acesso:', err);
-        toast({
-          title: 'Falha na operação',
-          description: err.message || 'Erro ao processar ação no Stripe.',
-          variant: 'destructive',
-        });
-        return false;
-      }
-    },
-    [toast, fetchAdmins]
-  );
+  const manageAccess = useCallback(async (
+    officeId: string,
+    action: 'apply_discount' | 'grant_lifetime' | 'revoke_lifetime',
+    options?: { discount_percent?: number; reason?: string }
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-manage-access', {
+        body: {
+          office_id: officeId,
+          action,
+          discount_percent: options?.discount_percent,
+          reason: options?.reason,
+        },
+      });
+      
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: 'Sucesso!',
+        description:
+          action === 'apply_discount'
+            ? 'Desconto aplicado no Stripe.'
+            : action === 'grant_lifetime'
+            ? 'Acesso vitalício concedido.'
+            : 'Vitalício revertido.',
+      });
+      await fetchAdmins();
+      return true;
+    } catch (err: any) {
+      console.error('Erro ao gerenciar acesso:', err);
+      toast({
+        title: 'Falha na operação',
+        description: err.message || 'Erro ao processar ação no Stripe.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [toast, fetchAdmins]);
 
   const sendPaymentReminder = useCallback(async (_email: string, _officeName: string) => {
     toast({ title: 'E-mail de lembrete enviado.' });

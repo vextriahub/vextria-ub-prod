@@ -588,6 +588,11 @@ export type Database = {
           user_id: string
           valor_causa: number | null
           vara: string | null
+          fase_processual: string | null
+          responsavel_id: string | null
+          requerido: string | null
+          segredo_justica: boolean
+          justica_gratuita: boolean
         }
         Insert: {
           cliente_id?: string | null
@@ -611,6 +616,11 @@ export type Database = {
           user_id: string
           valor_causa?: number | null
           vara?: string | null
+          fase_processual?: string | null
+          responsavel_id?: string | null
+          requerido?: string | null
+          segredo_justica?: boolean
+          justica_gratuita?: boolean
         }
         Update: {
           cliente_id?: string | null
@@ -634,6 +644,11 @@ export type Database = {
           user_id?: string
           valor_causa?: number | null
           vara?: string | null
+          fase_processual?: string | null
+          responsavel_id?: string | null
+          requerido?: string | null
+          segredo_justica?: boolean
+          justica_gratuita?: boolean
         }
         Relationships: [
           {

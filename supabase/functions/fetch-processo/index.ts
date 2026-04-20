@@ -4,12 +4,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Chave pública do DataJud (CNJ) como fallback
 const PUBLIC_DATAJUD_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
 
-// Mapeamento de J.RR para Sigla do Tribunal (Apenas os mais comuns para MVP)
 const TRIBUNAL_MAP: Record<string, string> = {
   "8.01": "tjac", "8.02": "tjal", "8.03": "tjam", "8.04": "tjap", "8.05": "tjba",
   "8.06": "tjce", "8.07": "tjdft", "8.08": "tjes", "8.09": "tjgo", "8.10": "tjma",
@@ -22,6 +21,15 @@ const TRIBUNAL_MAP: Record<string, string> = {
   "1.00": "stf", "3.00": "stj"
 };
 
+const UF_TO_TRIBUNAL: Record<string, string> = {
+  "AC": "tjac", "AL": "tjal", "AM": "tjam", "AP": "tjap", "BA": "tjba",
+  "CE": "tjce", "DF": "tjdft", "ES": "tjes", "GO": "tjgo", "MA": "tjma",
+  "MG": "tjmg", "MS": "tjms", "MT": "tjmt", "PA": "tjpa", "PB": "tjpb",
+  "PE": "tjpe", "PI": "tjpi", "PR": "tjpr", "RJ": "tjrj", "RN": "tjrn",
+  "RO": "tjro", "RR": "tjrr", "RS": "tjrs", "SC": "tjsc", "SE": "tjse",
+  "SP": "tjsp", "TO": "tjtq"
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -30,11 +38,9 @@ serve(async (req) => {
   try {
     const processKey = Deno.env.get("PROCESSO_API_KEY") || PUBLIC_DATAJUD_KEY;
 
-    // Obter o token de autenticação
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
 
-    // Verificar o usuário no Supabase
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -43,52 +49,122 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) throw new Error("Authentication error");
 
-    const { numeroProcesso } = await req.json();
-    if (!numeroProcesso) throw new Error("Número do processo é obrigatório");
+    const payload = await req.json();
+    const { numeroProcesso, oab, uf } = payload;
 
-    // Limpar o número (remover pontos e traços)
-    const cleanNumber = numeroProcesso.replace(/[.-]/g, "");
+    // BUSCA POR OAB
+    if (oab && uf) {
+      const tribunalSigla = UF_TO_TRIBUNAL[uf.toUpperCase()] || `tj${uf.toLowerCase()}`;
+      const apiUrl = `https://api-publica.datajud.cnj.jus.br/api_publica_${tribunalSigla}/_search`;
+      
+      console.log(`[FETCH-PROCESSO-OAB] Iniciando busca no tribunal: ${tribunalSigla} | OAB: ${oab} | UF: ${uf}`);
 
-    // Extrair J.RR (7º e 8º dígitos após o ano ou posições fixas no CNJ)
-    // Formato: NNNNNNN-DD.YYYY.J.RR.EEEE -> NNNNNNNDDYYYYJRR EEEE
-    // Posições (0-indexed): N(0-6), D(7-8), Y(9-12), J(13), R(14-15)
-    const j = cleanNumber.substring(13, 14);
-    const rr = cleanNumber.substring(14, 16);
-    const tribunalCode = `${j}.${rr}`;
-    const tribunalSigla = TRIBUNAL_MAP[tribunalCode] || "tjsp"; // Default tjsp se não encontrar
-
-    const apiUrl = `https://api-publica.datajud.cnj.jus.br/api_publica_${tribunalSigla}/_search`;
-    
-    console.log(`[FETCH-PROCESSO] Buscando no tribunal: ${tribunalSigla} (${tribunalCode})`);
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `APIKey ${processKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+      const searchBody = {
         query: {
-          match: {
-            numeroProcesso: cleanNumber
+          query_string: {
+            query: `partes.advogados.oab: "${oab}" AND partes.advogados.uf: "${uf.toUpperCase()}"`,
+            default_operator: "AND"
           }
-        }
-      })
-    });
+        },
+        size: 50
+      };
 
-    if (!response.ok) {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `APIKey ${processKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(searchBody)
+      });
+
+      if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Erro DataJud (${response.status}): ${errorText}`);
+        console.error(`[FETCH-PROCESSO-OAB] Erro na API do DataJud: ${response.status} - ${errorText}`);
+        
+        let userMessage = "Erro ao consultar o tribunal nacional.";
+        if (response.status === 403) userMessage = "Acesso negado pelo tribunal. Alguns tribunais restringem buscas em massa por OAB via API pública.";
+        if (response.status === 404) userMessage = `Tribunal ${tribunalSigla.toUpperCase()} não encontrado ou indisponível.`;
+        
+        return new Response(JSON.stringify({ error: userMessage, status: response.status, details: errorText }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: response.status,
+        });
+      }
+
+      const rawData = await response.json();
+      console.log(`[FETCH-PROCESSO-OAB] Resultados encontrados para OAB ${oab}: ${rawData.hits?.total?.value || 0}`);
+      
+      const processes = (rawData.hits?.hits || []).map((hit: any) => {
+          const source = hit._source;
+          const autores = source.partes?.filter((p: any) => p.tipo === 'Ativa' || p.tipo === 'Requerente')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
+          const reus = source.partes?.filter((p: any) => p.tipo === 'Passiva' || p.tipo === 'Requerido')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
+          const lastMovement = source.movimentacoes?.[0] || null;
+
+          return {
+              id: hit._id,
+              numeroProcesso: source.numeroProcesso,
+              titulo: `${autores} x ${reus}`,
+              partes: `${autores} x ${reus}`,
+              tribunal: source.tribunal || tribunalSigla.toUpperCase(),
+              ultimoAndamento: lastMovement ? {
+                  descricao: lastMovement.descricao,
+                  data: lastMovement.dataHora
+              } : null,
+              faseProcessual: source.classe?.nome || 'Não identificada',
+              valorCausa: source.valorCausa
+          };
+      });
+
+      return new Response(JSON.stringify(processes), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
-    const data = await response.json();
+    // BUSCA INDIVIDUAL
+    if (numeroProcesso) {
+      const cleanNumber = numeroProcesso.replace(/[.-]/g, "");
+      const j = cleanNumber.substring(13, 14);
+      const rr = cleanNumber.substring(14, 16);
+      const tribunalCode = `${j}.${rr}`;
+      const tribunalSigla = TRIBUNAL_MAP[tribunalCode] || "tjsp";
 
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+      console.log(`[FETCH-PROCESSO] Individual: ${cleanNumber} no tribunal: ${tribunalSigla}`);
+
+      const response = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunalSigla}/_search`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `APIKey ${processKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: {
+            match: {
+              numeroProcesso: cleanNumber
+            }
+          }
+        })
+      });
+
+      if (!response.ok) {
+          const errorText = await response.text();
+          return new Response(JSON.stringify({ error: `Erro no tribunal: ${response.status}`, details: errorText }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: response.status,
+          });
+      }
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    throw new Error("Parâmetros inválidos.");
   } catch (error) {
-    console.error(`[FETCH-PROCESSO-ERROR] ${error.message}`);
+    console.error(`[FETCH-PROCESSO-CRITICAL-ERROR] ${error.message}`);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

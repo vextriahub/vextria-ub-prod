@@ -80,12 +80,31 @@ const Metas = () => {
 
   return (
     <PermissionGuard permission="canViewMetas" showDeniedMessage>
-      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Metas</h1>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Defina e acompanhe suas metas profissionais
-          </p>
+      <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Target className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              </div>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                Metas & Objetivos
+              </h1>
+            </div>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium">
+              Defina, acompanhe e supere seus desafios profissionais.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+            <Button 
+              onClick={() => setCreateGoalOpen(true)}
+              size="lg"
+              className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6"
+            >
+              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              Nova Meta
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -104,57 +123,69 @@ const Metas = () => {
               </Button>
             </div>
 
-            <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
               {metas.map((meta) => {
                 const percentage = Math.round((meta.valorAtual / meta.valorMeta) * 100);
                 
                 return (
-                  <Card key={meta.id}>
-                    <CardHeader className="pb-3">
+                  <Card key={meta.id} className="hover-lift border-white/5 bg-card/40 backdrop-blur-sm overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
+                    <CardHeader className="pb-3 border-b border-white/5 bg-muted/5">
                       <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{meta.titulo}</CardTitle>
-                          <CardDescription className="capitalize">
-                            Meta {meta.periodo} • {meta.tipo}
-                          </CardDescription>
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">{meta.titulo}</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[10px] uppercase font-extrabold tracking-widest px-2 py-0 border-white/10 bg-muted/20">
+                              {meta.periodo}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px] uppercase font-extrabold tracking-widest px-2 py-0 border-white/10 bg-muted/20">
+                              {meta.tipo}
+                            </Badge>
+                          </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button size="sm" variant="ghost">
+                          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-primary/10">
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
-                            size="sm" 
+                            size="icon" 
                             variant="ghost"
                             onClick={() => handleDeleteGoal(meta.id)}
+                            className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
+                    <CardContent className="space-y-6 pt-6">
+                      <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Progresso</span>
-                          <span className={`text-sm font-medium ${getProgressColor(percentage)}`}>
+                          <span className="text-xs font-bold uppercase tracking-wider opacity-60">Status de Entrega</span>
+                          <span className={`text-sm font-extrabold ${getProgressColor(percentage)}`}>
                             {percentage}%
                           </span>
                         </div>
-                        <Progress value={percentage} className="h-2" />
+                        <div className="w-full bg-muted/50 rounded-full h-3 p-1 border border-white/5">
+                          <div 
+                            className="bg-gradient-to-r from-primary to-primary/60 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--primary),0.3)]"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
                       </div>
                       
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-2xl font-bold">
+                      <div className="flex justify-between items-end">
+                        <div className="space-y-1">
+                          <p className="text-3xl font-extrabold tracking-tight">
                             {formatValue(meta.valorAtual, meta.tipo)}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            de {formatValue(meta.valorMeta, meta.tipo)}
+                          <p className="text-xs font-medium text-muted-foreground opacity-70">
+                            Objetivo: {formatValue(meta.valorMeta, meta.tipo)}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Faltam</p>
-                          <p className="font-medium">
+                        <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/10">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-1">Gap Restante</p>
+                          <p className="font-extrabold text-primary">
                             {formatValue(meta.valorMeta - meta.valorAtual, meta.tipo)}
                           </p>
                         </div>

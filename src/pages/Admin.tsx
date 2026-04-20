@@ -127,22 +127,26 @@ const Admin = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-                  <Shield className="h-6 w-6 text-primary" />
-                  {isMainSuperAdmin ? 'Administração Global' : 'Painel do Administrador'}
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  {isMainSuperAdmin 
-                    ? 'Gerencie todo o sistema, escritórios e assinaturas em tempo real.'
-                    : 'Gerencie solicitações de exclusão de registros.'
-                  }
-                </p>
-              </div>
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+              {isMainSuperAdmin ? 'Administração Global' : 'Painel Estratégico'}
+            </h1>
+          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+            {isMainSuperAdmin 
+              ? 'Controle central de escritórios, assinaturas e integridade do ecossistema.'
+              : 'Gerencie solicitações críticas e integridade de dados do seu escritório.'
+            }
+          </p>
+        </div>
+      </div>
 
             {isMainSuperAdmin ? (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
@@ -175,29 +179,44 @@ const Admin = () => {
                   )}
 
                   {/* Stats Cards */}
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-primary">
+                  <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+                    <Card className="hover-lift border-white/5 bg-card/40">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Solicitações Pendentes</CardTitle>
+                        <div className="p-2 bg-amber-500/10 rounded-lg">
+                          <Clock className="h-4 w-4 text-amber-500" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-extrabold tracking-tight text-amber-500">
                           {exclusoesPendentes.length}
                         </div>
-                        <p className="text-sm text-muted-foreground">Solicitações Pendentes</p>
                       </CardContent>
                     </Card>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-amber-600">
+                    <Card className="hover-lift border-white/5 bg-card/40">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Itens Selecionados</CardTitle>
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          <Check className="h-4 w-4 text-primary" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-extrabold tracking-tight">
                           {multiSelect.selectedCount}
                         </div>
-                        <p className="text-sm text-muted-foreground">Itens Selecionados</p>
                       </CardContent>
                     </Card>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-green-600">
+                    <Card className="hover-lift border-white/5 bg-card/40">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Diversidade de Dados</CardTitle>
+                        <div className="p-2 bg-emerald-500/10 rounded-lg">
+                          <Activity className="h-4 w-4 text-emerald-500" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-extrabold tracking-tight text-emerald-500">
                           {new Set(exclusoesPendentes.map(e => e.tabela)).size}
                         </div>
-                        <p className="text-sm text-muted-foreground">Tipos de Registros</p>
                       </CardContent>
                     </Card>
                   </div>

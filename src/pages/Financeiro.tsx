@@ -37,74 +37,96 @@ const Financeiro = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pago': return 'bg-green-100 text-green-800';
-      case 'pendente': return 'bg-yellow-100 text-yellow-800';
-      case 'vencido': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pago': return 'border-emerald-500/50 text-emerald-500 bg-emerald-500/10 font-bold';
+      case 'pendente': return 'border-yellow-500/50 text-yellow-500 bg-yellow-500/10 font-bold';
+      case 'vencido': return 'border-red-500/50 text-red-500 bg-red-500/10 font-bold';
+      default: return 'border-muted/30 text-muted-foreground bg-muted/10';
     }
   };
 
   return (
     <PermissionGuard permission="canViewFinanceiro" showDeniedMessage>
-      <div className="p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
-        <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Financeiro</h1>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Controle financeiro do escritório
-          </p>
+      <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              </div>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                Gestão Financeira
+              </h1>
+            </div>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium">
+              Controle fluxos de caixa, honorários e despesas do seu escritório.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 glass-morphism p-2 rounded-2xl">
+            <Button size="lg" className="rounded-xl shadow-premium">
+              Exportar Relatório
+            </Button>
+          </div>
         </div>
 
         {/* Cards de Resumo */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Receita Mensal</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Receita Mensal</CardTitle>
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <TrendingUp className="h-4 w-4 text-emerald-500" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ 28.500</div>
-              <p className="text-xs text-muted-foreground">
-                <TrendingUp className="inline h-3 w-3 mr-1" />
-                +12% do mês anterior
+              <div className="text-3xl font-extrabold tracking-tight">R$ 28.500</div>
+              <p className="text-xs font-medium text-emerald-500 mt-1 flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                +12% vs mês anterior
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">A Receber</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Receber</CardTitle>
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CreditCard className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ 9.300</div>
-              <p className="text-xs text-muted-foreground">
-                3 faturas pendentes
+              <div className="text-3xl font-extrabold tracking-tight">R$ 9.300</div>
+              <p className="text-xs font-medium text-muted-foreground mt-1">
+                3 faturas pendentes este mês
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">A Pagar</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Pagar</CardTitle>
+              <div className="p-2 rounded-lg bg-orange-500/10">
+                <TrendingDown className="h-4 w-4 text-orange-500" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ 1.550</div>
-              <p className="text-xs text-muted-foreground">
-                2 contas pendentes
+              <div className="text-3xl font-extrabold tracking-tight">R$ 1.550</div>
+              <p className="text-xs font-medium text-muted-foreground mt-1">
+                2 contas com vencimento próximo
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Saldo Líquido</CardTitle>
+              <div className="p-2 rounded-lg bg-primary/10">
+                <DollarSign className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ 26.950</div>
-              <p className="text-xs text-muted-foreground">
-                Margem de 94.6%
+              <div className="text-3xl font-extrabold tracking-tight">R$ 26.950</div>
+              <p className="text-xs font-medium text-primary mt-1">
+                Eficiência operacional de 94.6%
               </p>
             </CardContent>
           </Card>
@@ -125,21 +147,33 @@ const Financeiro = () => {
             
             <div className="space-y-4">
               {contasReceber.map((conta) => (
-                <Card key={conta.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <p className="font-medium">{conta.cliente}</p>
-                        <p className="text-sm text-muted-foreground flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Vencimento: {conta.vencimento}
-                        </p>
+                <Card key={conta.id} className="hover-lift border-white/5 bg-card/30">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                          <TrendingUp className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-bold text-lg">{conta.cliente}</p>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              Vence {conta.vencimento}
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                            <span className="uppercase tracking-widest text-[10px] font-bold">Honorários</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg font-bold">R$ {conta.valor.toLocaleString()}</span>
-                        <Badge className={getStatusColor(conta.status)}>
+                      <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
+                        <div className="text-right">
+                          <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-1">Valor</p>
+                          <p className="text-xl font-black">R$ {conta.valor.toLocaleString()}</p>
+                        </div>
+                        <Badge className={cn("px-4 py-1.5 rounded-full", getStatusColor(conta.status))}>
                           {conta.status === 'vencido' && <AlertCircle className="h-3 w-3 mr-1" />}
-                          {conta.status.charAt(0).toUpperCase() + conta.status.slice(1)}
+                          <span className="uppercase tracking-tighter text-[11px]">{conta.status}</span>
                         </Badge>
                       </div>
                     </div>
@@ -157,20 +191,32 @@ const Financeiro = () => {
             
             <div className="space-y-4">
               {contasPagar.map((conta) => (
-                <Card key={conta.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <p className="font-medium">{conta.fornecedor}</p>
-                        <p className="text-sm text-muted-foreground flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Vencimento: {conta.vencimento}
-                        </p>
+                <Card key={conta.id} className="hover-lift border-white/5 bg-card/30">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                          <TrendingDown className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-bold text-lg">{conta.fornecedor}</p>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              Vence {conta.vencimento}
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                            <span className="uppercase tracking-widest text-[10px] font-bold">Operacional</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg font-bold">R$ {conta.valor.toLocaleString()}</span>
-                        <Badge className={getStatusColor(conta.status)}>
-                          {conta.status.charAt(0).toUpperCase() + conta.status.slice(1)}
+                      <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
+                        <div className="text-right">
+                          <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-1">Valor</p>
+                          <p className="text-xl font-black text-orange-500">- R$ {conta.valor.toLocaleString()}</p>
+                        </div>
+                        <Badge className={cn("px-4 py-1.5 rounded-full", getStatusColor(conta.status))}>
+                          <span className="uppercase tracking-tighter text-[11px]">{conta.status}</span>
                         </Badge>
                       </div>
                     </div>

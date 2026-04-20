@@ -151,74 +151,95 @@ export default function Agenda() {
   const reunioesCount = events.filter(c => c.type === 'reuniao').length;
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-6 border-b">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold">Agenda</h1>
+    <div className="flex flex-col h-full animate-in">
+      <div className="p-8 border-b bg-background/50 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-primary/10">
+                  <Calendar className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                </div>
+                <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                  Agenda & Compromissos
+                </h1>
+              </div>
+              <p className="text-sm md:text-lg text-muted-foreground font-medium">
+                Organize seu tempo, audiências e prazos de forma estratégica.
+              </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
               {!multiSelect.isNoneSelected && (
                 <Button
                   variant="destructive"
                   onClick={handleDeleteSelected}
-                  className="flex items-center gap-2"
+                  className="rounded-xl h-10 md:h-12 px-4 md:px-6"
                 >
-                  <Trash2 className="h-4 w-4" />
-                  Excluir Selecionados ({multiSelect.selectedCount})
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Excluir ({multiSelect.selectedCount})
                 </Button>
               )}
-              <Button onClick={() => handleNewEvent(new Date())}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button 
+                onClick={() => handleNewEvent(new Date())} 
+                size="lg" 
+                className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6"
+              >
+                <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                 Novo Compromisso
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="hover-lift border-white/5 bg-card/40">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Hoje</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Hoje</CardTitle>
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Clock className="h-4 w-4 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{todayEventsCount}</div>
-                <p className="text-xs text-muted-foreground">compromissos</p>
+                <div className="text-3xl font-extrabold tracking-tight">{todayEventsCount}</div>
+                <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Eventos agendados</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover-lift border-white/5 bg-card/40">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Esta Semana</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Esta Semana</CardTitle>
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Calendar className="h-4 w-4 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{weekEventsCount}</div>
-                <p className="text-xs text-muted-foreground">eventos agendados</p>
+                <div className="text-3xl font-extrabold tracking-tight">{weekEventsCount}</div>
+                <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Total de compromissos</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover-lift border-white/5 bg-card/40">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Audiências</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Audiências</CardTitle>
+                <div className="p-2 rounded-lg bg-red-500/10">
+                  <Users className="h-4 w-4 text-red-500" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{audienciasCount}</div>
-                <p className="text-xs text-muted-foreground">próximas</p>
+                <div className="text-3xl font-extrabold tracking-tight">{audienciasCount}</div>
+                <p className="text-xs font-medium text-red-500 mt-1 opacity-70">Críticas aguardando</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover-lift border-white/5 bg-card/40">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Reuniões</CardTitle>
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Reuniões</CardTitle>
+                <div className="p-2 rounded-lg bg-blue-500/10">
+                  <MapPin className="h-4 w-4 text-blue-500" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{reunioesCount}</div>
-                <p className="text-xs text-muted-foreground">esta semana</p>
+                <div className="text-3xl font-extrabold tracking-tight">{reunioesCount}</div>
+                <p className="text-xs font-medium text-blue-500 mt-1 opacity-70">Confirmadas na semana</p>
               </CardContent>
             </Card>
           </div>
@@ -227,11 +248,11 @@ export default function Agenda() {
 
       <div className="flex-1 flex">
         <Tabs defaultValue="calendar" className="flex-1 flex flex-col">
-          <div className="border-b px-6">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="calendar">Calendário</TabsTrigger>
-              <TabsTrigger value="list">Lista</TabsTrigger>
-              <TabsTrigger value="agenda">Agenda</TabsTrigger>
+          <div className="border-b px-8 bg-background/30 backdrop-blur-sm">
+            <TabsList className="h-12 w-fit gap-2 bg-transparent border-none">
+              <TabsTrigger value="calendar" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20">Calendário</TabsTrigger>
+              <TabsTrigger value="list" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20">Lista Diária</TabsTrigger>
+              <TabsTrigger value="agenda" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20">Visão Expandida</TabsTrigger>
             </TabsList>
           </div>
 

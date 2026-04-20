@@ -226,7 +226,7 @@ const Clientes = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
       {/* Page Header */}
       <ClientsPageHeader
         selectedCount={multiSelect.selectedCount}
@@ -237,19 +237,17 @@ const Clientes = () => {
 
       {/* Empty State ou Loading */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-12 space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Carregando seus clientes...</p>
+        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground font-medium">Carregando seus clientes...</p>
         </div>
       ) : showEmptyState ? (
-        <ClientsEmptyState
-          onNewClient={() => setNovoClienteDialogOpen(true)}
-          onLoadSampleData={() => {
-            toast({
-              title: "Aviso",
-              description: "Dados de exemplo desativados em produção.",
-            });
-          }}
+        <EmptyState
+          icon={Users}
+          title="Sua base de clientes está vazia"
+          description="Comece a cadastrar seus clientes para gerenciar processos, honorários e atendimentos de forma integrada."
+          actionLabel="Cadastrar Novo Cliente"
+          onAction={() => setNovoClienteDialogOpen(true)}
         />
       ) : (
         // Conteúdo normal quando há clientes

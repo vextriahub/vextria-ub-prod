@@ -32,40 +32,47 @@ const Equipe = () => {
   });
 
   return (
-    <main className="flex-1 p-4 md:p-6 space-y-4 md:space-y-6">
-      <div className="flex justify-between items-start">
+    <main className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Equipe</h1>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Gerencie as equipes e membros do escritório
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+              Gestão de Equipe
+            </h1>
+          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+            Gerencie o capital humano e a estrutura organizacional do seu escritório.
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Membro
-        </Button>
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+          <Button size="lg" className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6">
+            <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+            Adicionar Membro
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
-      <Card>
+      <Card className="border-white/5 bg-card/40 backdrop-blur-sm">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar equipes ou membros..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
+              <Input
+                placeholder="Buscar por nome, cargo ou equipe..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11 bg-muted/20 border-white/5 rounded-xl"
+              />
             </div>
             <Select value={equipeFilter} onValueChange={setEquipeFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Equipe" />
+              <SelectTrigger className="w-full md:w-56 h-11 bg-muted/20 border-white/5 rounded-xl font-medium">
+                <SelectValue placeholder="Filtrar por Equipe" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="todas">Todas as Equipes</SelectItem>
                 {mockEquipes.map(equipe => (
                   <SelectItem key={equipe.id} value={equipe.id.toString()}>

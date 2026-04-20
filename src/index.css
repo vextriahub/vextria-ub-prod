@@ -3,133 +3,86 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design system colors for JurisFlow */
 @layer base {
-  /* Tema Claro (Branco) */
-  :root,
-  .light {
-    /* Sistema de cores JurisFlow - Tema Claro */
-    --background: 0 0% 100%; /* Branco */
-    --foreground: 222.2 84% 4.9%; /* Texto escuro */
-    
-    --card: 0 0% 100%; /* Branco */
-    --card-foreground: 222.2 84% 4.9%; /* Texto escuro */
-    
-    --popover: 0 0% 100%; /* Branco */
-    --popover-foreground: 222.2 84% 4.9%; /* Texto escuro */
-    
-    --primary: 200 100% 28%; /* Azul petróleo */
-    --primary-foreground: 210 40% 98%; /* Texto claro */
-    
-    --secondary: 120 60% 85%; /* Verde claro */
-    --secondary-foreground: 120 60% 15%; /* Texto verde escuro */
-    
-    --muted: 210 40% 96%; /* Cinza muito claro */
-    --muted-foreground: 215.4 16.3% 46.9%; /* Cinza médio */
-    
-    --accent: 45 100% 85%; /* Amarelo suave */
-    --accent-foreground: 45 100% 15%; /* Texto amarelo escuro */
-    
-    --destructive: 0 84.2% 60.2%; /* Vermelho */
-    --destructive-foreground: 210 40% 98%; /* Texto claro */
-    
-    --border: 214.3 31.8% 91.4%; /* Cinza claro */
-    --input: 214.3 31.8% 91.4%; /* Cinza claro */
-    --ring: 200 100% 28%; /* Azul petróleo */
-    
-    --radius: 0.5rem;
-    
-    /* Cores específicas da sidebar */
-    --sidebar-background: 0 0% 98%; /* Branco levemente acinzentado */
-    --sidebar-foreground: 240 5.3% 26.1%; /* Texto escuro */
-    --sidebar-primary: 200 100% 28%; /* Azul petróleo */
-    --sidebar-primary-foreground: 0 0% 98%; /* Texto claro */
-    --sidebar-accent: 220 14.3% 95.9%; /* Cinza muito claro */
-    --sidebar-accent-foreground: 220 8.9% 46.1%; /* Cinza médio */
-    --sidebar-border: 220 13% 91%; /* Cinza claro */
-    --sidebar-ring: 200 100% 28%; /* Azul petróleo */
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 200 100% 28%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* Tema Azul (Tema escuro original) */
-  .blue {
-    --background: 200 50% 10%; /* Azul escuro */
-    --foreground: 210 40% 98%; /* Texto claro */
-    
-    --card: 200 50% 10%; /* Azul escuro */
-    --card-foreground: 210 40% 98%; /* Texto claro */
-    
-    --popover: 200 50% 10%; /* Azul escuro */
-    --popover-foreground: 210 40% 98%; /* Texto claro */
-    
-    --primary: 200 100% 50%; /* Azul vibrante */
-    --primary-foreground: 200 50% 10%; /* Texto escuro */
-    
-    --secondary: 200 30% 20%; /* Azul médio */
-    --secondary-foreground: 210 40% 98%; /* Texto claro */
-    
-    --muted: 200 30% 15%; /* Azul escuro médio */
-    --muted-foreground: 215.4 16.3% 65%; /* Cinza claro */
-    
-    --accent: 45 100% 60%; /* Amarelo vibrante */
-    --accent-foreground: 45 100% 10%; /* Texto escuro */
-    
-    --destructive: 0 84.2% 60.2%; /* Vermelho */
-    --destructive-foreground: 210 40% 98%; /* Texto claro */
-    
-    --border: 200 30% 20%; /* Azul médio */
-    --input: 200 30% 20%; /* Azul médio */
-    --ring: 200 100% 50%; /* Azul vibrante */
-    
-    /* Cores específicas da sidebar */
-    --sidebar-background: 200 50% 8%; /* Azul muito escuro */
-    --sidebar-foreground: 210 40% 98%; /* Texto claro */
-    --sidebar-primary: 200 100% 50%; /* Azul vibrante */
-    --sidebar-primary-foreground: 200 50% 10%; /* Texto escuro */
-    --sidebar-accent: 200 30% 15%; /* Azul escuro médio */
-    --sidebar-accent-foreground: 210 40% 98%; /* Texto claro */
-    --sidebar-border: 200 30% 20%; /* Azul médio */
-    --sidebar-ring: 200 100% 50%; /* Azul vibrante */
-  }
-
-  /* Tema Escuro (Preto) */
+  /* Premium Dark Mode */
   .dark {
-    --background: 0 0% 3.9%; /* Preto */
-    --foreground: 0 0% 98%; /* Texto claro */
-    
-    --card: 0 0% 3.9%; /* Preto */
-    --card-foreground: 0 0% 98%; /* Texto claro */
-    
-    --popover: 0 0% 3.9%; /* Preto */
-    --popover-foreground: 0 0% 98%; /* Texto claro */
-    
-    --primary: 0 0% 98%; /* Branco */
-    --primary-foreground: 0 0% 9%; /* Texto escuro */
-    
-    --secondary: 0 0% 14.9%; /* Cinza escuro */
-    --secondary-foreground: 0 0% 98%; /* Texto claro */
-    
-    --muted: 0 0% 14.9%; /* Cinza escuro */
-    --muted-foreground: 0 0% 63.9%; /* Cinza médio */
-    
-    --accent: 0 0% 14.9%; /* Cinza escuro */
-    --accent-foreground: 0 0% 98%; /* Texto claro */
-    
-    --destructive: 0 62.8% 30.6%; /* Vermelho escuro */
-    --destructive-foreground: 0 0% 98%; /* Texto claro */
-    
-    --border: 0 0% 14.9%; /* Cinza escuro */
-    --input: 0 0% 14.9%; /* Cinza escuro */
-    --ring: 0 0% 83.1%; /* Cinza claro */
-    
-    /* Cores específicas da sidebar */
-    --sidebar-background: 0 0% 2%; /* Preto mais escuro */
-    --sidebar-foreground: 0 0% 98%; /* Texto claro */
-    --sidebar-primary: 0 0% 98%; /* Branco */
-    --sidebar-primary-foreground: 0 0% 9%; /* Texto escuro */
-    --sidebar-accent: 0 0% 14.9%; /* Cinza escuro */
-    --sidebar-accent-foreground: 0 0% 98%; /* Texto claro */
-    --sidebar-border: 0 0% 14.9%; /* Cinza escuro */
-    --sidebar-ring: 0 0% 83.1%; /* Cinza claro */
+    --background: 222.2 84% 3.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 200 100% 50%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -137,143 +90,61 @@
   * {
     @apply border-border;
   }
-
-  html {
-    /* Prevent iOS Safari zoom on input focus */
-    -webkit-text-size-adjust: 100%;
-  }
-
   body {
-    @apply bg-background text-foreground font-inter;
-    /* Prevent horizontal scroll on mobile */
-    overflow-x: hidden;
-    /* Support for iOS safe area */
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-
-  /* Text selection styles for proper visibility */
-  ::selection {
-    background-color: hsl(var(--primary) / 0.3);
-    color: hsl(var(--primary-foreground));
-  }
-
-  ::-moz-selection {
-    background-color: hsl(var(--primary) / 0.3);
-    color: hsl(var(--primary-foreground));
-  }
-
-  /* Mobile-first responsive typography */
-  h1 {
-    @apply text-xl sm:text-2xl lg:text-3xl;
-  }
-
-  h2 {
-    @apply text-lg sm:text-xl lg:text-2xl;
-  }
-
-  h3 {
-    @apply text-base sm:text-lg lg:text-xl;
-  }
-
-  /* Mobile touch improvements */
-  button, 
-  [role="button"],
-  input,
-  select,
-  textarea {
-    /* Prevent iOS Safari zoom on focus */
-    font-size: 16px;
-  }
-
-  @media (min-width: 768px) {
-    button, 
-    [role="button"],
-    input,
-    select,
-    textarea {
-      font-size: 14px;
-    }
-  }
-
-  /* Mobile-friendly clickable areas */
-  .mobile-touch {
-    min-height: 44px;
-    min-width: 44px;
+    @apply bg-background text-foreground font-inter antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Custom scrollbar for dark theme */
-::-webkit-scrollbar {
-  width: 4px;
-}
-
-@media (min-width: 768px) {
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-muted;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-primary/60 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/80;
-}
-
-/* Mobile-specific utilities */
 @layer utilities {
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
+  .glass-morphism {
+    @apply bg-background/60 backdrop-blur-md border border-white/10 shadow-xl;
   }
   
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .mobile-container {
-    @apply px-4 sm:px-6 lg:px-8;
-  }
-  
-  .mobile-text {
-    @apply text-sm sm:text-base;
-  }
-  
-  .mobile-spacing {
-    @apply space-y-4 sm:space-y-6;
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-sm border border-white/5 shadow-2xl;
   }
 
-  .mobile-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  .text-glow {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
   }
 
-  .mobile-flex {
-    @apply flex flex-col sm:flex-row gap-4;
+  .premium-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
   }
 
-  /* Hide scrollbar while keeping functionality */
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
   }
-  
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-2xl;
+  }
+
+  .animate-in {
+    animation: animate-in 0.5s ease-out forwards;
+  }
+
+  @keyframes animate-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
 
-/* Mobile performance optimizations */
-* {
-  /* Smooth scrolling on all devices */
-  -webkit-overflow-scrolling: touch;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
 }
-
-/* Improve button tap response on mobile */
-button {
-  -webkit-tap-highlight-color: transparent;
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
 }

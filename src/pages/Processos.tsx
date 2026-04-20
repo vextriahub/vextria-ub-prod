@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessos } from '@/hooks/useProcessos';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2, RotateCw } from 'lucide-react';
 
 // Debug logs
 console.log('🔍 Processos.tsx - Iniciando carregamento do componente');
@@ -20,6 +20,10 @@ import { ProcessoEditDialog } from '@/components/Processos/ProcessoEditDialog';
 import { BuscaProcessoAPI } from '@/components/Processos/BuscaProcessoAPI';
 import { ProcessoFilters } from '@/components/Processos/ProcessoFilters';
 import { PermissionGuard } from '@/components/Auth/PermissionGuard';
+import { ProcessoTable } from '@/components/Processos/ProcessoTable';
+import { ProcessoDetailsDrawer } from '@/components/Processos/ProcessoDetailsDrawer';
+import { ProcessoViewSwitcher } from '@/components/Processos/ProcessoViewSwitcher';
+import { JudicialSyncDialog } from '@/components/Processos/JudicialSyncDialog';
 
 // Tipos e dados
 import { Processo, NovoProcessoForm, ProcessoFilters as IProcessoFilters, statusProcesso } from '@/types/processo';
@@ -51,10 +55,18 @@ const Processos = React.memo(() => {
       valorCausa: p.valor_causa,
       numeroProcesso: p.numero_processo,
       tipoProcesso: p.tipo_processo,
+      faseProcessual: (p as any).fase_processual || 'Fase Inicial',
+      responsavelId: (p as any).responsavel_id,
+      responsavelNome: (p as any).responsavel?.full_name || 'Não atribuído',
       area: p.tipo_processo || 'Cível',
       ultimaMovimentacao: p.data_ultima_atualizacao || p.created_at
     }));
   }, [dbProcessos]);
+
+  const [view, setView] = useState<'grid' | 'table'>('table');
+  const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
   const [filters, setFilters] = useState<IProcessoFilters>({
     search: '',
     status: 'all',
@@ -133,7 +145,7 @@ const Processos = React.memo(() => {
   }, [filters]);
 
   // Handlers - todos usando useCallback para evitar re-criações
-  const handleAddProcesso = useCallback(async (novoProcesso: NovoProcessoForm) => {
+  const handleAddProcesso = useCallback(async (novoProcesso: any) => {
     const success = await create({
       titulo: novoProcesso.titulo,
       cliente_id: (novoProcesso as any).clienteId || null,
@@ -143,7 +155,13 @@ const Processos = React.memo(() => {
       valor_causa: novoProcesso.valorCausa || 0,
       observacoes: novoProcesso.descricao || '',
       proximo_prazo: novoProcesso.proximoPrazo || null,
-      data_inicio: new Date().toISOString().split('T')[0]
+      data_inicio: new Date().toISOString().split('T')[0],
+      tribunal: novoProcesso.tribunal,
+      vara: novoProcesso.vara,
+      comarca: novoProcesso.comarca,
+      requerido: novoProcesso.requerido,
+      segredo_justica: novoProcesso.segredoJustica,
+      justica_gratuita: novoProcesso.justicaGratuita
     });
 
     if (success) {
@@ -154,9 +172,55 @@ const Processos = React.memo(() => {
     }
   }, [create, toast]);
 
+  const handleImportedSync = useCallback(async (processes: any[]) => {
+    let successCount = 0;
+    try {
+      for (const proc of processes) {
+        const success = await create({
+          titulo: proc.titulo,
+          cliente_id: null,
+          status: 'Em andamento',
+          numero_processo: proc.numeroProcesso,
+          tipo_processo: proc.faseProcessual, // Classe do DataJud
+          fase_processual: 'Fase Inicial',
+          responsavel_id: user?.id,
+          proximo_prazo: null,
+          valor_causa: proc.valorCausa || 0,
+          descricao: `Importado via OAB. Último andamento: ${proc.ultimoAndamento?.descricao || 'N/A'}`,
+          tribunal: proc.tribunal,
+          vara: proc.ultimoAndamento?.descricao ? `Andamento: ${proc.ultimoAndamento.descricao.slice(0, 50)}...` : '',
+          requerido: proc.partes.split(' x ')[1] || '',
+          segredo_justica: false,
+          justica_gratuita: false,
+          data_inicio: new Date().toISOString().split('T')[0]
+        });
+        if (success) successCount++;
+      }
+      
+      if (successCount > 0) {
+        toast({
+          title: "Importação concluída",
+          description: `${successCount} processos foram adicionados.`,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao importar processos da OAB:', error);
+      toast({
+        title: "Erro na importação",
+        description: "Houve um problema ao salvar alguns processos.",
+        variant: "destructive"
+      });
+    }
+  }, [create, user, toast]);
+
   const handleEditProcesso = useCallback((processo: Processo) => {
     setEditingProcesso(processo);
     setEditDialogOpen(true);
+  }, []);
+
+  const handleViewDetails = useCallback((processo: Processo) => {
+    setSelectedProcesso(processo);
+    setIsDetailsOpen(true);
   }, []);
 
   const handleSaveEdit = useCallback(async (processoAtualizado: Processo) => {
@@ -270,52 +334,39 @@ const Processos = React.memo(() => {
   }, []);
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-            <FileText className="h-8 w-8 text-primary" />
-            Processos Jurídicos
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie seus processos jurídicos de forma simples e eficiente
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            </div>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+              Processos Jurídicos
+            </h1>
+          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+            Gerencie e acompanhe o fluxo processual do seu escritório com inteligência.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+          <ProcessoViewSwitcher view={view} onViewChange={setView} />
+          <JudicialSyncDialog onImport={handleImportedSync} />
           <NovoProcessoDialog onAddProcesso={handleAddProcesso} />
         </div>
       </div>
 
       {/* Empty State */}
       {showEmptyState ? (
-        <Card className="border-dashed border-2 p-8">
-          <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
-            <FileText className="h-12 w-12 text-muted-foreground" />
-            <div className="text-center space-y-2">
-              <h3 className="text-xl font-semibold">Nenhum processo cadastrado</h3>
-              <p className="text-muted-foreground">
-                Você ainda não possui processos cadastrados. 
-                Comece criando seu primeiro processo ou carregue dados de exemplo.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <NovoProcessoDialog 
-                onAddProcesso={handleAddProcesso}
-                trigger={
-                  <Button>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Criar Primeiro Processo
-                  </Button>
-                }
-              />
-              <Button variant="outline" onClick={handleLoadSampleData}>
-                Carregar Dados de Exemplo
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title="Nenhum processo cadastrado"
+          description="Seu escritório ainda não possui processos no banco de dados. Comece importando processos via OAB ou cadastrando-os manualmente."
+          actionLabel="Criar Primeiro Processo"
+          onAction={() => {}} // O diálogo já lida com o trigger, mas manteremos o componente
+        />
       ) : (
         <>
           {/* Filtros */}
@@ -359,6 +410,13 @@ const Processos = React.memo(() => {
                 </div>
               </CardContent>
             </Card>
+          ) : view === 'table' ? (
+            <ProcessoTable
+              processos={filteredProcessos as any}
+              onEdit={handleEditProcesso}
+              onDelete={handleDeleteProcesso}
+              onViewDetails={handleViewDetails}
+            />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredProcessos.map((processo) => (
@@ -368,6 +426,7 @@ const Processos = React.memo(() => {
                   onEdit={handleEditProcesso}
                   onDelete={handleDeleteProcesso}
                   onClienteClick={handleClienteClick}
+                  onClick={() => handleViewDetails(processo as any)}
                 />
               ))}
             </div>
@@ -398,6 +457,13 @@ const Processos = React.memo(() => {
         title="Excluir Processo"
         description={`Tem certeza que deseja excluir o processo "${processoToDelete?.titulo}"? Esta ação não pode ser desfeita.`}
         isLoading={isDeleting}
+      />
+
+      {/* Painel de Detalhes (Drawer) */}
+      <ProcessoDetailsDrawer
+        processo={selectedProcesso as any}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
       />
     </div>
   );

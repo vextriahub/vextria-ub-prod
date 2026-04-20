@@ -267,7 +267,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             name: profileData?.full_name || initialUser.name,
             email: sessionUser.email || profileData?.email || initialUser.email,
             role: profileData?.role || initialUser.role,
-            office_id: profileData?.office_id || null,
+            office_id: profileData?.office_id || officeUser?.office_id || null,
             office_role: officeUser?.role || null
           };
           

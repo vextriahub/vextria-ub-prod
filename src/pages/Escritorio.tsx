@@ -9,28 +9,36 @@ import { Building2, Users, Settings } from "lucide-react";
 const Escritorio = () => {
   return (
     <PermissionGuard permission="canManageOffice">
-      <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-              <div className="space-y-2">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
-                  <Building2 className="h-6 w-6 text-primary" />
-                  Gerenciar Escritório
-                </h1>
-                <p className="text-sm md:text-base text-muted-foreground">
-                  Gerencie as configurações e usuários do seu escritório
-                </p>
+      <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Building2 className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                Gestão do Escritório
+              </h1>
+            </div>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium">
+              Ajuste as configurações globais e controle o acesso de usuários.
+            </p>
+          </div>
+        </div>
 
-              <Tabs defaultValue="configuracoes" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="configuracoes" className="flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Configurações
-                  </TabsTrigger>
-                  <TabsTrigger value="usuarios" className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Usuários
-                  </TabsTrigger>
-                </TabsList>
+        <Tabs defaultValue="configuracoes" className="space-y-8">
+          <div className="border-b border-white/5 bg-background/30 backdrop-blur-sm p-1 rounded-2xl w-fit">
+            <TabsList className="h-11 gap-1 bg-transparent border-none">
+              <TabsTrigger value="configuracoes" className="rounded-xl px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 font-bold flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Configurações
+              </TabsTrigger>
+              <TabsTrigger value="usuarios" className="rounded-xl px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 font-bold flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Usuários
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
                 <TabsContent value="configuracoes" className="space-y-6">
                   <OfficeSettings />

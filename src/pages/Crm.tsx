@@ -94,21 +94,29 @@ export default function Crm() {
   }
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+      <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <UserCheck className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold">CRM</h1>
-              <p className="text-sm md:text-base text-muted-foreground">Gerencie seus leads e relacionamentos</p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <UserCheck className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              </div>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                CRM & Leads
+              </h1>
             </div>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium">
+              Transforme prospecções em contratos com gestão inteligente de relacionamento.
+            </p>
           </div>
-          <Button className="w-full sm:w-auto" onClick={() => setShowNovoLeadDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Lead
-          </Button>
+          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+            <Button size="lg" className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6" onClick={() => setShowNovoLeadDialog(true)}>
+              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              Novo Lead
+            </Button>
+          </div>
         </div>
 
         {/* Navigation Menu */}
@@ -187,48 +195,52 @@ export default function Crm() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick("leads")}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("leads")}>
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total Leads</CardTitle>
+              <UserCheck className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">{0}</div>
-              <p className="text-xs text-muted-foreground">Clique para ver todos</p>
+              <div className="text-3xl font-extrabold tracking-tight">0</div>
+              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Ver base completa</p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick("leads-quentes")}>
+          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("leads-quentes")}>
+            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/40 group-hover:bg-orange-500 transition-colors" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Leads Quentes</CardTitle>
-              <Phone className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Leads Quentes</CardTitle>
+              <Phone className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">{0}</div>
-              <p className="text-xs text-muted-foreground">Clique para ver detalhes</p>
+              <div className="text-3xl font-extrabold tracking-tight">0</div>
+              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Oportunidades imediatas</p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick("conversoes")}>
+          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("conversoes")}>
+            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/40 group-hover:bg-emerald-500 transition-colors" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Conversões</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Conversões</CardTitle>
+              <Calendar className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">{0}</div>
-              <p className="text-xs text-muted-foreground">Clique para ver clientes</p>
+              <div className="text-3xl font-extrabold tracking-tight">0</div>
+              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Taxa de sucesso mensal</p>
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleCardClick("receita-potencial")}>
+          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("receita-potencial")}>
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Receita Potencial</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">VPL Estimado</CardTitle>
+              <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl md:text-2xl font-bold">R$ 110.000</div>
-              <p className="text-xs text-muted-foreground">Clique para ver pipeline</p>
+              <div className="text-3xl font-extrabold tracking-tight">R$ 110k</div>
+              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Pipeline ponderado</p>
             </CardContent>
           </Card>
         </div>

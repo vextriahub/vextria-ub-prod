@@ -82,13 +82,21 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="flex-1 p-3 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
       {/* Page Header */}
-      <div className="space-y-1 md:space-y-2">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Início</h1>
-        <p className="text-xs md:text-sm lg:text-base text-muted-foreground">
-          Bem-vindo ao seu assistente jurídico inteligente.
-        </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            {profile?.full_name ? `Olá, ${profile.full_name.split(' ')[0]}!` : 'Seu Assistente Jurídico'}
+          </h1>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+            Aqui está um resumo do seu escritório para hoje.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 glass-morphism rounded-full">
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs font-semibold uppercase tracking-wider opacity-70">Sistema Online</span>
+        </div>
       </div>
 
       {/* Trial Alert */}

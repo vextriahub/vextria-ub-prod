@@ -197,50 +197,36 @@ export default function Timesheet() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-8">
-        {/* Mostrar erro se houver ou se timeout */}
-        {(error || loadingTimeout) && (
-          <Card className="border-destructive bg-destructive/10 backdrop-blur-sm">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-destructive">
-                <AlertCircle className="h-4 w-4" />
-                <p className="text-sm">
-                  {loadingTimeout ? 
-                    'Timeout de carregamento - Usando modo offline' : 
-                    `Modo offline: ${error}`
-                  }
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+      <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
         {/* Header com Visual Moderno */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground flex items-center gap-3">
-              <div className="p-3 bg-primary rounded-2xl shadow-lg">
-                <Clock className="h-8 w-8 text-primary-foreground" />
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Clock className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
-              Timesheet {(error || loadingTimeout) ? '(Modo Offline)' : ''}
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Controle e acompanhe o tempo gasto em suas atividades jurídicas
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+                Timesheet & Produtividade
+              </h1>
+            </div>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium">
+              Controle e acompanhe o tempo gasto em suas atividades jurídicas.
             </p>
           </div>
           
-          <Dialog open={isNewTimerDialogOpen} onOpenChange={setIsNewTimerDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                className="shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-6 py-3 rounded-xl" 
-                disabled={!!timerAtivo}
-                size="lg"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Novo Timer
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+            <Dialog open={isNewTimerDialogOpen} onOpenChange={setIsNewTimerDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6" 
+                  disabled={!!timerAtivo}
+                  size="lg"
+                >
+                  <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  Novo Timer
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] rounded-2xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl">Iniciar Novo Timer</DialogTitle>
@@ -289,59 +275,61 @@ export default function Timesheet() {
             </DialogContent>
           </Dialog>
         </div>
+      </div>
 
         {/* Timer Ativo com Design Premium */}
-        <Card className="bg-card/80 backdrop-blur-md border shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className={`p-2 rounded-full ${timerAtivo ? 'bg-green-500/20 text-green-600' : 'bg-slate-500/20 text-slate-600'}`}>
-                <Timer className="h-6 w-6" />
+        <Card className="border-white/5 bg-card/40 backdrop-blur-xl overflow-hidden shadow-premium rounded-3xl relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+          <CardHeader className="pb-4 relative">
+            <CardTitle className="flex items-center gap-3 text-xl font-bold uppercase tracking-widest text-muted-foreground">
+              <div className={`p-2 rounded-xl ${timerAtivo ? 'bg-primary/20 text-primary' : 'bg-muted/20 text-muted-foreground'}`}>
+                <Timer className="h-5 w-5" />
               </div>
-              Timer Ativo {activeTimer ? '(Supabase)' : isTimerActive ? '(Local)' : ''}
+              Timer em Tempo Real
             </CardTitle>
-            <CardDescription className="text-lg">
-              {timerAtivo ? "Timer em execução" : "Nenhum timer ativo no momento"}
-            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8 relative">
             {timerAtivo ? (
-              <>
-                <div className="text-center py-8">
-                  <div className="text-6xl md:text-8xl font-mono font-bold text-foreground tracking-wider">
+              <div className="flex flex-col items-center py-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+                  <div className="text-7xl md:text-9xl font-extrabold tracking-tighter text-foreground relative drop-shadow-[0_0_15px_rgba(var(--primary),0.3)]">
                     {formatTime(elapsedTime)}
                   </div>
-                  <div className="mt-4 p-4 bg-muted/60 rounded-2xl backdrop-blur-sm">
-                    <p className="text-lg font-semibold text-foreground">
+                </div>
+                
+                <div className="mt-10 flex flex-col items-center gap-6 w-full max-w-xl">
+                  <div className="w-full p-6 bg-background/50 backdrop-blur-md rounded-2xl border border-white/5 shadow-inner">
+                    <p className="text-sm font-bold uppercase tracking-widest text-primary mb-2">Atividade Atual</p>
+                    <p className="text-xl font-bold text-foreground">
                       {activeTimer?.tarefa_descricao || formData.descricao}
                     </p>
                   </div>
-                </div>
-
-                <div className="flex justify-center">
+                  
                   <Button 
                     variant="destructive" 
                     onClick={handleStopTimer}
-                    className="px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    className="w-full md:w-auto px-12 h-14 rounded-xl shadow-premium font-bold text-lg hover:scale-105 transition-all"
                     size="lg"
                   >
-                    <Square className="h-5 w-5 mr-2" />
-                    Finalizar
+                    <Square className="h-5 w-5 mr-3 fill-current" />
+                    Finalizar Registro
                   </Button>
                 </div>
-              </>
+              </div>
             ) : (
               <div className="text-center py-12">
-                <div className="p-6 bg-slate-100/80 dark:bg-slate-700/80 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                  <Timer className="h-12 w-12 text-slate-400" />
+                <div className="p-8 bg-muted/10 rounded-full w-28 h-28 mx-auto mb-6 flex items-center justify-center border border-dashed border-white/10">
+                  <Timer className="h-12 w-12 text-muted-foreground/30" />
                 </div>
-                <p className="text-xl text-muted-foreground mb-6">Nenhum timer ativo</p>
+                <h3 className="text-2xl font-bold text-muted-foreground mb-4">Pronto para começar?</h3>
                 <Button 
                   onClick={() => setIsNewTimerDialogOpen(true)} 
-                  className="px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                   size="lg"
+                  className="rounded-xl shadow-premium px-10 h-14 font-bold"
                 >
-                  <Play className="h-5 w-5 mr-2" />
-                  Iniciar Novo Timer
+                  <Play className="h-5 w-5 mr-3 fill-current" />
+                  Iniciar Atividade
                 </Button>
               </div>
             )}
@@ -350,53 +338,50 @@ export default function Timesheet() {
 
         {/* Estatísticas Modernas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-card border shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Tempo Hoje</CardTitle>
-              <div className="p-2 bg-primary/20 rounded-lg">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tempo Hoje</CardTitle>
+              <div className="p-2 bg-primary/10 rounded-lg">
                 <Clock className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{formatMinutes(todayStats.totalMinutos)}</div>
-              <div className="flex items-center pt-1 text-xs text-muted-foreground">
+              <div className="text-3xl font-extrabold tracking-tight">{formatMinutes(todayStats.totalMinutos)}</div>
+              <div className="flex items-center pt-2 text-xs font-bold text-primary/70">
                 <TrendingUp className="mr-1 h-3 w-3" />
                 <span>{todayStats.totalRegistros} registros</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-card border shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Esta Semana</CardTitle>
-              <div className="p-2 bg-primary/20 rounded-lg">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Esta Semana</CardTitle>
+              <div className="p-2 bg-primary/10 rounded-lg">
                 <Timer className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{formatMinutes(weekStats.totalMinutos)}</div>
-              <div className="flex items-center pt-1 text-xs text-muted-foreground">
+              <div className="text-3xl font-extrabold tracking-tight">{formatMinutes(weekStats.totalMinutos)}</div>
+              <div className="flex items-center pt-2 text-xs font-bold text-primary/70">
                 <ArrowUpRight className="mr-1 h-3 w-3" />
                 <span>{weekStats.totalRegistros} registros</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-card border shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
+          <Card className="hover-lift border-white/5 bg-card/40">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Média Diária</CardTitle>
-              <div className="p-2 bg-primary/20 rounded-lg">
+              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Média Diária</CardTitle>
+              <div className="p-2 bg-primary/10 rounded-lg">
                 <TrendingUp className="h-4 w-4 text-primary" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">
+              <div className="text-3xl font-extrabold tracking-tight">
                 {weekStats.totalRegistros > 0 ? formatMinutes(Math.round(weekStats.totalMinutos / 7)) : "0m"}
               </div>
-              <div className="flex items-center pt-1 text-xs text-muted-foreground">
-                <Clock className="mr-1 h-3 w-3" />
-                <span>Últimos 7 dias</span>
-              </div>
+              <p className="text-xs font-medium text-muted-foreground mt-2 opacity-70">Últimos 7 dias móveis</p>
             </CardContent>
           </Card>
         </div>

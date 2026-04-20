@@ -40,18 +40,24 @@ export function StatsCards() {
   const stats = getStatsData();
 
   return (
-    <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat, index) => (
-        <Card key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 md:p-6">
-            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
+        <Card 
+          key={index} 
+          className="hover-lift overflow-hidden group border-white/5 bg-card/40"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-6">
+            <CardTitle className="text-xs md:text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {stat.title}
             </CardTitle>
-            <stat.icon className={`h-4 w-4 md:h-5 md:w-5 ${stat.color}`} />
+            <div className={`p-2 rounded-lg bg-background/50 ${stat.color} group-hover:scale-110 transition-transform`}>
+              <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0 md:p-6 md:pt-0">
-            <div className="text-xl md:text-2xl font-bold">{stat.value}</div>
-            <p className="text-xs text-muted-foreground mt-1">
+          <CardContent className="p-6 pt-0">
+            <div className="text-2xl md:text-3xl font-extrabold tracking-tight">{stat.value}</div>
+            <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">
               {stat.change}
             </p>
           </CardContent>

@@ -68,7 +68,7 @@ export function AppHeader() {
   const displayEmail = profile?.email || user?.email || session?.user?.email || "email@exemplo.com";
 
   return (
-    <header className="h-12 md:h-14 lg:h-16 border-b border-border bg-card flex items-center justify-between px-3 md:px-4 lg:px-6">
+    <header className="h-14 md:h-16 border-b border-white/5 bg-background/60 backdrop-blur-xl sticky top-0 z-50 flex items-center justify-between px-4 md:px-6 shadow-sm">
       {/* Sidebar Trigger - Always visible */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="h-7 w-7 md:h-8 md:w-8" />
