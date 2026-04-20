@@ -102,19 +102,20 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       });
 
       if (error) {
-        console.error("Erro completo da function:", error);
-        let errorMessage = "Ocorreu um problema ao consultar o DataJud.";
+        console.error("DEBUG - Erro na Function:", error);
         
-        // Supabase FunctionsHttpError pode ter o status no message ou no context
-        if (error.message) {
-          if (error.message.includes("403")) {
-            errorMessage = "Acesso negado pelo tribunal (TJDFT). Busca por OAB restrita via API pública.";
-          } else {
-            errorMessage = error.message;
-          }
+        let msg = "Não foi possível conectar ao serviço de busca.";
+        
+        // Se for erro de rede/CORS
+        if (error.message?.includes("Failed to fetch") || !error.status) {
+          msg = "Erro de conexão ou bloqueio de segurança (CORS). Verifique sua rede ou tente novamente.";
+        } else if (error.status === 403) {
+          msg = "Acesso negado pelo tribunal (TJDFT). O tribunal restringiu buscas automáticas por esta OAB.";
+        } else if (error.message) {
+          msg = error.message;
         }
         
-        throw new Error(errorMessage);
+        throw new Error(msg);
       }
 
       if (!data || data.length === 0) {
