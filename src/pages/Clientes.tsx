@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMultiSelect } from "@/hooks/useMultiSelect";
 import { Client } from "@/types/client";
-import { Loader2, Users, Plus } from "lucide-react";
+import { Loader2, Users, Plus, Search } from "lucide-react";
 import { useClientes } from "@/hooks/useClientes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

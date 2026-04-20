@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { AutoPublicationFetcher } from "@/components/Publications/AutoPublicationFetcher";
 import { PublicationDetailsDialog } from "@/components/Publications/PublicationDetailsDialog";
 import { ScheduleDialog } from "@/components/Publications/ScheduleDialog";
-import { BookOpen, Trash2 } from "lucide-react";
+import { BookOpen, Trash2, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,

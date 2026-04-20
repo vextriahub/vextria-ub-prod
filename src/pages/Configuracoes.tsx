@@ -21,7 +21,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Settings } from "lucide-react";
 
 import { TeamManagement } from "@/components/Settings/TeamManagement";
 import { ProcessTypeSimple } from "@/components/Settings/ProcessTypeSimple";
