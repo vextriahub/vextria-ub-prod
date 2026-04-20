@@ -44,6 +44,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const UFs = [
   'AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 
@@ -93,13 +94,18 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
   React.useEffect(() => {
     const fetchClients = async () => {
       if (!user) return;
-      const { data } = await supabase
-        .from('clientes')
-        .select('id, nome')
-        .eq('office_id', user.office_id)
-        .eq('deletado', false)
-        .order('nome');
-      if (data) setClients(data);
+      try {
+        const { data, error } = await supabase
+          .from('clientes')
+          .select('id, nome')
+          .eq('office_id', user.office_id)
+          .eq('deletado', false)
+          .order('nome');
+        if (error) throw error;
+        if (data) setClients(data);
+      } catch (err) {
+        console.error("Erro ao carregar clientes:", err);
+      }
     };
     fetchClients();
   }, [user]);
@@ -119,82 +125,39 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     setSelectedIds(new Set());
 
     try {
-      console.log(`🔍 Iniciando busca direta no PJe Communica: OAB ${oab}-${uf}`);
-      const response = await fetch(`https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${oab}&ufOab=${uf}`);
+      console.log(`🔍 Iniciando busca via Edge Function: OAB ${oab}-${uf}`);
       
-      if (!response.ok) {
-        throw new Error(`Erro na API do PJe (${response.status})`);
-      }
-
-      const data = await response.json();
-      const items = data.items || [];
-      
-      const toProperCase = (str: string) => {
-        if (!str) return '';
-        return str.toLowerCase().trim().replace(/(^|\s)\S/g, (L) => L.toUpperCase());
-      };
-
-      const mappedResults = items.map((item: any) => {
-        let constructedTitle = '';
-        const clientName = item.destinatarios?.[0]?.nome || '';
-        
-        // Tentativa 1: Extrair do Texto (Regex)
-        const text = item.texto || '';
-        const autorMatch = text.match(/AUTOR(?:A)?:\s*([^<]+)/i);
-        const reuMatch = text.match(/R(?:É|E)U:\s*([^<]+)/i);
-
-        if (autorMatch && reuMatch) {
-          constructedTitle = `${toProperCase(autorMatch[1])} vs ${toProperCase(reuMatch[1])}`;
-        } else if (autorMatch) {
-          constructedTitle = toProperCase(autorMatch[1]);
-        } else if (reuMatch) {
-          constructedTitle = toProperCase(reuMatch[1]);
-        } else if (clientName) {
-          constructedTitle = toProperCase(clientName);
-        } else {
-          constructedTitle = toProperCase(item.tipoComunicacao || 'Processo sem título');
-        }
-
-        return {
-          id: item.id || item.numero_processo,
-          numeroProcesso: item.numero_processo || item.numeroprocessocommascara,
-          titulo: constructedTitle,
-          partes: constructedTitle,
-          tribunal: item.nomeTribunal || 'PJE',
-          ultimoAndamento: {
-            descricao: (item.textoComunicacao || item.tipoComunicacao || '').substring(0, 200),
-            data: item.data_disponibilizacao || item.datadisponibilizacao
-          },
-          faseProcessual: 'Comunicado PJe',
-          valorCausa: 0,
-          vara: item.nomeOrgao || '',
-          comarca: uf,
-          clienteDestaque: toProperCase(clientName)
-        };
+      const { data, error } = await supabase.functions.invoke('fetch-by-oab', {
+        body: { oab, uf }
       });
 
-      // Remover duplicados
-      const uniqueProcesses = mappedResults.filter((p: any, index: number, self: any[]) => 
-        index === self.findIndex((t) => t.numeroProcesso === p.numeroProcesso)
-      );
-
-      if (uniqueProcesses.length === 0) {
+      if (error) throw error;
+      
+      const items = data || [];
+      
+      if (items.length === 0) {
         toast({
           title: "Nenhum processo encontrado",
-          description: `Não encontramos comunicações recentes no PJe para a OAB ${oab}-${uf}.`,
+          description: `Não encontramos processos recentes para a OAB ${oab}-${uf} nos tribunais de ${uf}.`,
         });
       } else {
-        setResults(uniqueProcesses);
+        // Garantir que cada item tenha um ID único para a UI
+        const mappedResults = items.map((item: any) => ({
+          ...item,
+          id: item.id || item.numeroProcesso
+        }));
+
+        setResults(mappedResults);
         toast({
           title: "Busca concluída",
-          description: `Encontramos ${uniqueProcesses.length} processos vinculados à sua OAB no PJe.`,
+          description: `Encontramos ${mappedResults.length} processos vinculados à sua OAB.`,
         });
       }
     } catch (error: any) {
-      console.error("DEBUG - Erro na Busca Direta:", error);
+      console.error("DEBUG - Erro na Busca via Edge Function:", error);
       toast({
         title: "Erro na sincronização",
-        description: "Não foi possível conectar ao serviço nacional do PJe. Tente novamente.",
+        description: error.message || "Não foi possível conectar ao serviço de busca. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -324,12 +287,37 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       <Separator className="mb-6 bg-white/10" />
 
       {/* Resultados */}
-        <div className="flex-1 overflow-y-auto min-h-0 border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md">
+      {results.length > 0 && (
+        <div className="bg-slate-900/50 border border-white/5 p-3 rounded-xl mb-4 flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-primary" />
+            <span className="text-sm font-bold text-white/90">Resultados encontrados ({results.length})</span>
+          </div>
+          <div className="flex items-center gap-4">
+             <span className="text-xs text-white/40">{selectedIds.size} selecionados</span>
+             <button 
+               onClick={toggleSelectAll}
+               className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+             >
+               {selectedIds.size === results.length ? 'Desmarcar todos' : 'Selecionar todos'}
+             </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 min-h-0 border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md overflow-hidden flex flex-col">
+        <ScrollArea className="flex-1">
           {results.length > 0 ? (
             <Table>
-              <TableHeader className="bg-slate-900 sticky top-0 z-20">
+              <TableHeader className="bg-slate-900 sticky top-0 z-20 shadow-sm">
                 <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead className="w-[40px] px-4">
+                    <Checkbox 
+                      checked={selectedIds.size === results.length && results.length > 0} 
+                      onCheckedChange={toggleSelectAll}
+                      className="border-white/20 data-[state=checked]:bg-primary"
+                    />
+                  </TableHead>
                   <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Processo / Partes</TableHead>
                   <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold min-w-[200px]">Vincular Cliente</TableHead>
                   <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Resumo / Data</TableHead>
@@ -339,7 +327,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
               <TableBody>
                 {results.map((proc) => (
                   <TableRow key={proc.id} className="group border-white/5 hover:bg-white/5 transition-colors">
-                    <TableCell>
+                    <TableCell className="px-4">
                       <Checkbox 
                         checked={selectedIds.has(proc.id)} 
                         onCheckedChange={() => toggleSelect(proc.id)}
@@ -347,25 +335,34 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1 py-1">
                         <span className="font-mono text-xs font-bold text-primary">{proc.numeroProcesso}</span>
-                        <div className="text-sm font-medium line-clamp-1 text-white/90">
-                          {proc.clienteDestaque && proc.partes.includes(proc.clienteDestaque) ? (
-                            <>
-                              {proc.partes.split(proc.clienteDestaque).map((segment, i, array) => (
-                                <React.Fragment key={i}>
-                                  {segment}
-                                  {i < array.length - 1 && (
-                                    <span className="text-primary font-bold">{proc.clienteDestaque}</span>
-                                  )}
-                                </React.Fragment>
-                              ))}
-                            </>
-                          ) : (
-                            proc.partes
-                          )}
-                        </div>
-                        <span className="text-[10px] text-white/40">{proc.tribunal}</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="text-sm font-medium line-clamp-1 text-white/90 cursor-default">
+                                {proc.clienteDestaque && proc.partes.includes(proc.clienteDestaque) ? (
+                                  <>
+                                    {proc.partes.split(proc.clienteDestaque).map((segment, i, array) => (
+                                      <React.Fragment key={i}>
+                                        {segment}
+                                        {i < array.length - 1 && (
+                                          <span className="text-primary font-bold">{proc.clienteDestaque}</span>
+                                        )}
+                                      </React.Fragment>
+                                    ))}
+                                  </>
+                                ) : (
+                                  proc.partes
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-slate-800 border-white/10 text-white">
+                              {proc.partes}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <span className="text-[10px] text-white/40">{proc.tribunal} {proc.vara && `• ${proc.vara}`}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -373,10 +370,10 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                         value={itemSelections[proc.id] || ''} 
                         onValueChange={(val) => setItemSelections(prev => ({ ...prev, [proc.id]: val }))}
                       >
-                        <SelectTrigger className="h-8 bg-white/5 border-white/10 text-[11px]">
+                        <SelectTrigger className="h-8 bg-white/5 border-white/10 text-[11px] hover:bg-white/10 transition-colors">
                           <SelectValue placeholder="Vincular a..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-900 border-white/10">
+                        <SelectContent className="bg-slate-900 border-white/10 max-h-[200px]">
                           {clients.map(c => (
                             <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                           ))}
@@ -391,10 +388,10 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                           </span>
                           <span className="text-xs line-clamp-1 italic text-white/50">{proc.ultimoAndamento.descricao}</span>
                         </div>
-                      ) : <span className="text-white/20 italic">---</span>}
+                      ) : <span className="text-white/20 italic text-[11px]">Sem andamento recente</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white/5 border-white/10 text-white/40">
+                      <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white/5 border-white/10 text-white/40 whitespace-nowrap">
                         {proc.faseProcessual}
                       </Badge>
                     </TableCell>
@@ -403,32 +400,35 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
               </TableBody>
             </Table>
           ) : (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-white/20">
+            <div className="flex flex-col items-center justify-center p-12 text-center text-white/20 h-full">
               {loading ? (
                 <>
                   <Loader2 className="h-10 w-10 animate-spin mb-4 text-primary" />
                   <p className="text-white/60 animate-pulse">Consultando banco de dados nacional do CNJ...</p>
+                  <p className="text-[10px] text-white/30 mt-2">Isso pode levar alguns segundos dependendo do tribunal.</p>
                 </>
               ) : (
                 <>
                   <Search className="h-12 w-12 mb-4 opacity-10" />
                   <p className="text-lg font-medium text-white/40">Pronto para buscar</p>
-                  <p className="text-xs mt-2 max-w-[200px] mx-auto">Informe sua OAB principal e o estado do tribunal para sincronizar processos.</p>
+                  <p className="text-xs mt-2 max-w-[240px] mx-auto text-white/30">
+                    Informe sua OAB principal e o estado do tribunal para sincronizar processos do DataJud.
+                  </p>
                 </>
               )}
             </div>
           )}
-        </div>
+        </ScrollArea>
       </div>
 
       <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
-        <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-white/40 hover:text-white">
+        <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-white/40 hover:text-white hover:bg-white/5">
           Cancelar
         </Button>
         <Button 
           onClick={handleImport} 
           disabled={selectedIds.size === 0 || importing}
-          className="gap-2 px-8 bg-primary shadow-lg shadow-primary/20 h-11"
+          className="gap-2 px-8 bg-primary shadow-lg shadow-primary/20 h-11 font-bold transition-all hover:scale-[1.02]"
         >
           {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
           {importing ? 'Importando...' : `Importar ${selectedIds.size} Processos`}

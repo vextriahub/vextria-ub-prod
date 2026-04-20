@@ -186,21 +186,22 @@ const Processos = React.memo(() => {
       for (const proc of processes) {
         const success = await create({
           titulo: proc.titulo,
-          cliente_id: null,
+          clienteId: (proc as any).clienteId || null,
           status: 'Em andamento',
-          numero_processo: proc.numeroProcesso,
-          tipo_processo: proc.faseProcessual, // Classe do DataJud
-          fase_processual: 'Fase Inicial',
-          responsavel_id: user?.id,
-          proximo_prazo: null,
-          valor_causa: proc.valorCausa || 0,
+          numeroProcesso: proc.numeroProcesso,
+          tipoProcesso: proc.faseProcessual || 'Cível',
+          faseProcessual: proc.faseProcessual || 'Fase Inicial',
+          responsavelId: user?.id,
+          proximoPrazo: null,
+          valorCausa: proc.valorCausa || 0,
           descricao: `Importado via OAB. Último andamento: ${proc.ultimoAndamento?.descricao || 'N/A'}`,
           tribunal: proc.tribunal,
-          vara: proc.ultimoAndamento?.descricao ? `Andamento: ${proc.ultimoAndamento.descricao.slice(0, 50)}...` : '',
-          requerido: proc.partes.split(' x ')[1] || '',
-          segredo_justica: false,
-          justica_gratuita: false,
-          data_inicio: new Date().toISOString().split('T')[0]
+          vara: proc.vara || '',
+          comarca: proc.comarca || '',
+          requerido: proc.partes?.split(' x ')?.[1] || '',
+          segredoJustica: false,
+          justicaGratuita: false,
+          dataInicio: new Date().toISOString().split('T')[0]
         });
         if (success) successCount++;
       }
@@ -208,7 +209,7 @@ const Processos = React.memo(() => {
       if (successCount > 0) {
         toast({
           title: "Importação concluída",
-          description: `${successCount} processos foram adicionados.`,
+          description: `${successCount} processos foram adicionados com sucesso ao seu escritório.`,
         });
       }
     } catch (error) {
@@ -374,6 +375,15 @@ const Processos = React.memo(() => {
           <div className="flex items-center gap-3 h-12">
             <ProcessoViewSwitcher view={view} onViewChange={setView} />
             <div className="h-6 w-px bg-white/10 mx-1 hidden md:block" />
+            <JudicialSyncDialog 
+              onImport={handleImportedSync} 
+              trigger={
+                <Button variant="outline" className="gap-2 h-12 bg-white/5 border-white/10 rounded-2xl hover:bg-white/10 transition-colors px-6">
+                  <RotateCw className="h-4 w-4 text-primary" />
+                  <span className="hidden sm:inline">Sincronizar OAB</span>
+                </Button>
+              }
+            />
             <NovoProcessoDialog onAddProcesso={handleAddProcesso} open={isNovoProcessoOpen} onOpenChange={setIsNovoProcessoOpen} />
           </div>
         </div>
