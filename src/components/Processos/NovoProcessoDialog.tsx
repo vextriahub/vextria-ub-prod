@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, FileText, Scale, User, Gavel, ShieldCheck, Info, RotateCw } from 'lucide-react';
+import { Plus, FileText, Scale, User, Gavel, ShieldCheck, Info, RotateCw, Search, Loader2 } from 'lucide-react';
 import { usePlanLimits } from '@/hooks/usePlanFeatures';
 import { useToast } from '@/hooks/use-toast';
 import { PermissionGuard } from '@/components/Auth/PermissionGuard';
