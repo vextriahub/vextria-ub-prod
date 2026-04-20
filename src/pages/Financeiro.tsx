@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitialData } from "@/utils/initialData";
-
+import { cn } from "@/lib/utils";
 import { PermissionGuard } from "@/components/Auth/PermissionGuard";
 
 const Financeiro = () => {

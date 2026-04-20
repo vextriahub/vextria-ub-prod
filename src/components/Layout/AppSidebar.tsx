@@ -244,8 +244,8 @@ export function AppSidebar() {
                 <SidebarMenu className="space-y-1">
                   {canViewAdmin && (
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild className="p-0">
-                        <NavLink to="/admin" className={getNavClasses}>
+                      <SidebarMenuButton asChild className="p-0" isActive={isLinkActive('/admin')}>
+                        <NavLink to="/admin" className={({ isActive }) => getNavClasses(isActive || isLinkActive('/admin'))}>
                           <Shield className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
                           {(!isCollapsed || isMobile) && <span className="truncate">
                             {isSuperAdmin ? 'Admin Global' : 'Administração'}
@@ -256,8 +256,8 @@ export function AppSidebar() {
                   )}
                   {canManageOffice && !isSuperAdmin && (
                     <SidebarMenuItem>
-                      <SidebarMenuButton asChild className="p-0">
-                        <NavLink to="/escritorio" className={getNavClasses}>
+                      <SidebarMenuButton asChild className="p-0" isActive={isLinkActive('/escritorio')}>
+                        <NavLink to="/escritorio" className={({ isActive }) => getNavClasses(isActive || isLinkActive('/escritorio'))}>
                           <Building2 className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
                           {(!isCollapsed || isMobile) && <span className="truncate">Meu Escritório</span>}
                         </NavLink>
