@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMultiSelect } from "@/hooks/useMultiSelect";
 import { Client } from "@/types/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, Users } from "lucide-react";
 import { useClientes } from "@/hooks/useClientes";
 
 // Componentes refatorados
