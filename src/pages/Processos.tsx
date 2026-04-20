@@ -6,6 +6,7 @@ import { useProcessos } from '@/hooks/useProcessos';
 import { FileText, Loader2, RotateCw, Search } from 'lucide-react';
 
 // Debug logs
+console.log('%c [VEXTRIA] VERSÃO ATUALIZADA - FIX USEAUTH APLICADO ', 'background: #22c55e; color: #fff; font-weight: bold;');
 console.log('🔍 Processos.tsx - Iniciando carregamento do componente');
 
 // Componentes UI
