@@ -235,7 +235,7 @@ export function AppSidebar() {
           <Separator className="my-3 md:my-4" />
 
           {/* Menu de Administração (Oculto para Super Admin porque já está no menu principal) */}
-          {(canViewAdmin || canManageOffice) && !isSuperAdmin && (
+          {(canViewAdmin || canManageOffice) && !isMainSuperAdmin && !isSuperAdmin && (
             <SidebarGroup>
               <SidebarGroupLabel className={`text-xs md:text-sm px-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
                 Administração
@@ -247,9 +247,7 @@ export function AppSidebar() {
                       <SidebarMenuButton asChild className="p-0" isActive={isLinkActive('/admin')}>
                         <NavLink to="/admin" className={({ isActive }) => getNavClasses(isActive || isLinkActive('/admin'))}>
                           <Shield className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
-                          {(!isCollapsed || isMobile) && <span className="truncate">
-                            {isSuperAdmin ? 'Admin Global' : 'Administração'}
-                          </span>}
+                          {(!isCollapsed || isMobile) && <span className="truncate">Administração</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -269,8 +267,10 @@ export function AppSidebar() {
             </SidebarGroup>
           )}
 
-          {(canViewAdmin || canManageOffice) && <Separator className="my-3 md:my-4" />}
+          {(canViewAdmin || canManageOffice) && !isMainSuperAdmin && !isSuperAdmin && <Separator className="my-3 md:my-4" />}
 
+          {/* Configurações - oculto para Super Admin */}
+          {!isMainSuperAdmin && !isSuperAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className={`text-xs md:text-sm px-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
               Configurações
@@ -293,6 +293,7 @@ export function AppSidebar() {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          )}
         </SidebarContent>
 
         <SidebarFooter className="p-2 md:p-3 border-t border-sidebar-border">

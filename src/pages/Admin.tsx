@@ -48,7 +48,7 @@ import { useSearchParams } from "react-router-dom";
 
 const Admin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') || "requests";
+  const initialTab = searchParams.get('tab') || "dashboard";
   const [activeTab, setActiveTab] = useState(initialTab);
   const { canViewAdminFeatures, isSuperAdmin, isLoading: authLoading } = useUserRole();
   const { user } = useAuth();
