@@ -102,7 +102,14 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       });
 
       if (error) {
-        throw new Error("Ocorreu um problema ao consultar o DataJud.");
+        let errorMessage = "Ocorreu um problema ao consultar o DataJud.";
+        try {
+          const errorData = await error.context?.json();
+          if (errorData?.error) errorMessage = errorData.error;
+        } catch (e) {
+          console.error("Erro ao processar erro da function:", e);
+        }
+        throw new Error(errorMessage);
       }
 
       if (!data || data.length === 0) {

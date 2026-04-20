@@ -31,14 +31,27 @@ const UF_TO_TRIBUNAL: Record<string, string> = {
 };
 
 const mapProcess = (hit: any, tribunalSigla?: string) => {
-  const source = hit._source;
+  const source = hit?._source;
+  if (!source) {
+    return {
+      id: hit?._id || 'unknown',
+      numeroProcesso: 'Não ident.',
+      titulo: 'Processo sem dados',
+      partes: 'Não ident.',
+      tribunal: tribunalSigla?.toUpperCase() || '---',
+      ultimoAndamento: null,
+      faseProcessual: '---',
+      valorCausa: 0
+    };
+  }
+
   const autores = source.partes?.filter((p: any) => p.tipo === 'Ativa' || p.tipo === 'Requerente')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
   const reus = source.partes?.filter((p: any) => p.tipo === 'Passiva' || p.tipo === 'Requerido')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
   const lastMovement = source.movimentacoes?.[0] || null;
 
   return {
     id: hit._id,
-    numeroProcesso: source.numeroProcesso,
+    numeroProcesso: source.numeroProcesso || 'N/A',
     titulo: `${autores} x ${reus}`,
     partes: `${autores} x ${reus}`,
     tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
@@ -47,9 +60,9 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
       data: lastMovement.dataHora
     } : null,
     faseProcessual: source.classe?.nome || 'Não identificada',
-    valorCausa: source.valorCausa,
+    valorCausa: source.valorCausa || 0,
     vara: source.orgaoJulgador?.nome || '',
-    comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '', // Poderia ser mapeado melhor se houvesse tabela de IBGE
+    comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '',
   };
 };
 
