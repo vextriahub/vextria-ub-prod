@@ -107,21 +107,42 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       const data = await response.json();
       const items = data.items || [];
       
-      const mappedResults = items.map((item: any) => ({
-        id: item.id || item.numero_processo,
-        numeroProcesso: item.numero_processo || item.numeroprocessocommascara,
-        titulo: item.tipoComunicacao || `Processo ${item.numero_processo}`,
-        partes: item.destinatarios?.map((d: any) => d.nome).join(' x ') || item.tituloProcesso || 'Não identificado',
-        tribunal: item.nomeTribunal || 'PJE',
-        ultimoAndamento: {
-          descricao: (item.textoComunicacao || item.tipoComunicacao || '').substring(0, 200),
-          data: item.data_disponibilizacao || item.datadisponibilizacao
-        },
-        faseProcessual: 'Comunicado PJe',
-        valorCausa: 0,
-        vara: item.nomeOrgao || '',
-        comarca: uf
-      }));
+      const toProperCase = (str: string) => {
+        return str.toLowerCase().replace(/(^|\s)\S/g, (L) => L.toUpperCase());
+      };
+
+      const mappedResults = items.map((item: any) => {
+        const dests = item.destinatarios || [];
+        const ativos = dests.filter((d: any) => d.polo === 'AT').map((d: any) => toProperCase(d.nome));
+        const passivos = dests.filter((d: any) => d.polo === 'PA').map((d: any) => toProperCase(d.nome));
+        
+        let constructedTitle = '';
+        if (ativos.length > 0 && passivos.length > 0) {
+          constructedTitle = `${ativos.join(', ')} vs ${passivos.join(', ')}`;
+        } else if (ativos.length > 0) {
+          constructedTitle = ativos.join(', ');
+        } else if (passivos.length > 0) {
+          constructedTitle = passivos.join(', ');
+        } else {
+          constructedTitle = toProperCase(item.tipoComunicacao || 'Processo sem título');
+        }
+
+        return {
+          id: item.id || item.numero_processo,
+          numeroProcesso: item.numero_processo || item.numeroprocessocommascara,
+          titulo: constructedTitle,
+          partes: constructedTitle,
+          tribunal: item.nomeTribunal || 'PJE',
+          ultimoAndamento: {
+            descricao: (item.textoComunicacao || item.tipoComunicacao || '').substring(0, 200),
+            data: item.data_disponibilizacao || item.datadisponibilizacao
+          },
+          faseProcessual: 'Comunicado PJe',
+          valorCausa: 0,
+          vara: item.nomeOrgao || '',
+          comarca: uf
+        };
+      });
 
       // Remover duplicados
       const uniqueProcesses = mappedResults.filter((p: any, index: number, self: any[]) => 
