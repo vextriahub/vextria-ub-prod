@@ -55,19 +55,20 @@ export interface JudicialProcessResult {
   titulo: string;
   partes: string;
   tribunal: string;
-  ultimoAndamento: {
+  ultimoAndamento?: {
     descricao: string;
     data: string;
-  } | null;
+  };
   faseProcessual: string;
-  valorCausa?: number;
+  valorCausa: number;
   vara?: string;
   comarca?: string;
+  clienteDestaque?: string;
 }
 
 interface JudicialSyncContentProps {
   onImport: (processes: JudicialProcessResult[]) => Promise<void>;
-  onCancel?: () => void;
+  onCancel: () => void;
 }
 
 export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
@@ -75,18 +76,36 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
   onCancel
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
   const [oab, setOab] = useState('');
-  const [uf, setUf] = useState('SP');
+  const [uf, setUf] = useState('DF');
   const [results, setResults] = useState<JudicialProcessResult[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedClientId, setSelectedClientId] = useState<string>('');
+  const [clients, setClients] = useState<any[]>([]);
+
+  // Carregar clientes para o seletor
+  React.useEffect(() => {
+    const fetchClients = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .eq('office_id', user.office_id)
+        .eq('deletado', false)
+        .order('nome');
+      if (data) setClients(data);
+    };
+    fetchClients();
+  }, [user]);
 
   const handleSearch = async () => {
-    if (!oab) {
+    if (!oab || !uf) {
       toast({
-        title: "Campo obrigatório",
-        description: "Por favor, informe o número da OAB.",
+        title: "Campos obrigatórios",
+        description: "Por favor, informe a OAB e o Estado.",
         variant: "destructive"
       });
       return;
@@ -114,6 +133,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
 
       const mappedResults = items.map((item: any) => {
         let constructedTitle = '';
+        const clientName = item.destinatarios?.[0]?.nome || '';
         
         // Tentativa 1: Extrair do Texto (Regex)
         const text = item.texto || '';
@@ -126,11 +146,9 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           constructedTitle = toProperCase(autorMatch[1]);
         } else if (reuMatch) {
           constructedTitle = toProperCase(reuMatch[1]);
-        } else if (item.destinatarios?.[0]?.nome) {
-          // Tentativa 2: Fallback para o destinatário da OAB
-          constructedTitle = toProperCase(item.destinatarios[0].nome);
+        } else if (clientName) {
+          constructedTitle = toProperCase(clientName);
         } else {
-          // Tentativa 3: Tipo da comunicação
           constructedTitle = toProperCase(item.tipoComunicacao || 'Processo sem título');
         }
 
@@ -147,7 +165,8 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           faseProcessual: 'Comunicado PJe',
           valorCausa: 0,
           vara: item.nomeOrgao || '',
-          comarca: uf
+          comarca: uf,
+          clienteDestaque: toProperCase(clientName)
         };
       });
 
@@ -200,20 +219,28 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
 
   const handleImport = async () => {
     if (selectedIds.size === 0) return;
-
+    
+    // Se não selecionou cliente, avisamos mas permitimos
     setImporting(true);
     try {
-      const selectedProcesses = results.filter(r => selectedIds.has(r.id));
+      const selectedProcesses = results
+        .filter(r => selectedIds.has(r.id))
+        .map(p => ({ 
+          ...p, 
+          clienteId: selectedClientId || null // Permitir nulo se não houver cliente ainda
+        }));
+
       await onImport(selectedProcesses);
       
       toast({
         title: "Importação concluída",
-        description: `${selectedIds.size} processos foram importados para o seu Hub.`,
+        description: `${selectedIds.size} processos foram salvos com segurança no seu escritório.`,
       });
     } catch (error) {
+      console.error('Erro na importação:', error);
       toast({
         title: "Erro na importação",
-        description: "Não foi possível importar alguns processos.",
+        description: "Não foi possível importar alguns processos. Verifique sua conexão.",
         variant: "destructive"
       });
     } finally {
@@ -256,10 +283,32 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </Button>
       </div>
 
+      <div className="bg-white/5 border border-white/5 p-6 rounded-2xl mb-6 space-y-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <User className="h-4 w-4" />
+          </div>
+          <div>
+            <h5 className="text-sm font-semibold text-white/90">Vincular a um Cliente (Opcional)</h5>
+            <p className="text-[10px] text-white/40">Opcional: vincule agora ou deixe para depois. O processo ficará seguro em seu escritório.</p>
+          </div>
+        </div>
+        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+          <SelectTrigger className="bg-white/5 border-white/10 h-11">
+            <SelectValue placeholder="Selecione um cliente..." />
+          </SelectTrigger>
+          <SelectContent className="bg-slate-900 border-white/10">
+            {clients.map(c => (
+              <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <Separator className="mb-6 bg-white/10" />
 
       {/* Resultados */}
-      <div className="flex-1 flex flex-col min-h-0 border border-white/5 rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md">
+      <div className="flex-1 flex flex-col min-h-0 border border-white/5 rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md relative">
         <div className="bg-white/5 p-3 border-b border-white/5 flex items-center justify-between px-6">
           <h4 className="text-sm font-semibold flex items-center gap-2 text-white/90">
             <Gavel className="h-4 w-4 text-primary" />
@@ -299,7 +348,22 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <span className="font-mono text-xs font-bold text-primary">{proc.numeroProcesso}</span>
-                        <span className="text-sm font-medium line-clamp-1 text-white/90">{proc.partes}</span>
+                        <div className="text-sm font-medium line-clamp-1 text-white/90">
+                          {proc.clienteDestaque && proc.partes.includes(proc.clienteDestaque) ? (
+                            <>
+                              {proc.partes.split(proc.clienteDestaque).map((segment, i, array) => (
+                                <React.Fragment key={i}>
+                                  {segment}
+                                  {i < array.length - 1 && (
+                                    <span className="text-primary font-bold">{proc.clienteDestaque}</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </>
+                          ) : (
+                            proc.partes
+                          )}
+                        </div>
                         <span className="text-[10px] text-white/40">{proc.tribunal}</span>
                       </div>
                     </TableCell>
@@ -341,7 +405,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </ScrollArea>
       </div>
 
-      <div className="mt-8 flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5">
+      <div className="sticky bottom-0 mt-auto pt-6 border-t border-white/5 bg-slate-950/80 backdrop-blur-md p-6 -mx-8 -mb-8 rounded-b-2xl flex items-center justify-between z-20">
         <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-white/40 hover:text-white">
           Cancelar
         </Button>
@@ -350,7 +414,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           disabled={selectedIds.size === 0 || importing}
           className="gap-2 px-8 bg-primary shadow-lg shadow-primary/20 h-11"
         >
-          {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />}
+          {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
           {importing ? 'Importando...' : `Importar ${selectedIds.size} Processos Selecionados`}
         </Button>
       </div>

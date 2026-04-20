@@ -178,7 +178,8 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
       for (const proc of processes) {
         await onAddProcesso({
           titulo: proc.titulo,
-          cliente: 'Importado via OAB',
+          cliente: proc.clienteDestaque || 'Importado via OAB',
+          clienteId: proc.clienteId,
           status: 'Em andamento',
           numeroProcesso: proc.numeroProcesso,
           tribunal: proc.tribunal,
@@ -192,6 +193,7 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
       resetForm();
     } catch (error) {
       console.error('Erro ao importar processos da OAB:', error);
+      throw error; // Propagar para JudicialSyncDialog resetar o loading
     }
   };
 
