@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSuperAdminOffices, AdminOffice } from '@/hooks/useSuperAdminOffices';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -18,43 +17,28 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { 
-  Building2, 
-  Search, 
-  Eye, 
-  UserX, 
-  UserCheck,
-  CreditCard, 
-  AlertCircle, 
-  CheckCircle, 
-  Clock,
-  RefreshCw,
-  Users,
-  Save,
-  Star,
-  Shield,
-  Calendar
-} from 'lucide-react';
+import { Building2, Search, Eye, UserX, UserCheck, CreditCard, AlertCircle, CheckCircle, Clock, RefreshCw, Users, Save, Star, Shield, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export const OfficeControlPanel: React.FC = () => {
-  const { 
-    admins, 
-    loading, 
-    error, 
-    refresh, 
-    updateOfficeStatus, 
+  const {
+    admins,
+    loading,
+    error,
+    refresh,
+    updateOfficeStatus,
     updateOfficeFull,
-    manageAccess, 
-    sendPaymentReminder 
+    manageAccess,
+    sendPaymentReminder
   } = useSuperAdminOffices();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedAdmin, setSelectedAdmin] = useState<AdminOffice | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<AdminOffice>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [discountInput, setDiscountInput] = useState<string>('');
 
   useEffect(() => {
     if (selectedAdmin) {
@@ -66,33 +50,48 @@ export const OfficeControlPanel: React.FC = () => {
         plan_name: selectedAdmin.plan_name as any,
         is_lifetime: selectedAdmin.is_lifetime
       });
+      setDiscountInput('');
     }
   }, [selectedAdmin]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAdmin?.office_id) return;
-
     setIsSubmitting(true);
     const success = await updateOfficeFull(selectedAdmin.office_id, editFormData);
     setIsSubmitting(false);
-
     if (success) {
       setDialogOpen(false);
     }
   };
 
+  const handleGrantLifetime = async () => {
+    if (!selectedAdmin?.office_id) return;
+    const ok = await manageAccess(selectedAdmin.office_id, 'grant_lifetime');
+    if (ok) setDialogOpen(false);
+  };
+
+  const handleApplyDiscount = async () => {
+    if (!selectedAdmin?.office_id || !discountInput) return;
+    await manageAccess(selectedAdmin.office_id, 'apply_discount', { discount_percent: Number(discountInput) });
+  };
+
+  const handleRemoveDiscount = async () => {
+    if (!selectedAdmin?.office_id) return;
+    await manageAccess(selectedAdmin.office_id, 'apply_discount', { discount_percent: 0 });
+  };
+
   const filteredAdmins = admins.filter(admin => {
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       admin.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admin.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       admin.office_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     let matchesStatus = statusFilter === 'all';
     if (statusFilter === 'trial') matchesStatus = admin.is_trial;
     if (statusFilter === 'em_dia') matchesStatus = admin.payment_status === 'em_dia' && !admin.is_trial;
     if (statusFilter === 'vencido') matchesStatus = admin.payment_status === 'vencido';
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -100,34 +99,28 @@ export const OfficeControlPanel: React.FC = () => {
     if (isLifetime) {
       return (
         <Badge variant="outline" className="border-amber-500/50 text-amber-500 bg-transparent font-bold">
-          <Star className="w-3 h-3 mr-1 fill-amber-500" />
-          Vitalício
+          <Star className="w-3 h-3 mr-1 fill-amber-500" /> Vitalício
         </Badge>
       );
     }
-    
     if (isTrial) {
       return (
         <Badge variant="outline" className="border-purple-500/50 text-purple-500 bg-transparent font-bold">
-          <Clock className="w-3 h-3 mr-1" />
-          Trial
+          <Clock className="w-3 h-3 mr-1" /> Trial
         </Badge>
       );
     }
-
     switch (status) {
       case 'em_dia':
         return (
           <Badge variant="outline" className="border-emerald-500/50 text-emerald-500 bg-transparent font-bold">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Ativo
+            <CheckCircle className="w-3 h-3 mr-1" /> Ativo
           </Badge>
         );
       case 'vencido':
         return (
           <Badge variant="outline" className="border-rose-500/50 text-rose-500 bg-transparent font-bold">
-            <AlertCircle className="w-3 h-3 mr-1" />
-            Vencido
+            <AlertCircle className="w-3 h-3 mr-1" /> Vencido
           </Badge>
         );
       default:
@@ -199,17 +192,15 @@ export const OfficeControlPanel: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Shield className="text-primary h-5 w-5" />
-                Administração Global
+                <Shield className="text-primary h-5 w-5" /> Administração Global
               </CardTitle>
               <CardDescription className="text-xs">Visualize e edite os dados institucionais dos escritórios.</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-8 hover:bg-muted/10">
+            <Button type="button" variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-8 hover:bg-muted/10">
               <RefreshCw className={`h-3 w-3 mr-2 ${loading ? 'animate-spin' : ''}`} /> Atualizar
             </Button>
           </div>
         </CardHeader>
-        
         <CardContent className="p-0">
           <div className="p-4 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
@@ -279,16 +270,18 @@ export const OfficeControlPanel: React.FC = () => {
                     </TableCell>
                     <TableCell className="py-4 text-right pr-6">
                       <div className="flex items-center justify-end gap-1">
-                        <Dialog open={dialogOpen && selectedAdmin?.office_id === admin.office_id} onOpenChange={(open) => {
-                          if (open) {
-                            setSelectedAdmin(admin);
-                            setDialogOpen(true);
-                          } else {
-                            setDialogOpen(false);
-                          }
-                        }}>
+                        <Dialog
+                          open={dialogOpen && selectedAdmin?.office_id === admin.office_id}
+                          onOpenChange={(open) => {
+                            if (open) {
+                              setSelectedAdmin(admin);
+                              setDialogOpen(true);
+                            } else {
+                              setDialogOpen(false);
+                            }
+                          }}>
                           <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-muted/10">
+                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-muted/10">
                               <Eye size={16} className="text-primary/70" />
                             </Button>
                           </DialogTrigger>
@@ -302,106 +295,95 @@ export const OfficeControlPanel: React.FC = () => {
                                   <DialogDescription className="text-xs">Ajuste os dados cadastrais e as configurações de plano.</DialogDescription>
                                 </DialogHeader>
                               </div>
-                              
                               <div className="p-6 space-y-6">
                                 <div className="space-y-4">
                                   <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Perfil do Escritório</h4>
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
                                       <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Nome Fantasia</Label>
-                                      <Input 
-                                        value={editFormData.office_name || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, office_name: e.target.value})}
-                                        className="h-10 bg-muted/20 border-none rounded-xl"
-                                      />
+                                      <Input value={editFormData.office_name || ''} onChange={(e) => setEditFormData({ ...editFormData, office_name: e.target.value })} className="h-10 bg-muted/20 border-none rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                       <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">E-mail para Contato</Label>
-                                      <Input 
-                                        type="email"
-                                        value={editFormData.office_email || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, office_email: e.target.value})}
-                                        className="h-10 bg-muted/20 border-none rounded-xl"
-                                      />
+                                      <Input type="email" value={editFormData.office_email || ''} onChange={(e) => setEditFormData({ ...editFormData, office_email: e.target.value })} className="h-10 bg-muted/20 border-none rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                       <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Telefone</Label>
-                                      <Input 
-                                        value={editFormData.phone || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
-                                        className="h-10 bg-muted/20 border-none rounded-xl"
-                                      />
+                                      <Input value={editFormData.phone || ''} onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })} className="h-10 bg-muted/20 border-none rounded-xl" />
                                     </div>
                                     <div className="space-y-1.5">
                                       <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Endereço Completo</Label>
-                                      <Input 
-                                        value={editFormData.address || ''} 
-                                        onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
-                                        className="h-10 bg-muted/20 border-none rounded-xl"
-                                      />
+                                      <Input value={editFormData.address || ''} onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })} className="h-10 bg-muted/20 border-none rounded-xl" />
                                     </div>
                                   </div>
-                                                             <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Gestão de Faturamento & Stripe (A + B)</h4>
-                                  
-                                  <div className="grid grid-cols-2 gap-3">
-                                    <div className="p-4 bg-muted/10 rounded-2xl border border-muted/10 space-y-3">
-                                      <div className="space-y-0.5">
-                                        <Label className="text-[10px] font-bold uppercase text-amber-500">Cenário A: Desconto</Label>
-                                        <p className="text-[9px] text-muted-foreground leading-tight">Aplica cupom no Stripe</p>
+
+                                  <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Gestão de Faturamento & Stripe (A + B)</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div className="p-4 bg-muted/10 rounded-2xl border border-muted/10 space-y-3">
+                                        <div className="space-y-0.5">
+                                          <Label className="text-[10px] font-bold uppercase text-amber-500">Cenário A: Desconto</Label>
+                                          <p className="text-[9px] text-muted-foreground leading-tight">Aplica cupom no Stripe</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <Input
+                                            type="number"
+                                            placeholder="%"
+                                            value={discountInput}
+                                            onChange={(e) => setDiscountInput(e.target.value)}
+                                            className="h-8 w-16 bg-background rounded-lg text-xs"
+                                          />
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-8 text-[10px] uppercase font-bold"
+                                            onClick={handleApplyDiscount}
+                                          >
+                                            Aplicar
+                                          </Button>
+                                        </div>
                                       </div>
-                                      <div className="flex gap-2">
-                                        <Input 
-                                          type="number" 
-                                          placeholder="%" 
-                                          id="discount_input"
-                                          className="h-8 w-16 bg-background rounded-lg text-xs"
-                                        />
-                                        <Button 
-                                          size="sm" 
+                                      <div className="p-4 bg-muted/10 rounded-2xl border border-muted/10 space-y-3">
+                                        <div className="space-y-0.5">
+                                          <Label className="text-[10px] font-bold uppercase text-emerald-500">Cenário B: Vitalício</Label>
+                                          <p className="text-[9px] text-muted-foreground leading-tight">Cancela Stripe + Libera</p>
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          className="w-full h-8 text-[10px] uppercase font-bold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20"
                                           variant="outline"
-                                          className="h-8 text-[10px] uppercase font-bold"
-                                          onClick={() => {
-                                            const val = (document.getElementById('discount_input') as HTMLInputElement).value;
-                                            if (val) manageAccess(admin.office_id!, 'apply_discount', { discount_percent: Number(val) });
-                                          }}
+                                          onClick={handleGrantLifetime}
                                         >
-                                          Aplicar
+                                          Tornar Vitalício
                                         </Button>
                                       </div>
                                     </div>
-
-                                    <div className="p-4 bg-muted/10 rounded-2xl border border-muted/10 space-y-3">
-                                      <div className="space-y-0.5">
-                                        <Label className="text-[10px] font-bold uppercase text-emerald-500">Cenário B: Vitalício</Label>
-                                        <p className="text-[9px] text-muted-foreground leading-tight">Cancela Stripe + Libera</p>
+                                    {admin.manual_discount_percent > 0 && (
+                                      <div className="px-3 py-1.5 bg-amber-500/5 border border-amber-500/10 rounded-lg flex items-center justify-between">
+                                        <span className="text-[10px] font-bold text-amber-600 uppercase">Desconto Ativo: {admin.manual_discount_percent}%</span>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-4 text-[10px] text-amber-600/60"
+                                          onClick={handleRemoveDiscount}
+                                        >
+                                          Remover
+                                        </Button>
                                       </div>
-                                      <Button 
-                                        size="sm" 
-                                        className="w-full h-8 text-[10px] uppercase font-bold bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20"
-                                        variant="outline"
-                                        onClick={() => manageAccess(admin.office_id!, 'grant_lifetime')}
-                                      >
-                                        Tornar Vitalício
-                                      </Button>
-                                    </div>
+                                    )}
                                   </div>
 
-                                  {admin.manual_discount_percent > 0 && (
-                                    <div className="px-3 py-1.5 bg-amber-500/5 border border-amber-500/10 rounded-lg flex items-center justify-between">
-                                      <span className="text-[10px] font-bold text-amber-600 uppercase">Desconto Ativo: {admin.manual_discount_percent}%</span>
-                                      <Button variant="ghost" size="sm" className="h-4 text-[10px] text-amber-600/60" onClick={() => manageAccess(admin.office_id!, 'apply_discount', { discount_percent: 0 })}>Remover</Button>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="space-y-4 mt-6">
-                                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Configurações Gerais</h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                      <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Plano UI (Dashboard)</Label>
-                                        <Select 
-                                          value={editFormData.plan_name} 
-                                          onValueChange={(val) => setEditFormData({...editFormData, plan_name: val as any})}
+                                  <div className="space-y-4 mt-6">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 border-b border-muted/20 pb-1">Configurações Gerais</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-bold uppercase text-muted-foreground ml-1">Plano UI (Dashboard)</Label>
+                                        <Select
+                                          value={editFormData.plan_name}
+                                          onValueChange={(val) => setEditFormData({ ...editFormData, plan_name: val as any })}
                                         >
                                           <SelectTrigger className="h-10 bg-muted/20 border-none rounded-xl">
                                             <SelectValue placeholder="Selecione o plano" />
@@ -413,12 +395,11 @@ export const OfficeControlPanel: React.FC = () => {
                                             <SelectItem value="business">Business</SelectItem>
                                           </SelectContent>
                                         </Select>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-       </div>
                               </div>
-
                               <DialogFooter className="p-6 pt-2">
                                 <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-2xl font-black bg-primary text-primary-foreground gap-2 shadow-lg shadow-primary/10">
                                   {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save size={18} />}
@@ -428,22 +409,11 @@ export const OfficeControlPanel: React.FC = () => {
                             </form>
                           </DialogContent>
                         </Dialog>
-
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} 
-                          className="h-8 w-8 p-0 text-blue-500/60 hover:text-blue-500 hover:bg-blue-500/5 transition-colors"
-                        >
+                        <Button type="button" variant="ghost" size="sm" onClick={() => sendPaymentReminder(admin.email || '', admin.office_name || '')} className="h-8 w-8 p-0 text-blue-500/60 hover:text-blue-500 hover:bg-blue-500/5 transition-colors">
                           <CreditCard size={15} />
                         </Button>
-
-                        <Button
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
-                          className={`h-8 w-8 p-0 rounded-full transition-colors ${admin.active ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/5' : 'text-emerald-500/60 hover:text-emerald-500 hover:bg-emerald-500/5'}`}
-                        >
+                        <Button type="button" variant="ghost" size="sm" onClick={() => updateOfficeStatus(admin.office_id || '', !admin.active)}
+                          className={`h-8 w-8 p-0 rounded-full transition-colors ${admin.active ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/5' : 'text-emerald-500/60 hover:text-emerald-500 hover:bg-emerald-500/5'}`}>
                           {admin.active ? <UserX size={15} /> : <UserCheck size={15} />}
                         </Button>
                       </div>
