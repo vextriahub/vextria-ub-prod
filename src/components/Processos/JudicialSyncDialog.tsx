@@ -247,7 +247,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           )}
         </div>
         
-        <ScrollArea className="h-[450px] w-full">
+        <ScrollArea className="flex-1 min-h-[200px] w-full">
           {results.length > 0 ? (
             <Table>
               <TableHeader className="bg-white/5 sticky top-0 z-10">
@@ -366,7 +366,7 @@ export const JudicialSyncDialog: React.FC<JudicialSyncDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <div className="p-8 pb-10">
+        <div className="flex-1 overflow-hidden flex flex-col px-8 pb-8">
           <JudicialSyncContent 
             onImport={async (procs) => {
               await onImport(procs);
