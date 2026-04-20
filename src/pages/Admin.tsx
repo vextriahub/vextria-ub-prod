@@ -127,99 +127,117 @@ const Admin = () => {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-primary/10">
               <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              {isMainSuperAdmin ? 'Administração Global' : 'Painel Estratégico'}
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              {isMainSuperAdmin ? 'Administração Global' : 'Painel de Controle'}
             </h1>
           </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
             {isMainSuperAdmin 
-              ? 'Controle central de escritórios, assinaturas e integridade do ecossistema.'
-              : 'Gerencie solicitações críticas e integridade de dados do seu escritório.'
+              ? 'Gestão centralizada de escritórios, planos e integridade sistêmica.'
+              : 'Gerencie as diretrizes, solicitações e dados fundamentais do seu escritório.'
             }
           </p>
         </div>
+        
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl shadow-premium">
+          <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
+          <span className="text-xs font-bold uppercase tracking-widest opacity-80 px-2">Modo Admin Ativo</span>
+        </div>
       </div>
 
-            {isMainSuperAdmin ? (
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-                {/* Abas exclusivas para o Super Admin principal */}
+      <div className="w-full">
+        {isMainSuperAdmin ? (
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
+            <div className="glass-card p-2 rounded-3xl inline-flex w-full md:w-auto h-auto">
+            <TabsList className="bg-transparent h-auto p-0 flex flex-wrap md:flex-nowrap gap-1">
+              <TabsTrigger value="requests" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+                Solicitações
+              </TabsTrigger>
+              {isMainSuperAdmin && (
+                <>
+                  <TabsTrigger value="dashboard" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+                    Métricas Globais
+                  </TabsTrigger>
+                  <TabsTrigger value="offices" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+                    Escritórios
+                  </TabsTrigger>
+                  <TabsTrigger value="subscriptions" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+                    Assinaturas
+                  </TabsTrigger>
+                </>
+              )}
+            </TabsList>
+          </div>
 
-                <TabsContent value="dashboard" className="space-y-6">
-                  <GlobalMetrics />
-                </TabsContent>
+          <TabsContent value="dashboard" className="animate-in slide-in-from-bottom-4 duration-500">
+            <GlobalMetrics />
+          </TabsContent>
 
-                <TabsContent value="offices" className="space-y-6">
-                  <OfficeControlPanel />
-                </TabsContent>
+          <TabsContent value="offices" className="animate-in slide-in-from-bottom-4 duration-500">
+            <OfficeControlPanel />
+          </TabsContent>
 
-                <TabsContent value="subscriptions" className="space-y-6">
-                  <SubscriptionControlPanel />
-                </TabsContent>
+          <TabsContent value="subscriptions" className="animate-in slide-in-from-bottom-4 duration-500">
+            <SubscriptionControlPanel />
+          </TabsContent>
 
-                <TabsContent value="requests" className="space-y-6">
-                  {!multiSelect.isNoneSelected && (
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleAprovarSelecionados}
-                        disabled={processando === 'multiplo'}
-                        className="flex items-center gap-2"
-                      >
-                        <Check className="h-4 w-4" />
-                        Aprovar Selecionados ({multiSelect.selectedCount})
-                      </Button>
-                    </div>
-                  )}
+          <TabsContent value="requests" className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            {/* Stats Rápido */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Pendentes</p>
+                  <AlertCircle className="h-5 w-5 text-amber-500" />
+                </div>
+                <p className="text-4xl font-extrabold text-amber-500">{exclusoesPendentes.length}</p>
+              </div>
 
-                  {/* Stats Cards */}
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
-                    <Card className="hover-lift border-white/5 bg-card/40">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Solicitações Pendentes</CardTitle>
-                        <div className="p-2 bg-amber-500/10 rounded-lg">
-                          <Clock className="h-4 w-4 text-amber-500" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-extrabold tracking-tight text-amber-500">
-                          {exclusoesPendentes.length}
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="hover-lift border-white/5 bg-card/40">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Itens Selecionados</CardTitle>
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <Check className="h-4 w-4 text-primary" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-extrabold tracking-tight">
-                          {multiSelect.selectedCount}
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="hover-lift border-white/5 bg-card/40">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Diversidade de Dados</CardTitle>
-                        <div className="p-2 bg-emerald-500/10 rounded-lg">
-                          <Activity className="h-4 w-4 text-emerald-500" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-3xl font-extrabold tracking-tight text-emerald-500">
-                          {new Set(exclusoesPendentes.map(e => e.tabela)).size}
-                        </div>
-                      </CardContent>
-                    </Card>
+              <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Selecionadas</p>
+                  <Check className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-4xl font-extrabold text-foreground">{multiSelect.selectedCount}</p>
+              </div>
+
+              <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Categorias</p>
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                </div>
+                <p className="text-4xl font-extrabold text-emerald-500">{new Set(exclusoesPendentes.map(e => e.tabela)).size}</p>
+              </div>
+            </div>
+
+            {!multiSelect.isNoneSelected && (
+              <div className="glass-card p-6 rounded-3xl bg-primary/5 border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in zoom-in duration-300">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary rounded-2xl shadow-premium">
+                    <Shield className="h-6 w-6 text-primary-foreground" />
                   </div>
+                  <div>
+                    <p className="text-lg font-extrabold">{multiSelect.selectedCount} Solicitações Selecionadas</p>
+                    <p className="text-sm font-medium opacity-70">Ações em massa para otimização de fluxo.</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleAprovarSelecionados}
+                  size="lg"
+                  className="rounded-2xl h-14 px-10 text-lg font-bold shadow-premium bg-primary hover:bg-primary/90"
+                >
+                  <Check className="mr-2 h-6 w-6" />
+                  Aprovar Massa
+                </Button>
+              </div>
+            )}
 
                   {requestsLoading && (
                     <Card>
@@ -539,7 +557,8 @@ const Admin = () => {
               </div>
             )}
       </div>
-    );
-  };
+    </div>
+  );
+};
 
 export default Admin;

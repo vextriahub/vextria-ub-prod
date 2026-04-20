@@ -216,92 +216,152 @@ const Tarefas = () => {
   ].filter(Boolean).length;
 
   return (
-    <div className="p-4 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
-      {/* Page Header */}
-      <TarefasPageHeader
-        selectedCount={multiSelect.selectedCount}
-        onDeleteSelected={handleDeleteSelected}
-        onNewTarefa={handleNewTarefa}
-        isNoneSelected={multiSelect.isNoneSelected}
-        stats={stats}
-      />
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Calendar className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              Tarefas e Gamificação
+            </h1>
+          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Pratique a alta performance, conquiste pontos e mantenha seu fluxo de trabalho impecável.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+          <Button 
+            onClick={handleNewTarefa}
+            size="lg"
+            className="rounded-xl shadow-premium h-12 px-6 font-bold"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Nova Tarefa
+          </Button>
+        </div>
+      </div>
 
-      {/* Empty State */}
-      {tarefas.length === 0 ? (
-        <TarefasEmptyState
-          onNewTarefa={handleNewTarefa}
-          onLoadSampleData={handleLoadSampleData}
-        />
-      ) : (
-        <>
-          {/* Filtros */}
-          <TarefasFilters
-            searchValue={searchValue}
-            priorityFilter={priorityFilter}
-            statusFilter={statusFilter}
-            sortBy={sortBy}
-            onSearchChange={handleSearchChange}
-            onPriorityFilterChange={handlePriorityFilterChange}
-            onStatusFilterChange={handleStatusFilterChange}
-            onSortChange={handleSortChange}
-            onClearFilters={handleClearFilters}
-            activeFiltersCount={activeFiltersCount}
-          />
+      {/* Grid de Estatísticas / Gamificação */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Target className="h-20 w-20" />
+          </div>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Total de Pontos</p>
+          <p className="text-4xl font-extrabold text-foreground group-hover:text-primary transition-colors">2.450</p>
+          <p className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mt-2 inline-block">Nível: Master</p>
+        </div>
+        
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Concluídas Hoje</p>
+          <p className="text-4xl font-extrabold text-foreground">{stats.completedTasks}</p>
+          <p className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full mt-2 inline-block">+{stats.completedTasks * 50} pontos</p>
+        </div>
 
-          {/* Empty State para filtros */}
-          {sortedTarefas.length === 0 ? (
-            <TarefasEmptyState
-              onNewTarefa={handleNewTarefa}
-              onLoadSampleData={handleLoadSampleData}
-              isFiltered={true}
+        <div className="md:col-span-2 glass-card p-6 rounded-3xl overflow-hidden relative border-primary/20">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Missão Semanal</p>
+              <h3 className="text-xl font-extrabold">Finalizar 15 Prazos</h3>
+            </div>
+            <Badge className="bg-primary hover:bg-primary py-1 px-3 rounded-full font-bold">500 XP</Badge>
+          </div>
+          <div className="space-y-3 pt-2">
+            <div className="flex justify-between text-sm font-bold">
+              <span>Progresso da Missão</span>
+              <span>12 / 15</span>
+            </div>
+            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-primary to-primary/60 w-[80%] rounded-full shadow-[0_0_15px_rgba(var(--primary),0.6)]" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="glass-card rounded-[2.5rem] shadow-premium border-white/10 overflow-hidden">
+        <div className="p-8 border-b border-white/5 bg-white/2 space-y-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <h3 className="text-2xl font-extrabold tracking-tight">Lista de Afazeres</h3>
+            <TarefasFilters
+              searchValue={searchValue}
+              priorityFilter={priorityFilter}
+              statusFilter={statusFilter}
+              sortBy={sortBy}
+              onSearchChange={handleSearchChange}
+              onPriorityFilterChange={handlePriorityFilterChange}
+              onStatusFilterChange={handleStatusFilterChange}
+              onSortChange={handleSortChange}
               onClearFilters={handleClearFilters}
+              activeFiltersCount={activeFiltersCount}
             />
-          ) : (
-            <>
-              {/* Controles de seleção */}
-              {sortedTarefas.length > 0 && (
-                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-4">
+          </div>
+        </div>
+
+        {tarefas.length === 0 ? (
+          <TarefasEmptyState
+            onNewTarefa={handleNewTarefa}
+            onLoadSampleData={handleLoadSampleData}
+          />
+        ) : (
+          <div className="p-4 md:p-8">
+            {sortedTarefas.length === 0 ? (
+              <TarefasEmptyState
+                onNewTarefa={handleNewTarefa}
+                onLoadSampleData={handleLoadSampleData}
+                isFiltered={true}
+                onClearFilters={handleClearFilters}
+              />
+            ) : (
+              <div className="space-y-6">
+                {/* Controles de seleção premium */}
+                <div className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5">
+                  <div className="flex items-center gap-6">
                     <Checkbox
                       checked={multiSelect.isAllSelected}
                       onCheckedChange={() => 
                         multiSelect.isAllSelected ? multiSelect.clearSelection() : multiSelect.selectAll()
                       }
+                      className="h-6 w-6 border-2 border-white/20 rounded-lg data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm md:text-base font-bold text-muted-foreground uppercase tracking-widest">
                       {multiSelect.selectedCount > 0 ? (
-                        `${multiSelect.selectedCount} de ${sortedTarefas.length} selecionada(s)`
+                        <span className="text-primary">{multiSelect.selectedCount} tarefas selecionadas</span>
                       ) : (
-                        "Selecionar todas"
+                        "Selecionar todas as tarefas"
                       )}
                     </span>
                   </div>
                   {multiSelect.selectedCount > 0 && (
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={multiSelect.clearSelection}
+                      className="font-bold text-red-500 hover:bg-red-500/10 rounded-xl"
                     >
                       Limpar seleção
                     </Button>
                   )}
                 </div>
-              )}
 
-              {/* Lista de Tarefas */}
-              <TarefasList
-                tarefas={sortedTarefas}
-                selectedIds={multiSelect.getSelectedItems().map(item => item.id)}
-                completedIds={completedTasks}
-                onToggleSelect={multiSelect.toggleItem}
-                onToggleComplete={handleToggleComplete}
-                onDelete={handleDeleteTarefa}
-                getPriorityColor={tarefaService.getPriorityColor}
-              />
-            </>
-          )}
-        </>
-      )}
+                <TarefasList
+                  tarefas={sortedTarefas}
+                  selectedIds={multiSelect.getSelectedItems().map(item => item.id)}
+                  completedIds={completedTasks}
+                  onToggleSelect={multiSelect.toggleItem}
+                  onToggleComplete={handleToggleComplete}
+                  onDelete={handleDeleteTarefa}
+                  getPriorityColor={tarefaService.getPriorityColor}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Modal de confirmação de exclusão em lote */}
       <DeleteConfirmDialog

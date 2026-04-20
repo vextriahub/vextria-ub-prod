@@ -46,182 +46,181 @@ const Financeiro = () => {
 
   return (
     <PermissionGuard permission="canViewFinanceiro" showDeniedMessage>
-      <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-              </div>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                Gestão Financeira
-              </h1>
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <p className="text-sm md:text-lg text-muted-foreground font-medium">
-              Controle fluxos de caixa, honorários e despesas do seu escritório.
-            </p>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              Gestão Financeira
+            </h1>
           </div>
-          <div className="flex items-center gap-2 glass-morphism p-2 rounded-2xl">
-            <Button size="lg" className="rounded-xl shadow-premium">
-              Exportar Relatório
-            </Button>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Visualize o fluxo de caixa, honários e a saúde financeira estratégica do seu escritório.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+          <Button 
+            size="lg"
+            className="rounded-xl shadow-premium h-12 px-6 font-bold"
+          >
+            <TrendingUp className="mr-2 h-5 w-5" />
+            Exportar Fluxo
+          </Button>
+        </div>
+      </div>
+
+      {/* Cards de Resumo Premium */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Receita Mensal</p>
+            <div className="p-2 bg-emerald-500/10 rounded-xl">
+              <TrendingUp className="h-5 w-5 text-emerald-500" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-foreground">R$ 28.500</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12% vs mês anterior</span>
           </div>
         </div>
-
-        {/* Cards de Resumo */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover-lift border-white/5 bg-card/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Receita Mensal</CardTitle>
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">R$ 28.500</div>
-              <p className="text-xs font-medium text-emerald-500 mt-1 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +12% vs mês anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Receber</CardTitle>
-              <div className="p-2 rounded-lg bg-primary/10">
-                <CreditCard className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">R$ 9.300</div>
-              <p className="text-xs font-medium text-muted-foreground mt-1">
-                3 faturas pendentes este mês
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Pagar</CardTitle>
-              <div className="p-2 rounded-lg bg-orange-500/10">
-                <TrendingDown className="h-4 w-4 text-orange-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">R$ 1.550</div>
-              <p className="text-xs font-medium text-muted-foreground mt-1">
-                2 contas com vencimento próximo
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Saldo Líquido</CardTitle>
-              <div className="p-2 rounded-lg bg-primary/10">
-                <DollarSign className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">R$ 26.950</div>
-              <p className="text-xs font-medium text-primary mt-1">
-                Eficiência operacional de 94.6%
-              </p>
-            </CardContent>
-          </Card>
+        
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Receber</p>
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <CreditCard className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-foreground">R$ 9.300</p>
+          <p className="text-xs font-medium text-muted-foreground mt-2">3 faturas pendentes</p>
         </div>
 
-        {/* Tabs para Contas */}
-        <Tabs defaultValue="receber" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
-            <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Pagar</p>
+            <div className="p-2 bg-orange-500/10 rounded-xl">
+              <TrendingDown className="h-5 w-5 text-orange-500" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-foreground">R$ 1.550</p>
+          <p className="text-xs font-medium text-muted-foreground mt-2">2 vencimentos próximos</p>
+        </div>
+
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Saldo Líquido</p>
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <DollarSign className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-foreground text-gradient">R$ 26.950</p>
+          <p className="text-xs font-medium text-primary mt-2">Eficiência de 94.6%</p>
+        </div>
+      </div>
+
+      {/* Tabs para Contas */}
+      <Tabs defaultValue="receber" className="w-full space-y-8">
+        <div className="glass-card p-2 rounded-3xl inline-flex h-auto">
+          <TabsList className="bg-transparent h-auto p-0 gap-1">
+            <TabsTrigger value="receber" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+              Contas a Receber
+            </TabsTrigger>
+            <TabsTrigger value="pagar" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+              Contas a Pagar
+            </TabsTrigger>
           </TabsList>
+        </div>
 
-          <TabsContent value="receber" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Contas a Receber</h3>
-              <Button>Nova Cobrança</Button>
+          <TabsContent value="receber" className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4">
+              <h3 className="text-2xl font-extrabold">Contas a Receber</h3>
+              <Button className="rounded-xl font-bold px-6 h-11 bg-emerald-500 hover:bg-emerald-600 text-white shadow-premium transition-all">
+                Nova Cobrança
+              </Button>
             </div>
             
-            <div className="space-y-4">
+            <div className="grid gap-6">
               {contasReceber.map((conta) => (
-                <Card key={conta.id} className="hover-lift border-white/5 bg-card/30">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                          <TrendingUp className="h-6 w-6" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-bold text-lg">{conta.cliente}</p>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              Vence {conta.vencimento}
-                            </span>
-                            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                            <span className="uppercase tracking-widest text-[10px] font-bold">Honorários</span>
-                          </div>
-                        </div>
+                <div key={conta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+                    <div className="flex items-center gap-6">
+                      <div className="h-16 w-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/10 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500">
+                        <TrendingUp className="h-8 w-8" />
                       </div>
-                      <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-                        <div className="text-right">
-                          <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-1">Valor</p>
-                          <p className="text-xl font-black">R$ {conta.valor.toLocaleString()}</p>
+                      <div className="space-y-1">
+                        <p className="font-extrabold text-2xl group-hover:text-primary transition-colors duration-500">{conta.cliente}</p>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
+                          <span className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg">
+                            <Calendar className="h-4 w-4" />
+                            Vence {conta.vencimento}
+                          </span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                          <span className="uppercase tracking-widest text-[10px] font-black opacity-60">Honorários Contratuais</span>
                         </div>
-                        <Badge className={cn("px-4 py-1.5 rounded-full", getStatusColor(conta.status))}>
-                          {conta.status === 'vencido' && <AlertCircle className="h-3 w-3 mr-1" />}
-                          <span className="uppercase tracking-tighter text-[11px]">{conta.status}</span>
-                        </Badge>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    
+                    <div className="flex items-center justify-between w-full lg:w-auto gap-10 border-t lg:border-t-0 border-white/5 pt-6 lg:pt-0">
+                      <div className="text-right">
+                        <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5 opacity-50">Valor Total</p>
+                        <p className="text-3xl font-black tracking-tighter">R$ {conta.valor.toLocaleString()}</p>
+                      </div>
+                      <Badge className={cn("px-6 py-2 rounded-2xl font-extrabold text-[11px] uppercase tracking-widest", getStatusColor(conta.status))}>
+                        {conta.status === 'vencido' && <AlertCircle className="h-4 w-4 mr-2" />}
+                        {conta.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>
 
-          <TabsContent value="pagar" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Contas a Pagar</h3>
-              <Button>Nova Despesa</Button>
+          <TabsContent value="pagar" className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4">
+              <h3 className="text-2xl font-extrabold">Contas a Pagar</h3>
+              <Button className="rounded-xl font-bold px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white shadow-premium transition-all">
+                Nova Despesa
+              </Button>
             </div>
             
-            <div className="space-y-4">
+            <div className="grid gap-6">
               {contasPagar.map((conta) => (
-                <Card key={conta.id} className="hover-lift border-white/5 bg-card/30">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-                          <TrendingDown className="h-6 w-6" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-bold text-lg">{conta.fornecedor}</p>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground font-medium">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              Vence {conta.vencimento}
-                            </span>
-                            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                            <span className="uppercase tracking-widest text-[10px] font-bold">Operacional</span>
-                          </div>
-                        </div>
+                <div key={conta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group">
+                  <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+                    <div className="flex items-center gap-6">
+                      <div className="h-16 w-16 rounded-3xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/10 group-hover:bg-orange-500 group-hover:text-white transition-all duration-500">
+                        <TrendingDown className="h-8 w-8" />
                       </div>
-                      <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-                        <div className="text-right">
-                          <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mb-1">Valor</p>
-                          <p className="text-xl font-black text-orange-500">- R$ {conta.valor.toLocaleString()}</p>
+                      <div className="space-y-1">
+                        <p className="font-extrabold text-2xl group-hover:text-primary transition-colors duration-500">{conta.fornecedor}</p>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
+                          <span className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg">
+                            <Calendar className="h-4 w-4" />
+                            Vence {conta.vencimento}
+                          </span>
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                          <span className="uppercase tracking-widest text-[10px] font-black opacity-60">Custos Operacionais</span>
                         </div>
-                        <Badge className={cn("px-4 py-1.5 rounded-full", getStatusColor(conta.status))}>
-                          <span className="uppercase tracking-tighter text-[11px]">{conta.status}</span>
-                        </Badge>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    
+                    <div className="flex items-center justify-between w-full lg:w-auto gap-10 border-t lg:border-t-0 border-white/5 pt-6 lg:pt-0">
+                      <div className="text-right">
+                        <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5 opacity-50">Valor Saída</p>
+                        <p className="text-3xl font-black tracking-tighter text-orange-500">- R$ {conta.valor.toLocaleString()}</p>
+                      </div>
+                      <Badge className={cn("px-6 py-2 rounded-2xl font-extrabold text-[11px] uppercase tracking-widest", getStatusColor(conta.status))}>
+                        {conta.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </TabsContent>

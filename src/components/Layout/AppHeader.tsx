@@ -68,77 +68,68 @@ export function AppHeader() {
   const displayEmail = profile?.email || user?.email || session?.user?.email || "email@exemplo.com";
 
   return (
-    <header className="h-14 md:h-16 border-b border-white/5 bg-background/60 backdrop-blur-xl sticky top-0 z-50 flex items-center justify-between px-4 md:px-6 shadow-sm">
-      {/* Sidebar Trigger - Always visible */}
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="h-7 w-7 md:h-8 md:w-8" />
+    <header className="h-16 md:h-20 border-b border-white/5 bg-background/40 backdrop-blur-2xl sticky top-0 z-50 flex items-center justify-between px-6 md:px-10">
+      {/* Sidebar Trigger & Branding Mobile */}
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="h-10 w-10 hover:bg-primary/10 transition-colors rounded-xl flex items-center justify-center" />
       </div>
 
-      {/* Search Bar - Hidden on mobile, shown on md+ */}
-      <div className="hidden md:flex flex-1 max-w-md mx-4">
-        <div className="relative w-full">
-          <Search className="absolute left-2.5 md:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground" />
+      {/* Premium Search Bar */}
+      <div className="hidden lg:flex flex-1 max-w-xl mx-8">
+        <div className="relative w-full group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent blur-sm opacity-0 group-focus-within:opacity-100 transition duration-500" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Buscar casos, clientes, tarefas..."
-            className="pl-8 md:pl-10 bg-background text-sm md:text-base h-8 md:h-10"
+            className="pl-12 bg-background/50 border-white/5 h-12 rounded-2xl text-base focus:ring-2 focus:ring-primary/20 transition-all font-medium shadow-inner"
           />
         </div>
       </div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-1 md:gap-2 lg:gap-4">
-        {/* Mobile Search Button */}
-        <Button variant="ghost" size="icon" className="md:hidden h-7 w-7">
-          <Search className="h-3.5 w-3.5" />
-        </Button>
-
-        {/* Notifications */}
+      {/* Actions Section */}
+      <div className="flex items-center gap-3 md:gap-5">
         <NotificationCenter />
 
-        {/* Theme Selector */}
-        <div className="h-7 w-7 md:h-8 md:w-8 lg:h-10 lg:w-10 flex items-center justify-center">
+        <div className="h-10 w-10 flex items-center justify-center p-1 rounded-xl bg-primary/5 border border-white/5 hover:bg-primary/10 transition-colors">
           <ThemeSelector />
         </div>
 
-        {/* User Menu */}
+        {/* User Profile Hook */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 lg:h-10 lg:w-10">
-              <User className="h-3.5 w-3.5 md:h-4 md:w-4 lg:h-5 lg:w-5" />
+            <Button variant="ghost" className="h-12 w-12 rounded-2xl p-0 hover:bg-primary/10 transition-all border border-white/5 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <User className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 md:w-56">
-            <DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-64 p-2 rounded-3xl bg-background/80 backdrop-blur-2xl border-white/10 shadow-premium mt-4">
+            <DropdownMenuLabel className="p-4">
               <div className="flex flex-col space-y-1">
-                <p className="text-xs md:text-sm font-medium">{getUserDisplayName()}</p>
-                <p className="text-[10px] md:text-xs text-muted-foreground">{displayEmail}</p>
+                <p className="text-base font-extrabold uppercase tracking-tight text-gradient">{getUserDisplayName()}</p>
+                <p className="text-xs text-muted-foreground font-medium truncate">{displayEmail}</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-white/5 mx-2" />
+            <div className="grid gap-1 py-2">
+              <DropdownMenuItem 
+                className="rounded-xl px-4 py-3 cursor-pointer hover:bg-primary/10 focus:bg-primary/10 font-bold transition-all"
+                onClick={() => navigate("/perfil")}
+              >
+                Meu Perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="rounded-xl px-4 py-3 cursor-pointer hover:bg-primary/10 focus:bg-primary/10 font-bold transition-all"
+                onClick={() => navigate("/configuracoes")}
+              >
+                Configurações
+              </DropdownMenuItem>
+            </div>
+            <DropdownMenuSeparator className="bg-white/5 mx-2" />
             <DropdownMenuItem 
-              className="text-xs md:text-sm cursor-pointer"
-              onClick={() => navigate("/perfil")}
-            >
-              Perfil
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="text-xs md:text-sm cursor-pointer"
-              onClick={() => navigate("/configuracoes")}
-            >
-              Configurações
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              className="text-xs md:text-sm cursor-pointer"
-              onClick={handlePlanClick}
-            >
-              Plano Atual
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              className="text-destructive text-xs md:text-sm cursor-pointer"
+              className="text-destructive rounded-xl px-4 py-3 cursor-pointer hover:bg-destructive/10 focus:bg-destructive/10 font-bold transition-all mt-1"
               onClick={handleLogout}
             >
-              Sair
+              Encerrar Sessão
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

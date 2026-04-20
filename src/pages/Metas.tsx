@@ -80,135 +80,156 @@ const Metas = () => {
 
   return (
     <PermissionGuard permission="canViewMetas" showDeniedMessage>
-      <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <Target className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-              </div>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                Metas & Objetivos
-              </h1>
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Target className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <p className="text-sm md:text-lg text-muted-foreground font-medium">
-              Defina, acompanhe e supere seus desafios profissionais.
-            </p>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              Metas & Objetivos
+            </h1>
           </div>
-          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
-            <Button 
-              onClick={() => setCreateGoalOpen(true)}
-              size="lg"
-              className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6"
-            >
-              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-              Nova Meta
-            </Button>
-          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Visualize o progresso em tempo real e impulsione a performance do seu escritório.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl shadow-premium">
+          <Button 
+            onClick={() => setCreateGoalOpen(true)}
+            size="lg"
+            className="rounded-xl h-12 shadow-premium bg-primary hover:bg-primary/90 font-bold px-8"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Nova Meta
+          </Button>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <div className="glass-card p-2 rounded-3xl inline-flex w-full md:w-auto h-auto">
+          <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-1">
+            <TabsTrigger value="individuais" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+              Individuais
+            </TabsTrigger>
+            <TabsTrigger value="demandas" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+              Demandas
+            </TabsTrigger>
+            <TabsTrigger value="escritorio" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+              Escritório
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="individuais" className="cursor-pointer">Individuais</TabsTrigger>
-            <TabsTrigger value="demandas" className="cursor-pointer">Por Demanda</TabsTrigger>
-            <TabsTrigger value="escritorio" className="cursor-pointer">Escritório</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="individuais" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Suas Metas Pessoais</h3>
-              <Button onClick={() => setCreateGoalOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Meta
-              </Button>
+          <TabsContent value="individuais" className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center px-4">
+              <h3 className="text-2xl font-extrabold">Suas Metas Pessoais</h3>
             </div>
 
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+            <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
               {metas.map((meta) => {
                 const percentage = Math.round((meta.valorAtual / meta.valorMeta) * 100);
                 
                 return (
-                  <Card key={meta.id} className="hover-lift border-white/5 bg-card/40 backdrop-blur-sm overflow-hidden group">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
-                    <CardHeader className="pb-3 border-b border-white/5 bg-muted/5">
+                  <div key={meta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Target className="h-24 w-24" />
+                    </div>
+                    
+                    <div className="relative z-10 space-y-8">
                       <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">{meta.titulo}</CardTitle>
+                        <div className="space-y-2">
+                          <h4 className="text-2xl font-extrabold group-hover:text-primary transition-colors duration-500 leading-tight">
+                            {meta.titulo}
+                          </h4>
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-[10px] uppercase font-extrabold tracking-widest px-2 py-0 border-white/10 bg-muted/20">
+                            <Badge className="bg-primary/10 text-primary border-primary/20 font-bold px-3 py-1 rounded-lg uppercase text-[10px] tracking-widest">
                               {meta.periodo}
                             </Badge>
-                            <Badge variant="outline" className="text-[10px] uppercase font-extrabold tracking-widest px-2 py-0 border-white/10 bg-muted/20">
+                            <Badge className="bg-white/5 text-muted-foreground border-white/5 font-bold px-3 py-1 rounded-lg uppercase text-[10px] tracking-widest">
                               {meta.tipo}
                             </Badge>
                           </div>
                         </div>
-                        <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg hover:bg-primary/10">
-                            <Edit className="h-4 w-4" />
+                        <div className="flex gap-2">
+                          <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl hover:bg-primary/10">
+                            <Edit className="h-5 w-5" />
                           </Button>
                           <Button 
                             size="icon" 
                             variant="ghost"
                             onClick={() => handleDeleteGoal(meta.id)}
-                            className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                            className="h-10 w-10 rounded-xl hover:bg-red-500/10 hover:text-red-500"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-5 w-5" />
                           </Button>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6 pt-6">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs font-bold uppercase tracking-wider opacity-60">Status de Entrega</span>
-                          <span className={`text-sm font-extrabold ${getProgressColor(percentage)}`}>
-                            {percentage}%
-                          </span>
+
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                          <div className="space-y-1">
+                            <p className="text-5xl font-black tracking-tighter">
+                              {formatValue(meta.valorAtual, meta.tipo)}
+                            </p>
+                            <p className="text-sm font-medium text-muted-foreground opacity-60">
+                              Objetivo Final: {formatValue(meta.valorMeta, meta.tipo)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-2xl font-black ${getProgressColor(percentage)}`}>
+                              {percentage}%
+                            </span>
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Proporção</p>
+                          </div>
                         </div>
-                        <div className="w-full bg-muted/50 rounded-full h-3 p-1 border border-white/5">
+
+                        <div className="w-full bg-white/5 rounded-2xl h-4 p-1 border border-white/5">
                           <div 
-                            className="bg-gradient-to-r from-primary to-primary/60 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(var(--primary),0.3)]"
-                            style={{ width: `${percentage}%` }}
-                          />
+                            className="bg-gradient-to-r from-primary to-primary/60 h-full rounded-xl transition-all duration-1000 ease-out shadow-premium relative group-hover:shadow-[0_0_20px_rgba(var(--primary),0.4)]"
+                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                          >
+                            <div className="absolute top-0 right-0 h-full w-2 bg-white/20 blur-sm rounded-full" />
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="flex justify-between items-end">
-                        <div className="space-y-1">
-                          <p className="text-3xl font-extrabold tracking-tight">
-                            {formatValue(meta.valorAtual, meta.tipo)}
-                          </p>
-                          <p className="text-xs font-medium text-muted-foreground opacity-70">
-                            Objetivo: {formatValue(meta.valorMeta, meta.tipo)}
-                          </p>
+
+                      <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Meta Ativa</span>
                         </div>
-                        <div className="text-right p-3 rounded-xl bg-primary/5 border border-primary/10">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-1">Gap Restante</p>
-                          <p className="font-extrabold text-primary">
-                            {formatValue(meta.valorMeta - meta.valorAtual, meta.tipo)}
+                        <div className="bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-primary/70 mb-0.5">Falta para concluir</p>
+                          <p className="font-black text-primary text-lg leading-none">
+                            {formatValue(Math.max(meta.valorMeta - meta.valorAtual, 0), meta.tipo)}
                           </p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
 
               {metas.length === 0 && (
-                <Card className="col-span-full">
-                  <CardContent className="flex flex-col items-center justify-center py-12">
-                    <Target className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Nenhuma meta criada</h3>
-                    <p className="text-muted-foreground text-center mb-4">
-                      Crie suas primeira meta para começar a acompanhar seu progresso.
+                <div className="col-span-full py-20 text-center glass-card rounded-[3rem] space-y-6">
+                  <div className="p-8 bg-white/5 rounded-full inline-block">
+                    <Target className="h-16 w-16 text-muted-foreground/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-extrabold">Nenhuma meta ativa</h3>
+                    <p className="text-muted-foreground font-medium max-w-sm mx-auto">
+                      Comece a transformar sua produtividade criando sua primeira meta estratégica hoje.
                     </p>
-                    <Button onClick={() => setCreateGoalOpen(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Criar Meta
-                    </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <Button onClick={() => setCreateGoalOpen(true)} size="lg" className="rounded-2xl h-14 px-10 font-bold shadow-premium">
+                    <Plus className="h-6 w-6 mr-2" />
+                    Criar Primeira Meta
+                  </Button>
+                </div>
               )}
             </div>
           </TabsContent>

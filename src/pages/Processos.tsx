@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessos } from '@/hooks/useProcessos';
-import { FileText, Loader2, RotateCw } from 'lucide-react';
+import { FileText, Loader2, RotateCw, Search } from 'lucide-react';
 
 // Debug logs
 console.log('🔍 Processos.tsx - Iniciando carregamento do componente');
@@ -379,35 +379,21 @@ const Processos = React.memo(() => {
             onClearFilters={handleClearFilters}
           />
 
-          {/* Busca por API */}
-          <BuscaProcessoAPI 
-            onProcessoEncontrado={handleProcessoEncontradoAPI}
-            processosAtivos={processos.length}
-          />
-
-          {/* Grid de Processos ou Loading/Empty State */}
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-muted-foreground">Carregando seus processos...</p>
-            </div>
-          ) : filteredProcessos.length === 0 ? (
-            <Card className="border-dashed border-2 p-8">
-              <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
-                <FileText className="h-12 w-12 text-muted-foreground" />
-                <div className="text-center space-y-2">
-                  <h3 className="text-xl font-semibold">Nenhum processo encontrado</h3>
-                  <p className="text-muted-foreground">
-                    Não foram encontrados processos com os filtros aplicados. 
-                    Tente ajustar os filtros ou criar um novo processo.
+          {filteredProcessos.length === 0 ? (
+            <Card className="glass-card border-white/5 bg-card/30 p-12 text-center rounded-[2rem] shadow-premium">
+              <CardContent className="space-y-6">
+                <div className="p-6 bg-primary/5 rounded-full inline-block border border-primary/10">
+                  <Search className="h-12 w-12 text-primary opacity-40" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-extrabold">Nenhum processo encontrado</h3>
+                  <p className="text-muted-foreground font-medium max-w-sm mx-auto">
+                    Tente ajustar seus filtros ou faça uma nova busca refinada para encontrar o que procura.
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleClearFilters}>
-                    Limpar Filtros
-                  </Button>
-                  <NovoProcessoDialog onAddProcesso={handleAddProcesso} />
-                </div>
+                <Button variant="outline" onClick={handleClearFilters} className="rounded-xl font-bold h-12 px-8 border-white/10 hover:bg-white/5">
+                  Limpar Filtros
+                </Button>
               </CardContent>
             </Card>
           ) : view === 'table' ? (

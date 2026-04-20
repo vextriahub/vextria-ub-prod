@@ -82,49 +82,52 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
             {profile?.full_name ? `Olá, ${profile.full_name.split(' ')[0]}!` : 'Seu Assistente Jurídico'}
           </h1>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium">
-            Aqui está um resumo do seu escritório para hoje.
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Aqui está o panorama estratégico do seu escritório para hoje.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 glass-morphism rounded-full">
-          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-semibold uppercase tracking-wider opacity-70">Sistema Online</span>
+        <div className="flex items-center gap-3 px-6 py-3 bg-card/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-premium">
+          <div className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+          <span className="text-xs font-bold uppercase tracking-widest opacity-80">Ecosistema Vextria Ativo</span>
         </div>
       </div>
 
-      {/* Trial Alert */}
+      {/* Trial Alert Premium */}
       {trialInfo?.isTrial && trialInfo.daysLeft > 0 && (
-        <Alert className="bg-muted border-border text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          <AlertTitle>Período de Teste Ativo</AlertTitle>
-          <AlertDescription>
-            Você tem {trialInfo.daysLeft} dia{trialInfo.daysLeft > 1 ? 's' : ''} restante{trialInfo.daysLeft > 1 ? 's' : ''} no seu período de teste gratuito. 
-            Após este período, você precisará fornecer os dados de pagamento para continuar usando o sistema.
+        <Alert className="bg-primary/5 border-primary/20 text-foreground py-6 rounded-3xl shadow-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50 transition-all group-hover:opacity-100" />
+          <Clock className="h-5 w-5 text-primary" />
+          <AlertTitle className="text-lg font-bold">Período de Teste Ativo</AlertTitle>
+          <AlertDescription className="text-muted-foreground mt-1">
+            Você tem <span className="font-bold text-primary">{trialInfo.daysLeft} dia{trialInfo.daysLeft > 1 ? 's' : ''}</span> restante{trialInfo.daysLeft > 1 ? 's' : ''} no seu período premium. 
+            Aproveite todas as funcionalidades exclusivas.
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Stats Cards */}
-      <StatsCards />
+      {/* Stats Cards Section */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-transparent blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+        <StatsCards />
+      </div>
 
-      {/* Layout responsivo - Mobile: Stack vertical, Desktop: Grid otimizado */}
+      {/* Main Grid Content */}
       {isMobile ? (
-        /* Layout Mobile - Tudo empilhado verticalmente */
-        <div className="space-y-4">
+        <div className="space-y-6">
           <RecentActivity />
           <CalendarWidget />
           <HearingsCard />
           <PriorityTasks />
           <DeadlinesCard />
           <ScoreCard
-            userName="Usuário"
+            userName="Membro"
             totalScore={0}
             monthlyScore={0}
             weeklyScore={0}
@@ -134,41 +137,38 @@ const Index = () => {
           />
         </div>
       ) : (
-        /* Layout Desktop - Grid otimizado com altura uniforme */
-        <div className="grid gap-6">
-          {/* Primeira linha - Agenda ao lado de Audiências, Prioridades e Prazos */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[500px]">
-            <div className="h-full">
+        <div className="grid gap-8">
+          {/* Top Row: Strategic View */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-[550px]">
+            <div className="h-full hover-lift">
               <CalendarWidget />
             </div>
-            <div className="h-full">
+            <div className="h-full hover-lift">
               <HearingsCard />
             </div>
-            <div className="h-full">
+            <div className="h-full hover-lift">
               <PriorityTasks />
             </div>
-            <div className="h-full">
+            <div className="h-full hover-lift">
               <DeadlinesCard />
             </div>
           </div>
 
-          {/* Segunda linha - Atividades Recentes ao lado de Produtividade */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[400px]">
-            <div className="h-full">
+          {/* Bottom Row: Operations & Gamification */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-full hover-lift">
               <RecentActivity />
             </div>
-            <div className="h-full flex items-center justify-center">
-              <div className="w-full max-w-md h-full">
-                <ScoreCard
-                  userName="Usuário"
-                  totalScore={0}
-                  monthlyScore={0}
-                  weeklyScore={0}
-                  rank={0}
-                  completedTasks={0}
-                  totalTasks={0}
-                />
-              </div>
+            <div className="h-full hover-lift">
+              <ScoreCard
+                userName="Membro"
+                totalScore={0}
+                monthlyScore={0}
+                weeklyScore={0}
+                rank={0}
+                completedTasks={0}
+                totalTasks={0}
+              />
             </div>
           </div>
         </div>

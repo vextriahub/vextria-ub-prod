@@ -168,14 +168,14 @@ export function AppSidebar() {
   };
 
   const getNavClasses = (isActiveManual: boolean) =>
-    `flex items-center gap-2 md:gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 text-sm md:text-base w-full group ${
+    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500 text-sm md:text-[15px] w-full group relative overflow-hidden ${
       isActiveManual 
-        ? "bg-primary text-primary-foreground font-semibold shadow-lg shadow-primary/20 scale-105" 
-        : "hover:bg-primary/10 text-sidebar-foreground hover:text-primary hover:translate-x-1"
+        ? "bg-primary text-primary-foreground font-bold shadow-premium scale-[1.02] z-10" 
+        : "hover:bg-primary/10 text-sidebar-foreground hover:text-primary hover:translate-x-1 font-medium"
     }`;
 
   return (
-    <Sidebar className="border-r border-white/5 bg-sidebar-background/60 backdrop-blur-xl" collapsible="icon">
+    <Sidebar className="border-r border-white/5 bg-sidebar-background/40 backdrop-blur-2xl" collapsible="icon">
       <div className="flex h-full flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-3 md:p-4 border-b border-sidebar-border">

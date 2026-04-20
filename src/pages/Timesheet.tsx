@@ -336,25 +336,8 @@ export default function Timesheet() {
           </CardContent>
         </Card>
 
-        {/* Estatísticas Modernas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="hover-lift border-white/5 bg-card/40">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tempo Hoje</CardTitle>
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock className="h-4 w-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">{formatMinutes(todayStats.totalMinutos)}</div>
-              <div className="flex items-center pt-2 text-xs font-bold text-primary/70">
-                <TrendingUp className="mr-1 h-3 w-3" />
-                <span>{todayStats.totalRegistros} registros</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="hover-lift border-white/5 bg-card/40 shadow-premium rounded-3xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Esta Semana</CardTitle>
               <div className="p-2 bg-primary/10 rounded-lg">

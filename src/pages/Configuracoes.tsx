@@ -83,48 +83,47 @@ const Configuracoes = () => {
   };
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-primary/10">
               <Settings className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Configurações do Sistema
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              Configurações
             </h1>
           </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium">
-            Personalize sua experiência e gerencie as diretrizes do escritório.
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Ajuste as preferências globais e personalize a inteligência do seu escritório.
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <div className="overflow-x-auto pb-4 -mx-4 md:mx-0 px-4 md:px-0 scrollbar-hide">
-          <div className="border-b border-white/5 bg-background/30 backdrop-blur-sm p-1 rounded-2xl w-fit min-w-full md:min-w-0">
-            <TabsList className="h-11 gap-1 bg-transparent border-none">
-              {[
-                { id: "geral", label: "Geral" },
-                { id: "usuarios", label: "Usuários" },
-                { id: "permissoes", label: "Permissões" },
-                { id: "clientes", label: "Clientes" },
-                { id: "processos", label: "Processos" },
-                { id: "prazos", label: "Prazos" },
-                { id: "equipes", label: "Equipes" },
-                ...(canManageOffice ? [{ id: "escritorio", label: "Escritório" }] : []),
-                { id: "integracao", label: "Integração" }
-              ].map((tab) => (
-                <TabsTrigger 
-                  key={tab.id}
-                  value={tab.id} 
-                  className="rounded-xl px-4 md:px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 font-bold whitespace-nowrap transition-all"
-                >
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+        <div className="glass-card p-2 rounded-3xl inline-flex w-full overflow-x-auto h-auto no-scrollbar">
+          <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-1">
+            {[
+              { id: "geral", label: "Geral" },
+              { id: "usuarios", label: "Usuários" },
+              { id: "permissoes", label: "Permissões" },
+              { id: "clientes", label: "Clientes" },
+              { id: "processos", label: "Processos" },
+              { id: "prazos", label: "Prazos" },
+              { id: "equipes", label: "Equipes" },
+              ...(canManageOffice ? [{ id: "escritorio", label: "Escritório" }] : []),
+              { id: "integracao", label: "Integração" }
+            ].map((tab) => (
+              <TabsTrigger 
+                key={tab.id}
+                value={tab.id} 
+                className="rounded-2xl px-6 py-2.5 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all whitespace-nowrap"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
         </div>
 
               <TabsContent value="geral" className="space-y-4">

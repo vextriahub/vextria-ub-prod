@@ -15,8 +15,6 @@ import { format, isToday, addDays, startOfMonth, endOfMonth, eachDayOfInterval, 
 import { ptBR } from "date-fns/locale";
 
 import { useAgendaEvents, EventType, EventStatus, AgendaEvent } from "@/hooks/useAgendaEvents";
-import { format, isToday, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 const getTypeColor = (type: string) => {
   switch (type) {
@@ -188,63 +186,9 @@ export default function Agenda() {
                 Novo Compromisso
               </Button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="hover-lift border-white/5 bg-card/40">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Hoje</CardTitle>
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Clock className="h-4 w-4 text-primary" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-extrabold tracking-tight">{todayEventsCount}</div>
-                <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Eventos agendados</p>
-              </CardContent>
-            </Card>
-
-            <Card className="hover-lift border-white/5 bg-card/40">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Esta Semana</CardTitle>
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Calendar className="h-4 w-4 text-primary" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-extrabold tracking-tight">{weekEventsCount}</div>
-                <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Total de compromissos</p>
-              </CardContent>
-            </Card>
-
-            <Card className="hover-lift border-white/5 bg-card/40">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Audiências</CardTitle>
-                <div className="p-2 rounded-lg bg-red-500/10">
-                  <Users className="h-4 w-4 text-red-500" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-extrabold tracking-tight">{audienciasCount}</div>
-                <p className="text-xs font-medium text-red-500 mt-1 opacity-70">Críticas aguardando</p>
-              </CardContent>
-            </Card>
-
-            <Card className="hover-lift border-white/5 bg-card/40">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Reuniões</CardTitle>
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <MapPin className="h-4 w-4 text-blue-500" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-extrabold tracking-tight">{reunioesCount}</div>
-                <p className="text-xs font-medium text-blue-500 mt-1 opacity-70">Confirmadas na semana</p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
+    </div>
 
       <div className="flex-1 flex">
         <Tabs defaultValue="calendar" className="flex-1 flex flex-col">

@@ -217,66 +217,74 @@ const Clientes = () => {
     applyFilters(clients, searchValue, filters);
   };
 
-  const handleClearAdvancedFilters = () => {
-    applyFilters(clients, searchValue, {});
-  };
-
-  const handleFilterClick = () => {
-    // This is now handled by the ClientsAdvancedFilters component
-  };
-
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
-      {/* Page Header */}
-      <ClientsPageHeader
-        selectedCount={multiSelect.selectedCount}
-        onDeleteSelected={handleDeleteSelected}
-        onNewClient={() => setNovoClienteDialogOpen(true)}
-        isNoneSelected={multiSelect.isNoneSelected}
-      />
-
-      {/* Empty State ou Loading */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium">Carregando seus clientes...</p>
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              Gestão de Clientes
+            </h1>
+          </div>
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Visualize e gerencie todos os seus relacionamentos profissionais e CRM.
+          </p>
         </div>
-      ) : showEmptyState ? (
-        <EmptyState
-          icon={Users}
-          title="Sua base de clientes está vazia"
-          description="Comece a cadastrar seus clientes para gerenciar processos, honorários e atendimentos de forma integrada."
-          actionLabel="Cadastrar Novo Cliente"
-          onAction={() => setNovoClienteDialogOpen(true)}
-        />
-      ) : (
-        // Conteúdo normal quando há clientes
-        <>
-          {/* Search and Advanced Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <ClientsSearchBar
-                searchValue={searchValue}
-                onSearchChange={handleSearchChange}
-                onFilterClick={handleFilterClick}
+        
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+          <Button 
+            onClick={() => setNovoClienteDialogOpen(true)}
+            size="lg"
+            className="rounded-xl shadow-premium h-12 px-6 font-bold"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Novo Cliente
+          </Button>
+        </div>
+      </div>
+
+      {/* Seção de Filtros e Busca */}
+      <div className="grid grid-cols-1 gap-6">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 group transition-all duration-500">
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+              <Input
+                placeholder="Buscar por nome, email ou CPF/CNPJ..."
+                value={searchValue}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-12 h-14 bg-background/50 border-white/5 rounded-2xl text-lg focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
               />
             </div>
-            <ClientsAdvancedFilters
-              onFiltersChange={handleAdvancedFiltersChange}
-              onClearFilters={handleClearAdvancedFilters}
-            />
           </div>
+          <ClientsAdvancedFilters onFiltersChange={handleAdvancedFiltersChange} />
+        </div>
+      </div>
 
-          {/* Selection Controls */}
-          {filteredClients.length > 0 && (
-            <ClientsSelectionControls
-              isAllSelected={multiSelect.isAllSelected}
-              selectedCount={multiSelect.selectedCount}
-              totalCount={filteredClients.length}
-              onSelectAll={multiSelect.selectAll}
-              onClearSelection={multiSelect.clearSelection}
-            />
-          )}
+      {/* Lista de Clientes */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-32 space-y-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <Loader2 className="h-14 w-14 animate-spin text-primary relative" />
+          </div>
+          <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Sincronizando Base de Clientes...</p>
+        </div>
+      ) : showEmptyState ? (
+        <ClientsEmptyState onAction={() => setNovoClienteDialogOpen(true)} />
+      ) : (
+        <>
+          <ClientsSelectionControls
+            isAllSelected={multiSelect.isAllSelected}
+            selectedCount={multiSelect.selectedCount}
+            totalCount={filteredClients.length}
+            onSelectAll={multiSelect.selectAll}
+            onClearSelection={multiSelect.clearSelection}
+          />
 
           {/* Clients Grid */}
           {filteredClients.length > 0 && (

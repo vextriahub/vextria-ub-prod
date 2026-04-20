@@ -94,178 +94,171 @@ export default function Crm() {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
-      <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <UserCheck className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-              </div>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                CRM & Leads
-              </h1>
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+      {/* Page Header Moderno */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <UserCheck className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <p className="text-sm md:text-lg text-muted-foreground font-medium">
-              Transforme prospecções em contratos com gestão inteligente de relacionamento.
-            </p>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+              Gestão de Relacionamento
+            </h1>
           </div>
-          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
-            <Button size="lg" className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6" onClick={() => setShowNovoLeadDialog(true)}>
-              <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-              Novo Lead
+          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+            Converta prospecções em contratos e gerencie seu funil de vendas com inteligência.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl shadow-premium">
+          <Button 
+            onClick={() => setShowNovoLeadDialog(true)}
+            size="lg"
+            className="rounded-xl h-12 shadow-premium bg-primary hover:bg-primary/90 font-bold px-8"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Novo Lead
+          </Button>
+        </div>
+      </div>
+
+      {/* Navigation Groups Premium */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="glass-card p-2 rounded-2xl flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="rounded-xl font-bold px-6 h-11 hover:bg-primary/10 hover:text-primary transition-all">
+                Pipeline & Prospecção
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80 rounded-2xl border-white/5 bg-background/80 backdrop-blur-2xl p-2">
+              <DropdownMenuItem className="rounded-xl p-4 cursor-pointer hover:bg-primary/10 mb-1 transition-all" onSelect={() => handleMenuClick("funil-vendas")}>
+                <Target className="h-5 w-5 text-primary mr-4" />
+                <div>
+                  <p className="font-extrabold text-sm">Funil Estratégico</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Fluxo completo de vendas</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="rounded-xl p-4 cursor-pointer hover:bg-primary/10 transition-all" onSelect={() => handleMenuClick("oportunidades")}>
+                <TrendingUp className="h-5 w-5 text-primary mr-4" />
+                <div>
+                  <p className="font-extrabold text-sm">Oportunidades Ativas</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Gestão de leads qualificados</p>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="glass-card p-2 rounded-2xl flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="rounded-xl font-bold px-6 h-11 hover:bg-primary/10 hover:text-primary transition-all">
+                Análises Dinâmicas
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80 rounded-2xl border-white/5 bg-background/80 backdrop-blur-2xl p-2">
+              <DropdownMenuItem className="rounded-xl p-4 cursor-pointer hover:bg-primary/10 mb-1 transition-all" onSelect={() => handleMenuClick("relatorios")}>
+                <BarChart3 className="h-5 w-5 text-primary mr-4" />
+                <div>
+                  <p className="font-extrabold text-sm">Performance CRM</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Relatórios e ROI</p>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="rounded-xl p-4 cursor-pointer hover:bg-primary/10 transition-all" onSelect={() => handleMenuClick("metas")}>
+                <Target className="h-5 w-5 text-primary mr-4" />
+                <div>
+                  <p className="font-extrabold text-sm">Metas Comerciais</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">KPIs de aquisição</p>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="glass-card p-2 rounded-2xl flex items-center gap-1 ml-auto">
+          <Button variant="ghost" className="rounded-xl font-bold px-6 h-11 hover:bg-white/5 opacity-60 hover:opacity-100 transition-all" onClick={() => window.location.href = '/configuracoes'}>
+            Parâmetros CRM
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Premium Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group cursor-pointer" onClick={() => handleCardClick("leads")}>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Base Total</p>
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <UserCheck className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <p className="text-4xl font-black text-foreground">124</p>
+          <p className="text-xs font-medium text-muted-foreground mt-2 opacity-60">Leads em observação</p>
+        </div>
+        
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group cursor-pointer" onClick={() => handleCardClick("leads-quentes")}>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Leads Quentes</p>
+            <div className="p-2 bg-orange-500/10 rounded-xl">
+              <Phone className="h-5 w-5 text-orange-500" />
+            </div>
+          </div>
+          <p className="text-4xl font-black text-orange-500">28</p>
+          <p className="text-xs font-medium text-muted-foreground mt-2 opacity-60">Potencial de contrato imediato</p>
+        </div>
+
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group cursor-pointer" onClick={() => handleCardClick("conversoes")}>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Sucesso Conversão</p>
+            <div className="p-2 bg-emerald-500/10 rounded-xl">
+              <TrendingUp className="h-5 w-5 text-emerald-500" />
+            </div>
+          </div>
+          <p className="text-4xl font-black text-emerald-500">32%</p>
+          <p className="text-xs font-medium text-muted-foreground mt-2 opacity-60">Taxa média mensal</p>
+        </div>
+
+        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group cursor-pointer" onClick={() => handleCardClick("receita-potencial")}>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Valor Pipeline</p>
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <BarChart3 className="h-5 w-5 text-primary" />
+            </div>
+          </div>
+          <p className="text-4xl font-black text-gradient">R$ 142k</p>
+          <p className="text-xs font-medium text-muted-foreground mt-2 opacity-60">Previsão para 60 dias</p>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 px-4">
+          <div className="glass-card p-2 rounded-3xl inline-flex h-auto">
+            <TabsList className="bg-transparent h-auto p-0 gap-1">
+              <TabsTrigger value="leads" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+                Pipeline Leads
+              </TabsTrigger>
+              <TabsTrigger value="clientes" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+                Histórico Conversão
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl w-full md:w-auto">
+            <div className="relative flex-1 md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/40" />
+              <Input
+                placeholder="Filtrar base de leads..."
+                className="pl-12 h-12 bg-background/50 border-white/5 rounded-xl font-medium"
+              />
+            </div>
+            <Button variant="ghost" className="h-12 w-12 rounded-xl border border-white/5 hover:bg-white/5">
+              <Filter className="h-5 w-5 opacity-40 hover:opacity-100 transition-opacity" />
             </Button>
           </div>
         </div>
 
-        {/* Navigation Menu */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto justify-center">
-                Pipeline
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80 max-w-[calc(100vw-2rem)]">
-              <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer" onSelect={() => handleMenuClick("funil-vendas")}>
-                <Target className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-medium">Funil de Vendas</div>
-                  <div className="text-sm text-muted-foreground">Visualize o pipeline completo</div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer" onSelect={() => handleMenuClick("oportunidades")}>
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-medium">Oportunidades</div>
-                  <div className="text-sm text-muted-foreground">Gerencie oportunidades ativas</div>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto justify-center">Análises</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80 max-w-[calc(100vw-2rem)]">
-              <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer" onSelect={() => handleMenuClick("relatorios")}>
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-medium">Relatórios</div>
-                  <div className="text-sm text-muted-foreground">Análises detalhadas de performance</div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer" onSelect={() => handleMenuClick("metas")}>
-                <Target className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-medium">Metas</div>
-                  <div className="text-sm text-muted-foreground">Acompanhe o progresso das metas</div>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto justify-center">Automação</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80 max-w-[calc(100vw-2rem)]">
-              <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer" onSelect={() => handleMenuClick("email-marketing")}>
-                <Mail className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-medium">E-mail Marketing</div>
-                  <div className="text-sm text-muted-foreground">Campanhas automatizadas</div>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-3 p-3 cursor-pointer" onSelect={() => handleMenuClick("follow-up")}>
-                <Calendar className="h-5 w-5 text-primary" />
-                <div>
-                  <div className="font-medium">Follow-up</div>
-                  <div className="text-sm text-muted-foreground">Lembretes automáticos</div>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="outline" className="w-full sm:w-auto" onClick={() => window.location.href = '/configuracoes'}>
-            Configurações
-          </Button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("leads")}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total Leads</CardTitle>
-              <UserCheck className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">0</div>
-              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Ver base completa</p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("leads-quentes")}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500/40 group-hover:bg-orange-500 transition-colors" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Leads Quentes</CardTitle>
-              <Phone className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">0</div>
-              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Oportunidades imediatas</p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("conversoes")}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/40 group-hover:bg-emerald-500 transition-colors" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Conversões</CardTitle>
-              <Calendar className="h-4 w-4 text-emerald-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">0</div>
-              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Taxa de sucesso mensal</p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover-lift border-white/5 bg-card/40 overflow-hidden cursor-pointer group" onClick={() => handleCardClick("receita-potencial")}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40 group-hover:bg-primary transition-colors" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">VPL Estimado</CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-extrabold tracking-tight">R$ 110k</div>
-              <p className="text-xs font-medium text-muted-foreground mt-1 opacity-70">Pipeline ponderado</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 md:space-y-6">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-            <TabsList className="grid w-full sm:w-auto grid-cols-2">
-              <TabsTrigger value="leads">Leads</TabsTrigger>
-              <TabsTrigger value="clientes">Clientes</TabsTrigger>
-            </TabsList>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-              <div className="relative flex-1 sm:max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input placeholder="Buscar..." className="pl-10" />
-              </div>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <Filter className="h-4 w-4 mr-2" />
-                Filtros
-              </Button>
-            </div>
-          </div>
-
-          <TabsContent value="leads">
+        <TabsContent value="leads">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg md:text-xl">Leads Ativos</CardTitle>
@@ -351,7 +344,6 @@ export default function Crm() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
       
       {/* Dialog de Novo Lead */}
       <NovoLeadDialog
