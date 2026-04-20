@@ -27,6 +27,7 @@ import {
   ShieldCheck, 
   Gavel, 
   User, 
+  Users,
   Loader2, 
   ChevronRight,
   Database
@@ -84,7 +85,8 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
   const [uf, setUf] = useState('DF');
   const [results, setResults] = useState<JudicialProcessResult[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectedClientId, setSelectedClientId] = useState<string>('');
+  const [itemSelections, setItemSelections] = useState<Record<string, string>>({});
+  const [bulkClientId, setBulkClientId] = useState<string>('');
   const [clients, setClients] = useState<any[]>([]);
 
   // Carregar clientes para o seletor
@@ -228,7 +230,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         .filter(r => selectedIds.has(r.id))
         .map(p => ({ 
           ...p, 
-          clienteId: selectedClientId || null // Permitir nulo se não houver cliente ainda
+          clienteId: itemSelections[p.id] || null 
         }));
 
       await onImport(selectedProcesses);
@@ -252,11 +254,11 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-transparent">
       {/* Busca */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end p-1">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 items-end p-1">
         <div className="space-y-2">
           <Label className="text-white/60">UF do Tribunal</Label>
           <Select value={uf} onValueChange={setUf}>
-            <SelectTrigger className="bg-white/5 border-white/10 h-11">
+            <SelectTrigger className="bg-white/5 border-white/10 h-10">
               <SelectValue placeholder="UF" />
             </SelectTrigger>
             <SelectContent className="bg-slate-900 border-white/10">
@@ -266,45 +268,58 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
             </SelectContent>
           </Select>
         </div>
-        <div className="md:col-span-2 space-y-2">
+        <div className="md:col-span-3 space-y-2">
           <Label className="text-white/60">Número da OAB (Somente dígitos)</Label>
           <div className="relative">
-            <ShieldCheck className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+            <ShieldCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input 
-              className="pl-10 bg-white/5 border-white/10 h-11"
-              placeholder="Ex: 123456" 
+              className="pl-10 bg-white/5 border-white/10 h-10"
+              placeholder="Ex: 61199" 
               value={oab}
               onChange={(e) => setOab(e.target.value.replace(/\D/g, ''))}
             />
           </div>
         </div>
-        <Button onClick={handleSearch} disabled={loading} className="gap-2 h-11 bg-primary">
+        <Button onClick={handleSearch} disabled={loading} className="gap-2 h-10 bg-primary">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-          {loading ? 'Buscando...' : 'Buscar Processos'}
+          {loading ? 'Buscando...' : 'Buscar'}
         </Button>
       </div>
 
-      <div className="bg-white/5 border border-white/5 p-6 rounded-2xl mb-6 space-y-4">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-            <User className="h-4 w-4" />
+      {results.length > 0 && (
+        <div className="bg-primary/5 border border-primary/20 p-3 rounded-xl mb-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-xs font-medium text-white/70">Aplicar cliente aos {selectedIds.size} selecionados:</span>
           </div>
-          <div>
-            <h5 className="text-sm font-semibold text-white/90">Vincular a um Cliente (Opcional)</h5>
-            <p className="text-[10px] text-white/40">Opcional: vincule agora ou deixe para depois. O processo ficará seguro em seu escritório.</p>
+          <div className="flex items-center gap-2 flex-1 max-w-[400px]">
+            <Select value={bulkClientId} onValueChange={setBulkClientId}>
+              <SelectTrigger className="bg-white/5 border-white/10 h-9 text-xs">
+                <SelectValue placeholder="Escolher cliente para massa..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-white/10">
+                {clients.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              size="sm" 
+              variant="secondary" 
+              disabled={!bulkClientId || selectedIds.size === 0}
+              onClick={() => {
+                const updated = { ...itemSelections };
+                selectedIds.forEach(id => { updated[id] = bulkClientId; });
+                setItemSelections(updated);
+                toast({ title: "Vínculo aplicado", description: `${selectedIds.size} processos vinculados com sucesso.` });
+              }}
+              className="h-9"
+            >
+              Aplicar
+            </Button>
           </div>
         </div>
-        <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-          <SelectTrigger className="bg-white/5 border-white/10 h-11">
-            <SelectValue placeholder="Selecione um cliente..." />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-900 border-white/10">
-            {clients.map(c => (
-              <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      )}
 
       <Separator className="mb-6 bg-white/10" />
 
@@ -325,15 +340,16 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           )}
         </div>
         
-        <ScrollArea className="h-[400px] w-full">
+        <ScrollArea className="flex-1 w-full">
           {results.length > 0 ? (
             <Table>
-              <TableHeader className="bg-white/5 sticky top-0 z-10">
+              <TableHeader className="bg-slate-900 sticky top-0 z-10">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="w-[40px]"></TableHead>
                   <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Processo / Partes</TableHead>
-                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Último Andamento</TableHead>
-                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Fase</TableHead>
+                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold min-w-[200px]">Vincular Cliente</TableHead>
+                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Resumo / Data</TableHead>
+                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -369,17 +385,32 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       </div>
                     </TableCell>
                     <TableCell>
+                      <Select 
+                        value={itemSelections[proc.id] || ''} 
+                        onValueChange={(val) => setItemSelections(prev => ({ ...prev, [proc.id]: val }))}
+                      >
+                        <SelectTrigger className="h-8 bg-white/5 border-white/10 text-[11px]">
+                          <SelectValue placeholder="Vincular a..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-900 border-white/10">
+                          {clients.map(c => (
+                            <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
                       {proc.ultimoAndamento ? (
                         <div className="flex flex-col gap-1 max-w-[250px]">
-                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full border border-primary/20 w-fit">
+                          <span className="text-[10px] text-primary/70 font-bold uppercase">
                             {new Date(proc.ultimoAndamento.data).toLocaleDateString()}
                           </span>
-                          <span className="text-xs line-clamp-2 italic text-white/60">{proc.ultimoAndamento.descricao}</span>
+                          <span className="text-xs line-clamp-1 italic text-white/50">{proc.ultimoAndamento.descricao}</span>
                         </div>
                       ) : <span className="text-white/20 italic">---</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[10px] whitespace-nowrap bg-white/5 border-white/10 text-white/60">
+                      <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white/5 border-white/10 text-white/40">
                         {proc.faseProcessual}
                       </Badge>
                     </TableCell>
