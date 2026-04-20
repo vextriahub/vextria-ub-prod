@@ -24,7 +24,7 @@ export const useExclusoesPendentes = () => {
         .from('exclusoes_pendentes')
         .select(`
           *,
-          user:profiles!exclusoes_pendentes_user_id_fkey(full_name, email)
+          user:profiles(full_name, email)
         `)
         .eq('status', 'pendente')
         .order('solicitado_em', { ascending: false });

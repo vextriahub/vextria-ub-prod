@@ -24,6 +24,7 @@ import { ProcessoTable } from '@/components/Processos/ProcessoTable';
 import { ProcessoDetailsDrawer } from '@/components/Processos/ProcessoDetailsDrawer';
 import { ProcessoViewSwitcher } from '@/components/Processos/ProcessoViewSwitcher';
 import { JudicialSyncDialog } from '@/components/Processos/JudicialSyncDialog';
+import { EmptyState } from '@/components/ui/empty-state';
 
 // Tipos e dados
 import { Processo, NovoProcessoForm, ProcessoFilters as IProcessoFilters, statusProcesso } from '@/types/processo';
