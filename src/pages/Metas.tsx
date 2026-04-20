@@ -81,7 +81,7 @@ const Metas = () => {
 
   return (
     <PermissionGuard permission="canViewMetas" showDeniedMessage>
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden entry-animate">
       {/* Page Header Moderno */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
@@ -125,7 +125,7 @@ const Metas = () => {
           </TabsList>
         </div>
 
-          <TabsContent value="individuais" className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+          <TabsContent value="individuais" className="space-y-8 entry-animate slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-4">
               <h3 className="text-2xl font-extrabold">Suas Metas Pessoais</h3>
             </div>

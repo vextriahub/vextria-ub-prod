@@ -24,7 +24,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center p-8 md:p-12 glass-morphism rounded-3xl animate-in",
+        "flex flex-col items-center justify-center text-center p-8 md:p-12 glass-morphism rounded-3xl entry-animate",
         className
       )}
       {...props}

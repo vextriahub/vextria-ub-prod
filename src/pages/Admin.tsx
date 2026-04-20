@@ -127,25 +127,25 @@ const Admin = () => {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-6 overflow-x-hidden animate-in fade-in duration-700">
+    <div className="flex-1 p-4 md:p-8 space-y-6 overflow-x-hidden entry-animate fade-in duration-700">
       <div className="w-full">
         {isMainSuperAdmin ? (
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             {/* TabsList removido — navegação feita pelo sidebar */}
 
-            <TabsContent value="dashboard" className="animate-in slide-in-from-bottom-4 duration-500 mt-0">
+            <TabsContent value="dashboard" className="entry-animate slide-in-from-bottom-4 duration-500 mt-0">
               <GlobalMetrics />
             </TabsContent>
 
-            <TabsContent value="offices" className="animate-in slide-in-from-bottom-4 duration-500 mt-0">
+            <TabsContent value="offices" className="entry-animate slide-in-from-bottom-4 duration-500 mt-0">
               <OfficeControlPanel />
             </TabsContent>
 
-            <TabsContent value="subscriptions" className="animate-in slide-in-from-bottom-4 duration-500 mt-0">
+            <TabsContent value="subscriptions" className="entry-animate slide-in-from-bottom-4 duration-500 mt-0">
               <SubscriptionControlPanel />
             </TabsContent>
 
-            <TabsContent value="requests" className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 mt-0">
+            <TabsContent value="requests" className="space-y-6 entry-animate slide-in-from-bottom-4 duration-500 mt-0">
             {/* Stats Rápido */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
@@ -174,7 +174,7 @@ const Admin = () => {
             </div>
 
             {!multiSelect.isNoneSelected && (
-              <div className="glass-card p-6 rounded-3xl bg-primary/5 border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 animate-in fade-in zoom-in duration-300">
+              <div className="glass-card p-6 rounded-3xl bg-primary/5 border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6 entry-animate fade-in zoom-in duration-300">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-primary rounded-2xl shadow-premium">
                     <Shield className="h-6 w-6 text-primary-foreground" />

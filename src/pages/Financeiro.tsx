@@ -46,7 +46,7 @@ const Financeiro = () => {
 
   return (
     <PermissionGuard permission="canViewFinanceiro" showDeniedMessage>
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden entry-animate">
       {/* Page Header Moderno */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
@@ -136,7 +136,7 @@ const Financeiro = () => {
           </TabsList>
         </div>
 
-          <TabsContent value="receber" className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <TabsContent value="receber" className="space-y-6 entry-animate slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-4">
               <h3 className="text-2xl font-extrabold">Contas a Receber</h3>
               <Button className="rounded-xl font-bold px-6 h-11 bg-emerald-500 hover:bg-emerald-600 text-white shadow-premium transition-all">
@@ -181,7 +181,7 @@ const Financeiro = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="pagar" className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+          <TabsContent value="pagar" className="space-y-6 entry-animate slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-4">
               <h3 className="text-2xl font-extrabold">Contas a Pagar</h3>
               <Button className="rounded-xl font-bold px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white shadow-premium transition-all">

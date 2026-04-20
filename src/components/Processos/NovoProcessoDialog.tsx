@@ -163,57 +163,67 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
           {trigger || defaultTrigger}
         </DialogTrigger>
         
-        <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden flex flex-col max-h-[90vh]">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Novo Processo</DialogTitle>
-            <DialogDescription>
-              Crie um novo processo jurídico preenchendo as informações abaixo.
+        <DialogContent className="sm:max-w-[800px] bg-background/40 backdrop-blur-3xl border-white/5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] p-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <DialogHeader className="p-8 pb-4 border-b border-white/5">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+              Novo Processo
+            </DialogTitle>
+            <DialogDescription className="text-white/40">
+              Crie um novo processo jurí­dico preenchendo as informações abaixo.
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 overflow-y-auto px-6">
-            <form onSubmit={handleSubmit} className="space-y-8 py-4">
+          <ScrollArea className="flex-1 overflow-y-auto px-8">
+            <form onSubmit={handleSubmit} className="space-y-10 py-6">
               {/* Seção 1: Identificação Básica */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2">
-                  <Info className="h-4 w-4" />
-                  <span>Identificação Básica</span>
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <Info className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white/90">Identificação Básica</h3>
+                    <p className="text-xs text-white/40">Informações principais do processo</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-white/5 border border-white/5">
                   <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="titulo">Título do Processo *</Label>
+                    <Label htmlFor="titulo" className="text-white/60">Título do Processo *</Label>
                     <Input
                       id="titulo"
                       required
                       value={formData.titulo}
                       onChange={(e) => handleChange('titulo', e.target.value)}
                       placeholder="Ex: Ação Trabalhista - Cliente X"
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="cliente">Cliente *</Label>
+                    <Label htmlFor="cliente" className="text-white/60">Cliente *</Label>
                     <Input
                       id="cliente"
                       required
                       value={formData.cliente}
                       onChange={(e) => handleChange('cliente', e.target.value)}
                       placeholder="Nome do cliente"
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="numeroProcesso">Número do Processo (CNJ)</Label>
+                    <Label htmlFor="numeroProcesso" className="text-white/60">Número do Processo (CNJ)</Label>
                     <div className="flex gap-2">
                       <Input
                         id="numeroProcesso"
                         value={formData.numeroProcesso || ''}
                         onChange={(e) => handleChange('numeroProcesso', formatCNJ(e.target.value))}
                         placeholder="0000000-00.0000.0.00.0000"
-                        className="font-mono"
+                        className="font-mono bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11 flex-1"
                       />
                       <JudicialSyncDialog 
                         onImport={handleImportedSync}
                         trigger={
-                          <Button type="button" variant="outline" size="icon" title="Sincronizar via OAB">
+                          <Button type="button" variant="outline" size="icon" title="Sincronizar via OAB" className="h-11 w-11 border-white/10 hover:bg-white/5">
                             <RotateCw className="h-4 w-4" />
                           </Button>
                         }
@@ -223,69 +233,85 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
                 </div>
               </div>
 
-              {/* Seção 2: Capa Jurídica */}
-              <div className="space-y-4 pt-2">
-                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2">
-                  <Gavel className="h-4 w-4" />
-                  <span>Capa Jurídica</span>
+              {/* Seção 2: Capa Jurí­dica */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                    <Gavel className="h-5 w-5 text-indigo-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white/90">Capa Jurí­dica</h3>
+                    <p className="text-xs text-white/40">Dados de localização do processo</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-white/5 border border-white/5">
                   <div className="space-y-2">
-                    <Label htmlFor="tribunal">Tribunal / Instância</Label>
+                    <Label htmlFor="tribunal" className="text-white/60">Tribunal / Instância</Label>
                     <Input
                       id="tribunal"
                       value={formData.tribunal || ''}
                       onChange={(e) => handleChange('tribunal', e.target.value)}
                       placeholder="Ex: TJSP, TRT2..."
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="comarca">Comarca / Foro</Label>
+                    <Label htmlFor="comarca" className="text-white/60">Comarca / Foro</Label>
                     <Input
                       id="comarca"
                       value={formData.comarca || ''}
                       onChange={(e) => handleChange('comarca', e.target.value)}
                       placeholder="Ex: São Paulo"
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vara">Vara / Secretaria</Label>
+                    <Label htmlFor="vara" className="text-white/60">Vara / Secretaria</Label>
                     <Input
                       id="vara"
                       value={formData.vara || ''}
                       onChange={(e) => handleChange('vara', e.target.value)}
-                      placeholder="Ex: 2ª Vara Cível"
+                      placeholder="Ex: 2ª Vara Cí­vel"
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="requerido">Parte Contraria (Requerido)</Label>
+                    <Label htmlFor="requerido" className="text-white/60">Parte Contraria (Requerido)</Label>
                     <Input
                       id="requerido"
                       value={formData.requerido || ''}
                       onChange={(e) => handleChange('requerido', e.target.value)}
                       placeholder="Nome do réu/oponente"
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Seção 3: Gestão Processual */}
-              <div className="space-y-4 pt-2">
-                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2">
-                  <Scale className="h-4 w-4" />
-                  <span>Gestão e Prazos</span>
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <Scale className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white/90">Gestão e Prazos</h3>
+                    <p className="text-xs text-white/40">Status, fase e responsabilidades</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-white/5 border border-white/5">
                   <div className="space-y-2">
-                    <Label>Status</Label>
+                    <Label className="text-white/60">Status</Label>
                     <Select 
                       value={formData.status} 
                       onValueChange={(value: any) => handleChange('status', value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white/5 border-white/10 h-11">
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-slate-900 border-white/10">
                         {statusProcesso.map(s => (
                           <SelectItem key={s} value={s}>{s}</SelectItem>
                         ))}
@@ -293,15 +319,15 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Fase Processual</Label>
+                    <Label className="text-white/60">Fase Processual</Label>
                     <Select 
                       value={formData.faseProcessual} 
                       onValueChange={(value) => handleChange('faseProcessual', value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white/5 border-white/10 h-11">
                         <SelectValue placeholder="Selecione a fase" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-slate-900 border-white/10">
                         {fasesProcessuais.map(f => (
                           <SelectItem key={f} value={f}>{f}</SelectItem>
                         ))}
@@ -309,31 +335,15 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Tipo do Processo / Área</Label>
-                    <Select 
-                      value={formData.tipoProcesso} 
-                      onValueChange={(value) => handleChange('tipoProcesso', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tiposProcesso.map(t => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Responsável</Label>
+                    <Label className="text-white/60">Responsável</Label>
                     <Select 
                       value={formData.responsavelId} 
                       onValueChange={(value) => handleChange('responsavelId', value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white/5 border-white/10 h-11">
                         <SelectValue placeholder="Selecionar responsável" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-slate-900 border-white/10">
                         {teamMembers.length > 0 ? (
                           teamMembers.map((member) => (
                             <SelectItem key={member.user_id} value={member.user_id || ''}>
@@ -349,83 +359,90 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="proximoPrazo">Próximo Prazo</Label>
+                    <Label htmlFor="proximoPrazo" className="text-white/60">Próximo Prazo</Label>
                     <Input
                       id="proximoPrazo"
                       type="date"
                       value={formData.proximoPrazo || ''}
                       onChange={(e) => handleChange('proximoPrazo', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="valorCausa">Valor da Causa (R$)</Label>
-                    <Input
-                      id="valorCausa"
-                      type="number"
-                      step="0.01"
-                      value={formData.valorCausa || ''}
-                      onChange={(e) => handleChange('valorCausa', e.target.value === '' ? 0 : parseFloat(e.target.value))}
-                      placeholder="0,00"
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all h-11 [color-scheme:dark]"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Seção 4: Opções e Observações */}
-              <div className="space-y-4 pt-2">
-                <div className="flex items-center gap-2 text-primary font-semibold border-b pb-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Configurações Extras</span>
-                </div>
-                <div className="flex flex-wrap gap-6 py-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="segredoJustica" 
-                      checked={formData.segredoJustica}
-                      onCheckedChange={(checked) => handleChange('segredoJustica', !!checked)}
-                    />
-                    <Label htmlFor="segredoJustica" className="cursor-pointer">Segredo de Justiça</Label>
+              {/* Seção 4: Configurações Extras */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <ShieldCheck className="h-5 w-5 text-amber-400" />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="justicaGratuita" 
-                      checked={formData.justicaGratuita}
-                      onCheckedChange={(checked) => handleChange('justicaGratuita', !!checked)}
-                    />
-                    <Label htmlFor="justicaGratuita" className="cursor-pointer">Justiça Gratuita</Label>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white/90">Configurações Extras</h3>
+                    <p className="text-xs text-white/40">Opções adicionais do processo</p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="descricao">Descrição / Observações</Label>
-                  <Textarea
-                    id="descricao"
-                    value={formData.descricao || ''}
-                    onChange={(e) => handleChange('descricao', e.target.value)}
-                    placeholder="Notas adicionais sobre o processo..."
-                    rows={3}
-                  />
+
+                <div className="p-6 rounded-2xl bg-white/5 border border-white/5 space-y-6">
+                  <div className="flex flex-wrap gap-10">
+                    <div className="flex items-center space-x-3 group cursor-pointer">
+                      <Checkbox 
+                        id="segredoJustica" 
+                        checked={formData.segredoJustica}
+                        onCheckedChange={(checked) => handleChange('segredoJustica', !!checked)}
+                        className="border-white/20 data-[state=checked]:bg-primary"
+                      />
+                      <Label htmlFor="segredoJustica" className="cursor-pointer text-white/70 group-hover:text-white transition-colors">Segredo de Justiça</Label>
+                    </div>
+                    <div className="flex items-center space-x-3 group cursor-pointer">
+                      <Checkbox 
+                        id="justicaGratuita" 
+                        checked={formData.justicaGratuita}
+                        onCheckedChange={(checked) => handleChange('justicaGratuita', !!checked)}
+                        className="border-white/20 data-[state=checked]:bg-primary"
+                      />
+                      <Label htmlFor="justicaGratuita" className="cursor-pointer text-white/70 group-hover:text-white transition-colors">Justiça Gratuita</Label>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="descricao" className="text-white/60">Descrição / Observações</Label>
+                    <Textarea
+                      id="descricao"
+                      value={formData.descricao || ''}
+                      onChange={(e) => handleChange('descricao', e.target.value)}
+                      placeholder="Notas adicionais sobre o processo..."
+                      rows={4}
+                      className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 transition-all resize-none"
+                    />
+                  </div>
                 </div>
               </div>
 
               {isLimitReached && (
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-md text-amber-800 text-sm">
+                <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl text-amber-400 text-sm">
                   <p className="font-semibold flex items-center gap-2">
                     ⚠️ Limite de processos atingido
                   </p>
-                  <p>Seu plano atual permite até {limits.processes.max} processos. Faça um upgrade para continuar.</p>
+                  <p className="mt-1">Seu plano atual permite até {limits.processes.max} processos. Faça um upgrade para continuar.</p>
                 </div>
               )}
 
-              <DialogFooter className="sticky bottom-0 bg-background pt-4 pb-2 mt-4 z-10 border-t">
+              <DialogFooter className="sticky bottom-0 bg-background/80 backdrop-blur-md pt-6 pb-2 mt-4 z-10 border-t border-white/5">
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  variant="ghost" 
                   onClick={() => setOpen(false)}
                   disabled={isLoading}
+                  className="text-white/60 hover:text-white hover:bg-white/5"
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isLoading || isLimitReached}>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading || isLimitReached}
+                  className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 px-8"
+                >
                   {isLoading ? "Criando..." : "Criar Processo"}
                 </Button>
               </DialogFooter>

@@ -197,7 +197,7 @@ export default function Timesheet() {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden entry-animate">
       <div className="max-w-7xl mx-auto space-y-8 md:space-y-10">
         {/* Header com Visual Moderno */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">

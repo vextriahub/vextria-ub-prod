@@ -149,7 +149,7 @@ export default function Agenda() {
   const reunioesCount = events.filter(c => c.type === 'reuniao').length;
 
   return (
-    <div className="flex flex-col h-full animate-in">
+    <div className="flex flex-col h-full entry-animate">
       <div className="p-8 border-b bg-background/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">

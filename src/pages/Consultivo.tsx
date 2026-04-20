@@ -29,7 +29,7 @@ export default function Consultivo() {
   };
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden animate-in">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden entry-animate">
       <div className="max-w-7xl mx-auto w-full space-y-8 md:space-y-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -70,7 +70,7 @@ export default function Consultivo() {
 
         {/* Filtro de Cliente Ativo */}
         {filtroCliente && (
-          <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-2xl animate-in slide-in-from-top-4">
+          <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-2xl entry-animate slide-in-from-top-4">
             <div className="p-2 rounded-lg bg-primary/10">
               <Filter className="h-4 w-4 text-primary" />
             </div>

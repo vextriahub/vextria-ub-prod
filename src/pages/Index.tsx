@@ -72,7 +72,7 @@ const Index = () => {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-6 md:space-y-8 overflow-x-hidden animate-in fade-in duration-700">
+    <div className="flex-1 p-4 md:p-8 space-y-6 md:space-y-8 overflow-x-hidden entry-animate fade-in duration-700">
 
       {/* 1. Hero compacto */}
       <DashboardHero />

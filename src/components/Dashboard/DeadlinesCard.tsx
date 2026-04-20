@@ -62,7 +62,7 @@ export function DeadlinesCard() {
 
       <CardContent className="flex-1 flex flex-col justify-center items-center p-6 text-center space-y-4">
         {prazos.length === 0 ? (
-          <div className="animate-in fade-in zoom-in duration-700 delay-100 w-full">
+          <div className="entry-animate fade-in zoom-in duration-700 delay-100 w-full">
             <div className="relative mb-5 mx-auto w-fit">
               <div className="absolute inset-0 bg-rose-500/20 blur-3xl rounded-full" />
               <div className="relative p-5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500">

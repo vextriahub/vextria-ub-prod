@@ -93,7 +93,7 @@ const SystemSubscriptions: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 p-6 animate-in fade-in duration-500">
+    <div className="space-y-6 p-6 entry-animate fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
