@@ -81,6 +81,7 @@ const Processos = React.memo(() => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [processoToDelete, setProcessoToDelete] = useState<Processo | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [cnjSearch, setCnjSearch] = useState('');
 
   // Memoized values
   const showEmptyState = useMemo(() => {
@@ -111,8 +112,10 @@ const Processos = React.memo(() => {
     return processos.filter(processo => {
       const matchesSearch = filters.search === '' || 
         processo.titulo.toLowerCase().includes(filters.search.toLowerCase()) ||
-        processo.cliente.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (processo.numeroProcesso && processo.numeroProcesso.toLowerCase().includes(filters.search.toLowerCase()));
+        processo.cliente.toLowerCase().includes(filters.search.toLowerCase());
+      
+      const matchesCnj = cnjSearch === '' || 
+        (processo.numeroProcesso && processo.numeroProcesso.toLowerCase().includes(cnjSearch.toLowerCase()));
       
       const matchesStatus = filters.status === 'all' || processo.status === filters.status;
       const matchesCliente = filters.cliente === 'all' || processo.cliente === filters.cliente;
@@ -120,9 +123,9 @@ const Processos = React.memo(() => {
       const matchesArea = filters.area === 'all' || processo.area === filters.area;
       const matchesMovimentacao = isWithinDateRange(processo.ultimaMovimentacao, filters.movimentacao);
       
-      return matchesSearch && matchesStatus && matchesCliente && matchesNumeroProcesso && matchesArea && matchesMovimentacao;
+      return matchesSearch && matchesCnj && matchesStatus && matchesCliente && matchesNumeroProcesso && matchesArea && matchesMovimentacao;
     });
-  }, [processos, filters, isWithinDateRange]);
+  }, [processos, filters, cnjSearch, isWithinDateRange]);
 
   // Listas únicas para filtros - memoizadas
   const uniqueClientes = useMemo(() => {
@@ -142,8 +145,8 @@ const Processos = React.memo(() => {
       filters.numeroProcesso !== 'all',
       filters.area !== 'all',
       filters.movimentacao !== 'all'
-    ].filter(Boolean).length;
-  }, [filters]);
+    ].filter(Boolean).length + (cnjSearch !== '' ? 1 : 0);
+  }, [filters, cnjSearch]);
 
   // Handlers - todos usando useCallback para evitar re-criações
   const handleAddProcesso = useCallback(async (novoProcesso: any) => {
@@ -318,6 +321,7 @@ const Processos = React.memo(() => {
       area: 'all',
       movimentacao: 'all'
     });
+    setCnjSearch('');
   }, []);
 
   const handleEditDialogOpenChange = useCallback((open: boolean) => {
@@ -352,10 +356,22 @@ const Processos = React.memo(() => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
-          <ProcessoViewSwitcher view={view} onViewChange={setView} />
-          <JudicialSyncDialog onImport={handleImportedSync} />
-          <NovoProcessoDialog onAddProcesso={handleAddProcesso} />
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem]">
+          <div className="relative group flex-1 md:min-w-[300px]">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
+            <Input 
+              placeholder="Buscar por número CNJ..." 
+              value={cnjSearch}
+              onChange={(e) => setCnjSearch(e.target.value)}
+              className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
+            />
+          </div>
+          
+          <div className="flex items-center gap-3 h-12">
+            <ProcessoViewSwitcher view={view} onViewChange={setView} />
+            <div className="h-6 w-px bg-white/10 mx-1 hidden md:block" />
+            <NovoProcessoDialog onAddProcesso={handleAddProcesso} />
+          </div>
         </div>
       </div>
 
