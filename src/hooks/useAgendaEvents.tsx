@@ -43,7 +43,7 @@ export const useAgendaEvents = (targetDate: Date) => {
       // 1. Buscar Audiências
       const { data: audiencias, error: audError } = await supabase
         .from("audiencias")
-        .select("*, clientes(nome)")
+        .select("*, clientes!cliente_id(nome)")
         .eq("office_id", user.office_id)
         .gte("data_audiencia", start.toISOString())
         .lte("data_audiencia", end.toISOString())
@@ -61,7 +61,7 @@ export const useAgendaEvents = (targetDate: Date) => {
       // 3. Buscar Atendimentos (Reuniões)
       const { data: atendimentos, error: ateError } = await supabase
         .from("atendimentos")
-        .select("*, clientes(nome)")
+        .select("*, clientes!cliente_id(nome)")
         .eq("office_id", user.office_id)
         .gte("data_atendimento", start.toISOString())
         .lte("data_atendimento", end.toISOString())
@@ -70,7 +70,7 @@ export const useAgendaEvents = (targetDate: Date) => {
       // 4. Buscar Tarefas
       const { data: tarefas, error: tarError } = await supabase
         .from("tarefas")
-        .select("*, clientes(nome)")
+        .select("*, clientes!cliente_id(nome)")
         .eq("office_id", user.office_id)
         .gte("data_vencimento", start.toISOString())
         .lte("data_vencimento", end.toISOString())

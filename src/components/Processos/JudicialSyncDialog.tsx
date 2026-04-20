@@ -108,14 +108,14 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       const items = data.items || [];
       
       const mappedResults = items.map((item: any) => ({
-        id: item.id || item.numeroProcesso,
-        numeroProcesso: item.numeroProcesso,
-        titulo: item.tituloProcesso || `Processo ${item.numeroProcesso}`,
-        partes: item.partes?.map((p: any) => p.nome).join(' x ') || item.tituloProcesso || 'Não identificado',
+        id: item.id || item.numero_processo,
+        numeroProcesso: item.numero_processo || item.numeroprocessocommascara,
+        titulo: item.tipoComunicacao || `Processo ${item.numero_processo}`,
+        partes: item.destinatarios?.map((d: any) => d.nome).join(' x ') || item.tituloProcesso || 'Não identificado',
         tribunal: item.nomeTribunal || 'PJE',
         ultimoAndamento: {
-          descricao: (item.textoComunicacao || '').substring(0, 200) + '...',
-          data: item.dataDisponibilizacao
+          descricao: (item.textoComunicacao || item.tipoComunicacao || '').substring(0, 200),
+          data: item.data_disponibilizacao || item.datadisponibilizacao
         },
         faseProcessual: 'Comunicado PJe',
         valorCausa: 0,
