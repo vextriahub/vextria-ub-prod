@@ -126,7 +126,7 @@ export function AppSidebar() {
   const isMainSuperAdmin = user?.email?.toLowerCase().trim() === 'contato@vextriahub.com.br';
   
   const platformItems = [
-    { title: "Dashboard", url: "/admin?tab=dashboard", icon: BarChart3 },
+    { title: "Métricas", url: "/admin?tab=dashboard", icon: BarChart3 },
     { title: "Escritórios", url: "/admin?tab=offices", icon: Building2 },
     { title: "Assinaturas", url: "/admin?tab=subscriptions", icon: CreditCard },
     { title: "Solicitações", url: "/admin?tab=requests", icon: AlertCircle },

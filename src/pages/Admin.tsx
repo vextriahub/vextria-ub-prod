@@ -127,69 +127,25 @@ const Admin = () => {
   }
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden animate-in">
-      {/* Page Header Moderno */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <Shield className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-            </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
-              {isMainSuperAdmin ? 'Administração Global' : 'Painel de Controle'}
-            </h1>
-          </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
-            {isMainSuperAdmin 
-              ? 'Gestão centralizada de escritórios, planos e integridade sistêmica.'
-              : 'Gerencie as diretrizes, solicitações e dados fundamentais do seu escritório.'
-            }
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl shadow-premium">
-          <div className="h-2.5 w-2.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-widest opacity-80 px-2">Modo Admin Ativo</span>
-        </div>
-      </div>
-
+    <div className="flex-1 p-4 md:p-8 space-y-6 overflow-x-hidden animate-in fade-in duration-700">
       <div className="w-full">
         {isMainSuperAdmin ? (
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
-            <div className="glass-card p-2 rounded-3xl inline-flex w-full md:w-auto h-auto">
-            <TabsList className="bg-transparent h-auto p-0 flex flex-wrap md:flex-nowrap gap-1">
-              <TabsTrigger value="requests" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
-                Solicitações
-              </TabsTrigger>
-              {isMainSuperAdmin && (
-                <>
-                  <TabsTrigger value="dashboard" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
-                    Métricas Globais
-                  </TabsTrigger>
-                  <TabsTrigger value="offices" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
-                    Escritórios
-                  </TabsTrigger>
-                  <TabsTrigger value="subscriptions" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
-                    Assinaturas
-                  </TabsTrigger>
-                </>
-              )}
-            </TabsList>
-          </div>
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+            {/* TabsList removido — navegação feita pelo sidebar */}
 
-          <TabsContent value="dashboard" className="animate-in slide-in-from-bottom-4 duration-500">
-            <GlobalMetrics />
-          </TabsContent>
+            <TabsContent value="dashboard" className="animate-in slide-in-from-bottom-4 duration-500 mt-0">
+              <GlobalMetrics />
+            </TabsContent>
 
-          <TabsContent value="offices" className="animate-in slide-in-from-bottom-4 duration-500">
-            <OfficeControlPanel />
-          </TabsContent>
+            <TabsContent value="offices" className="animate-in slide-in-from-bottom-4 duration-500 mt-0">
+              <OfficeControlPanel />
+            </TabsContent>
 
-          <TabsContent value="subscriptions" className="animate-in slide-in-from-bottom-4 duration-500">
-            <SubscriptionControlPanel />
-          </TabsContent>
+            <TabsContent value="subscriptions" className="animate-in slide-in-from-bottom-4 duration-500 mt-0">
+              <SubscriptionControlPanel />
+            </TabsContent>
 
-          <TabsContent value="requests" className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+            <TabsContent value="requests" className="space-y-6 animate-in slide-in-from-bottom-4 duration-500 mt-0">
             {/* Stats Rápido */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
