@@ -247,7 +247,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           )}
         </div>
         
-        <ScrollArea className="flex-1 h-[300px]">
+        <ScrollArea className="h-[450px] w-full">
           {results.length > 0 ? (
             <Table>
               <TableHeader className="bg-white/5 sticky top-0 z-10">
