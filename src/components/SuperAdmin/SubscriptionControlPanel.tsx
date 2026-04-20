@@ -16,7 +16,8 @@ import {
   TrendingUp,
   ArrowUpRight,
   Shield,
-  CreditCard
+  CreditCard,
+  Star
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,10 +35,11 @@ export const SubscriptionControlPanel: React.FC = () => {
       admin.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     let matchesStatus = statusFilter === 'all';
-    if (statusFilter === 'trial') matchesStatus = admin.is_trial;
-    if (statusFilter === 'em_dia') matchesStatus = admin.payment_status === 'em_dia' && !admin.is_trial;
+    if (statusFilter === 'trial') matchesStatus = !!admin.is_trial && !admin.is_lifetime;
+    if (statusFilter === 'em_dia') matchesStatus = admin.payment_status === 'em_dia' && !admin.is_trial && !admin.is_lifetime;
     if (statusFilter === 'vencido') matchesStatus = admin.payment_status === 'vencido';
     if (statusFilter === 'proximo_vencimento') matchesStatus = admin.payment_status === 'proximo_vencimento';
+    if (statusFilter === 'lifetime') matchesStatus = admin.is_lifetime === true;
     
     return matchesSearch && matchesStatus;
   });
@@ -45,10 +47,11 @@ export const SubscriptionControlPanel: React.FC = () => {
   // Cálculos de métricas reais
   const metrics = {
     totalOffices: admins.length,
-    activeOffices: admins.filter(a => a.payment_status === 'em_dia' && !a.is_trial).length,
+    activeOffices: admins.filter(a => a.payment_status === 'em_dia' && !a.is_trial && !a.is_lifetime).length,
     trialOffices: admins.filter(a => a.is_trial).length,
+    lifetimeOffices: admins.filter(a => a.is_lifetime).length,
     blockedOffices: admins.filter(a => a.payment_status === 'vencido').length,
-    revenue: admins.reduce((acc, a) => acc + (a.payment_status === 'em_dia' && !a.is_trial ? a.price : 0), 0)
+    revenue: admins.reduce((acc, a) => acc + (a.payment_status === 'em_dia' && !a.is_trial && !a.is_lifetime ? a.price : 0), 0)
   };
 
   const getStatusBadge = (status: string, isTrial?: boolean, isLifetime?: boolean) => {
@@ -95,7 +98,7 @@ export const SubscriptionControlPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Cards de Métricas com visual limpo */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
@@ -113,6 +116,16 @@ export const SubscriptionControlPanel: React.FC = () => {
               <CheckCircle size={12} className="text-emerald-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-emerald-500">{metrics.activeOffices}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between pb-1">
+              <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Vitalício ⭐</p>
+              <Star size={12} className="text-amber-500 opacity-50" />
+            </div>
+            <div className="text-xl font-black text-amber-500">{metrics.lifetimeOffices}</div>
           </CardContent>
         </Card>
 
@@ -186,6 +199,7 @@ export const SubscriptionControlPanel: React.FC = () => {
                 <SelectItem value="proximo_vencimento">Pendente</SelectItem>
                 <SelectItem value="vencido">Vencido</SelectItem>
                 <SelectItem value="trial">Em Trial</SelectItem>
+                <SelectItem value="lifetime">Vitalício ⭐</SelectItem>
               </SelectContent>
             </Select>
           </div>

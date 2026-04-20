@@ -112,21 +112,25 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
 
         const isLegacyLifetime =
           office.is_lifetime === true ||
+          office.access_type === 'lifetime' ||
           sub?.end_date?.includes('2099') ||
           office.plan === 'lifetime';
         
+        // isTrial only if NOT lifetime
         const isTrial =
-          office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing';
+          !isLegacyLifetime &&
+          (office.plan === 'trial' || sub?.status === 'trial' || sub?.status === 'trialing');
 
         let payment_status: AdminOffice['payment_status'] = 'pendente';
         let plan_display_name = office.plan || sub?.plan || 'Free';
 
-        if (isTrial) {
-          payment_status = 'em_dia';
-          plan_display_name = 'trial';
-        } else if (isLegacyLifetime) {
+        // Lifetime takes PRIORITY over trial
+        if (isLegacyLifetime) {
           payment_status = 'em_dia';
           plan_display_name = 'lifetime';
+        } else if (isTrial) {
+          payment_status = 'em_dia';
+          plan_display_name = 'trial';
         } else if (sub) {
           if (sub.status === 'active') payment_status = 'em_dia';
           else if (sub.status === 'past_due' || sub.status === 'unpaid')
