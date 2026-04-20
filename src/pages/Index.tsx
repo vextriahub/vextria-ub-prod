@@ -8,6 +8,8 @@ import { ScoreCard } from "@/components/Gamification/ScoreCard";
 import { CalendarWidget } from "@/components/Dashboard/CalendarWidget";
 import { DashboardHero } from "@/components/Dashboard/DashboardHero";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 
