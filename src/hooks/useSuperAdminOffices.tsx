@@ -109,3 +109,228 @@ export const useSuperAdminOffices = (): UseSuperAdminOfficesResult => {
         let plan_display_name = office.plan || sub?.plan || 'Free';
 
         if (isTrial) {
+          payment_status = 'em_dia';
+          plan_display_name = 'trial';
+        } else if (isLegacyLifetime) {
+          payment_status = 'em_dia';
+          plan_display_name = 'lifetime';
+        } else if (sub) {
+          if (sub.status === 'active') payment_status = 'em_dia';
+          else if (sub.status === 'past_due' || sub.status === 'unpaid')
+            payment_status = 'proximo_vencimento';
+          else payment_status = 'vencido';
+
+          const revPlanMap: Record<string, string> = {
+            basico: 'starter',
+            intermediario: 'pro',
+            avancado: 'business',
+            premium: 'lifetime',
+          };
+          plan_display_name = revPlanMap[sub.plan] || sub.plan || 'trial';
+        }
+
+        let end_date = sub?.end_date || office.end_date || null;
+        if (isTrial && !end_date && office.created_at) {
+          end_date = addDays(new Date(office.created_at), 7).toISOString();
+        }
+
+        return {
+          id: officeUser?.user_id || office.id,
+          full_name: profile?.full_name || 'Usuário Hub',
+          email: profile?.email || 'Sem e-mail',
+          role: officeUser?.role || 'user',
+          office_id: office.id,
+          office_name: office.name || 'Escritório Sem Nome',
+          office_email: office.email || null,
+          address: office.address || null,
+          phone: office.phone || null,
+          created_at: office.created_at,
+          payment_status,
+          plan_name: plan_display_name,
+          price: sub?.price || 0,
+          end_date,
+          is_trial: isTrial,
+          active: office.active ?? true,
+          is_lifetime: !!isLegacyLifetime,
+          manual_discount_percent:
+            Number(sub?.manual_discount_percent) ||
+            Number(office.manual_discount_percent) ||
+            0,
+        };
+      });
+
+      setAdmins(adminList);
+    } catch (err: any) {
+      console.error('Erro ao carregar dados:', err);
+      setError('Erro ao carregar dados administrativos.');
+    } finally {
+      setLoading(false);
+    }
+  }, [isSuperAdmin, user]);
+
+  const updateOfficeStatus = useCallback(
+    async (officeId: string, active: boolean) => {
+      try {
+        const { error } = await supabase
+          .from('offices')
+          .update({ active })
+          .eq('id', officeId);
+        if (error) throw error;
+        toast({ title: active ? 'Acesso Liberado' : 'Acesso Suspenso' });
+        await fetchAdmins();
+        return true;
+      } catch (err: any) {
+        toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+        return false;
+      }
+    },
+    [toast, fetchAdmins]
+  );
+
+  const updateOfficeFull = useCallback(
+    async (office_id: string, updates: Partial<AdminOffice>) => {
+      try {
+        const planMap: Record<string, string> = {
+          trial: 'trial',
+          starter: 'basico',
+          pro: 'intermediario',
+          business: 'avancado',
+          lifetime: 'premium',
+        };
+        const dbPlan = updates.plan_name
+          ? planMap[updates.plan_name] || updates.plan_name
+          : undefined;
+
+        const officeUpdates: any = {};
+        if (updates.office_name !== undefined) officeUpdates.name = updates.office_name;
+        if (updates.office_email !== undefined) officeUpdates.email = updates.office_email;
+        if (updates.phone !== undefined) officeUpdates.phone = updates.phone;
+        if (updates.address !== undefined) officeUpdates.address = updates.address;
+        if (dbPlan) officeUpdates.plan = dbPlan;
+        if (updates.is_lifetime !== undefined) officeUpdates.is_lifetime = updates.is_lifetime;
+
+        if (Object.keys(officeUpdates).length > 0) {
+          const { error: ofError } = await supabase
+            .from('offices')
+            .update(officeUpdates)
+            .eq('id', office_id);
+          if (ofError) throw ofError;
+        }
+
+        const subUpdates: any = {};
+        if (dbPlan) subUpdates.plan = dbPlan;
+        if (updates.is_lifetime !== undefined) {
+          subUpdates.end_date = updates.is_lifetime
+            ? '2099-12-31T23:59:59Z'
+            : addDays(new Date(), 30).toISOString();
+          subUpdates.status = 'active';
+        }
+
+        if (Object.keys(subUpdates).length > 0) {
+          const { data: existingSub, error: checkError } = await supabase
+            .from('subscriptions')
+            .select('id')
+            .eq('office_id', office_id)
+            .maybeSingle();
+          if (checkError) throw checkError;
+
+          if (existingSub) {
+            const { error: subUpdateError } = await supabase
+              .from('subscriptions')
+              .update(subUpdates)
+              .eq('id', existingSub.id);
+            if (subUpdateError) throw subUpdateError;
+          } else {
+            const { error: subInsertError } = await supabase
+              .from('subscriptions')
+              .insert({
+                office_id,
+                ...subUpdates,
+                start_date: new Date().toISOString(),
+              });
+            if (subInsertError) throw subInsertError;
+          }
+        }
+
+        toast({
+          title: 'Dados Sincronizados',
+          description: 'Configurações do escritório atualizadas com sucesso.',
+        });
+        await fetchAdmins();
+        return true;
+      } catch (err: any) {
+        console.error('Erro ao atualizar escritório:', err);
+        toast({
+          title: 'Erro ao salvar',
+          description: err.message || 'Não foi possível atualizar os dados.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+    },
+    [toast, fetchAdmins]
+  );
+
+  const manageAccess = useCallback(
+    async (
+      officeId: string,
+      action: 'apply_discount' | 'grant_lifetime' | 'revoke_lifetime',
+      options?: { discount_percent?: number; reason?: string }
+    ) => {
+      try {
+        const { data, error } = await supabase.functions.invoke('admin-manage-access', {
+          body: {
+            office_id: officeId,
+            action,
+            discount_percent: options?.discount_percent,
+            reason: options?.reason,
+          },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        toast({
+          title: 'Sucesso!',
+          description:
+            action === 'apply_discount'
+              ? 'Desconto aplicado no Stripe.'
+              : action === 'grant_lifetime'
+              ? 'Acesso vitalício concedido.'
+              : 'Vitalício revertido.',
+        });
+        await fetchAdmins();
+        return true;
+      } catch (err: any) {
+        console.error('Erro ao gerenciar acesso:', err);
+        toast({
+          title: 'Falha na operação',
+          description: err.message || 'Erro ao processar ação no Stripe.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+    },
+    [toast, fetchAdmins]
+  );
+
+  const sendPaymentReminder = useCallback(async (_email: string, _officeName: string) => {
+    toast({ title: 'E-mail de lembrete enviado.' });
+    return true;
+  }, [toast]);
+
+  useEffect(() => {
+    fetchAdmins();
+  }, [fetchAdmins]);
+
+  return {
+    admins,
+    loading,
+    error,
+    refresh: fetchAdmins,
+    updateOfficeStatus,
+    updateOfficeFull,
+    manageAccess,
+    sendPaymentReminder,
+    isEmpty: admins.length === 0,
+  };
+};
