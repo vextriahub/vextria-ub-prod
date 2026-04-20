@@ -109,7 +109,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         ])
         .select(`
           *,
-          cliente:clientes(nome),
+          cliente:clientes!cliente_id(nome),
           responsavel:profiles(full_name)
         `)
         .single();
@@ -160,7 +160,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         .eq('office_id', user.office_id)
         .select(`
           *,
-          cliente:clientes(nome),
+          cliente:clientes!cliente_id(nome),
           responsavel:profiles(full_name)
         `)
         .single();
