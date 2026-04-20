@@ -31,7 +31,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { NovoProcessoForm, tiposProcesso, statusProcesso, fasesProcessuais } from '@/types/processo';
 import { Separator } from '@/components/ui/separator';
 import { formatCNJ, unformatCNJ } from '@/lib/formatters';
-import { JudicialSyncDialog } from './JudicialSyncDialog';
+import { JudicialSyncDialog, JudicialSyncContent } from './JudicialSyncDialog';
 
 interface NovoProcessoDialogProps {
   onAddProcesso: (processo: any) => void;
@@ -283,27 +283,10 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
 
                 {step === 'oab' && (
                   <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                    <JudicialSyncDialog 
+                    <JudicialSyncContent 
                       onImport={handleImportedSync}
-                      trigger={
-                        <div className="hidden"></div> // Trigger invisível, vamos disparar o conteúdo
-                      }
+                      onCancel={() => setStep('choice')}
                     />
-                    {/* Como o JudicialSyncDialog é um Dialog interno, vou refatorar o conteúdo para ser inline se possível ou apenas abrir ele. 
-                        Na verdade, para manter a consistência, vamos apenas abrir o componente JudicalSyncContent ou similar.
-                        Aqui vou simplificar e usar o trigger original do JudicialSyncDialog mas estilizado como container */}
-                    <div className="text-center space-y-6">
-                       <JudicialSyncDialog 
-                          onImport={handleImportedSync}
-                          trigger={
-                            <Button className="w-full h-24 text-xl font-bold bg-indigo-500 hover:bg-indigo-600 rounded-2xl border-none shadow-indigo-500/20">
-                              <RotateCw className="mr-3 h-8 w-8" />
-                              Abrir Busca por OAB
-                            </Button>
-                          }
-                       />
-                       <p className="text-sm text-white/40 italic">O sistema abrirá o painel de sincronização do DataJud</p>
-                    </div>
                   </div>
                 )}
 
