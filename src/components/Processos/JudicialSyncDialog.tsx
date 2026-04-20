@@ -324,26 +324,10 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       <Separator className="mb-6 bg-white/10" />
 
       {/* Resultados */}
-      <div className="flex-1 flex flex-col min-h-0 border border-white/5 rounded-2xl overflow-hidden bg-white/5 backdrop-blur-md relative">
-        <div className="bg-white/5 p-3 border-b border-white/5 flex items-center justify-between px-6">
-          <h4 className="text-sm font-semibold flex items-center gap-2 text-white/90">
-            <Gavel className="h-4 w-4 text-primary" />
-            Resultados encontrados {results.length > 0 && `(${results.length})`}
-          </h4>
-          {results.length > 0 && (
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-white/40">{selectedIds.size} selecionados</span>
-              <Button variant="link" size="sm" onClick={toggleSelectAll} className="h-auto p-0 text-primary hover:text-primary/80">
-                {selectedIds.size === results.length ? 'Desmarcar todos' : 'Selecionar todos'}
-              </Button>
-            </div>
-          )}
-        </div>
-        
-        <ScrollArea className="flex-1 w-full">
+        <div className="flex-1 overflow-y-auto min-h-0 border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md">
           {results.length > 0 ? (
             <Table>
-              <TableHeader className="bg-slate-900 sticky top-0 z-10">
+              <TableHeader className="bg-slate-900 sticky top-0 z-20">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="w-[40px]"></TableHead>
                   <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Processo / Partes</TableHead>
@@ -434,10 +418,10 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
               )}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </div>
 
-      <div className="sticky bottom-0 mt-auto pt-6 border-t border-white/5 bg-slate-950/80 backdrop-blur-md p-6 -mx-8 -mb-8 rounded-b-2xl flex items-center justify-between z-20">
+      <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
         <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-white/40 hover:text-white">
           Cancelar
         </Button>
@@ -447,7 +431,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           className="gap-2 px-8 bg-primary shadow-lg shadow-primary/20 h-11"
         >
           {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-          {importing ? 'Importando...' : `Importar ${selectedIds.size} Processos Selecionados`}
+          {importing ? 'Importando...' : `Importar ${selectedIds.size} Processos`}
         </Button>
       </div>
     </div>
@@ -475,8 +459,8 @@ export const JudicialSyncDialog: React.FC<JudicialSyncDialogProps> = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] bg-background/40 backdrop-blur-3xl border-white/5 p-0 overflow-hidden flex flex-col max-h-[90vh]">
-        <DialogHeader className="p-8 pb-4 border-b border-white/5">
+      <DialogContent className="sm:max-w-[900px] bg-background/45 backdrop-blur-3xl border-white/5 p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
+        <DialogHeader className="p-8 pb-4 border-b border-white/5 bg-transparent">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
               <Database className="h-6 w-6" />
@@ -490,7 +474,7 @@ export const JudicialSyncDialog: React.FC<JudicialSyncDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col px-8 pb-8">
+        <div className="flex-1 overflow-hidden flex flex-col px-8 pb-6">
           <JudicialSyncContent 
             onImport={async (procs) => {
               await onImport(procs);
