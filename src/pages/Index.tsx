@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const { isFirstLogin, isSuperAdmin, validatePayment } = useAuth();
+  const { isFirstLogin, isSuperAdmin, validatePayment, profile } = useAuth();
   const navigate = useNavigate();
   const [trialInfo, setTrialInfo] = useState<{daysLeft: number; isTrial: boolean} | null>(null);
 
