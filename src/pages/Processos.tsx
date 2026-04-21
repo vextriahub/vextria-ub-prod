@@ -27,6 +27,9 @@ import { ProcessoDetailsDrawer } from '@/components/Processos/ProcessoDetailsDra
 import { ProcessoViewSwitcher } from '@/components/Processos/ProcessoViewSwitcher';
 import { JudicialSyncDialog } from '@/components/Processos/JudicialSyncDialog';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ProcessoIntegracaoPanel } from '@/components/Processos/ProcessoIntegracaoPanel';
+import { LayoutGrid, Table as TableIcon, Download, List } from 'lucide-react';
 
 // Tipos e dados
 import { Processo, NovoProcessoForm, ProcessoFilters as IProcessoFilters, statusProcesso } from '@/types/processo';
@@ -151,6 +154,7 @@ const Processos = React.memo(() => {
   }, [filters, cnjSearch]);
 
   const [isNovoProcessoOpen, setIsNovoProcessoOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('carteira');
 
   // Handlers - todos usando useCallback para evitar re-criações
   const handleAddProcesso = useCallback(async (novoProcesso: any) => {
@@ -345,49 +349,62 @@ const Processos = React.memo(() => {
 
   return (
     <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden entry-animate">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              </div>
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                Processos Jurídicos
+              </h1>
             </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-              Processos Jurídicos
-            </h1>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium">
+              Gerencie sua carteira ou importe novos processos com inteligência.
+            </p>
           </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium">
-            Gerencie e acompanhe o fluxo processual do seu escritório com inteligência.
-          </p>
+
+          <div className="flex items-center gap-4">
+            <TabsList className="bg-white/5 border border-white/10 p-1 h-12 rounded-2xl">
+              <TabsTrigger value="carteira" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold gap-2">
+                <List className="h-4 w-4" />
+                Meus Processos
+              </TabsTrigger>
+              <TabsTrigger value="novo" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold gap-2">
+                <Download className="h-4 w-4" />
+                Importar / Novo
+              </TabsTrigger>
+            </TabsList>
+            
+            {activeTab === 'carteira' && (
+              <Button 
+                onClick={() => setActiveTab('novo')}
+                className="h-12 px-6 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+              >
+                <Plus className="h-5 w-5" />
+                Novo Processo
+              </Button>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem]">
-          <div className="relative group flex-1 md:min-w-[300px]">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
-            <Input 
-              placeholder="Buscar por número CNJ..." 
-              value={cnjSearch}
-              onChange={(e) => setCnjSearch(e.target.value)}
-              className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
-            />
+        <TabsContent value="carteira" className="space-y-8 animate-in fade-in duration-500">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem]">
+            <div className="relative group flex-1 md:min-w-[300px]">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
+              <Input 
+                placeholder="Buscar por número CNJ..." 
+                value={cnjSearch}
+                onChange={(e) => setCnjSearch(e.target.value)}
+                className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3 h-12">
+              <ProcessoViewSwitcher view={view} onViewChange={setView} />
+            </div>
           </div>
-          
-          <div className="flex items-center gap-3 h-12">
-            <ProcessoViewSwitcher view={view} onViewChange={setView} />
-            <div className="h-6 w-px bg-white/10 mx-1 hidden md:block" />
-            <JudicialSyncDialog 
-              onImport={handleImportedSync} 
-              trigger={
-                <Button variant="outline" className="gap-2 h-12 bg-white/5 border-white/10 rounded-2xl hover:bg-white/10 transition-colors px-6">
-                  <RotateCw className="h-4 w-4 text-primary" />
-                  <span className="hidden sm:inline">Sincronizar OAB</span>
-                </Button>
-              }
-            />
-            <NovoProcessoDialog onAddProcesso={handleAddProcesso} open={isNovoProcessoOpen} onOpenChange={setIsNovoProcessoOpen} />
-          </div>
-        </div>
-      </div>
 
       {/* Empty State */}
       {showEmptyState ? (
@@ -449,14 +466,19 @@ const Processos = React.memo(() => {
             </div>
           )}
 
-          {/* Contador de resultados */}
-          {filteredProcessos.length > 0 && (
-            <div className="text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-muted-foreground pb-8">
               Mostrando {filteredProcessos.length} de {processos.length} processo(s)
             </div>
           )}
-        </>
-      )}
+        </TabsContent>
+
+        <TabsContent value="novo" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <ProcessoIntegracaoPanel 
+            onAddProcesso={handleImportedSync}
+            onSuccess={() => setActiveTab('carteira')}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Modal de Edição */}
       <ProcessoEditDialog
