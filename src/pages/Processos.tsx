@@ -6,8 +6,8 @@ import { useProcessos } from '@/hooks/useProcessos';
 import { FileText, Loader2, RotateCw, Search, Plus } from 'lucide-react';
 
 // Debug logs
-console.log('%c [VEXTRIA] VERSÃO ATUALIZADA - FIX USEAUTH APLICADO ', 'background: #22c55e; color: #fff; font-weight: bold;');
-console.log('🔍 Processos.tsx - Iniciando carregamento do componente');
+console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V5 - ABAS ATIVAS ', 'background: #f59e0b; color: #000; font-weight: bold; font-size: 16px;');
+console.log('🔍 Processos.tsx - Renderizando nova arquitetura de abas');
 
 // Componentes UI
 import { Button } from '@/components/ui/button';
