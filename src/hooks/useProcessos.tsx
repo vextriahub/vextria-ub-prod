@@ -21,7 +21,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     return {
       id: dbRecord.id,
       titulo: dbRecord.titulo,
-      cliente: dbRecord.cliente?.nome || 'Sem cliente',
+      cliente: dbRecord.cliente?.nome || 'Cliente não vinculado',
       clienteId: dbRecord.cliente_id,
       status: dbRecord.status === 'ativo' ? 'Em andamento' : dbRecord.status,
       dataInicio: dbRecord.data_inicio || dbRecord.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
@@ -61,16 +61,19 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
       if (user.office_id) {
         const resp = await supabase
           .from('processos')
-          .select(`
-            *,
-            cliente:clientes!cliente_id(nome)
-          `)
+          .select('*')
           .eq('office_id', user.office_id)
           .eq('deletado', false)
           .order('created_at', { ascending: false });
 
         result = resp.data;
         fetchError = resp.error;
+        
+        if (fetchError) {
+          console.error('📋 Erro na query office_id:', fetchError);
+        } else {
+          console.log(`📋 Query office_id retornou ${result?.length || 0} processos`);
+        }
       }
 
       // Fallback: if office query fails or returns nothing, try user_id based
@@ -78,10 +81,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         console.log('📋 Fallback: buscando processos por user_id');
         const resp2 = await supabase
           .from('processos')
-          .select(`
-            *,
-            cliente:clientes!cliente_id(nome)
-          `)
+          .select('*')
           .eq('user_id', user.id)
           .eq('deletado', false)
           .order('created_at', { ascending: false });
@@ -89,8 +89,10 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         if (!resp2.error) {
           result = resp2.data;
           fetchError = null;
+          console.log(`📋 Fallback user_id retornou ${result?.length || 0} processos`);
         } else {
           fetchError = resp2.error;
+          console.error('📋 Erro no fallback user_id:', resp2.error);
         }
       }
 
