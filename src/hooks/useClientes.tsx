@@ -22,7 +22,7 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
       setLoading(true);
       const { data: result, error } = await supabase
         .from('clientes')
-        .select('*, processos(count)')
+        .select('*, processos!processos_cliente_id_fkey(count)')
         .eq('office_id', user.office_id)
         .eq('deletado', false)
         .order('created_at', { ascending: false });
