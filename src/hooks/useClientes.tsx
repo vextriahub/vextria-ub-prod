@@ -10,7 +10,7 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const { isAdmin, isOfficeAdmin } = usePermissions();
+  const { isAdmin, isOfficeAdmin, isSuperAdmin } = usePermissions();
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -179,7 +179,7 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
 
     try {
       const recordsToDelete = data.filter(item => ids.includes(item.id));
-      const hasAdminRights = isAdmin || isOfficeAdmin;
+      const hasAdminRights = isAdmin || isOfficeAdmin || isSuperAdmin;
 
       if (hasAdminRights) {
         // Direct Deletion (Software Delete)

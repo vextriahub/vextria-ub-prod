@@ -37,8 +37,8 @@ const Clientes = () => {
     requestMultipleDelete, 
     isEmpty: dbIsEmpty 
   } = useClientes();
-  const { isAdmin, isOfficeAdmin } = usePermissions();
-  const hasAdminRights = isAdmin || isOfficeAdmin;
+  const { isAdmin, isOfficeAdmin, isSuperAdmin } = usePermissions();
+  const hasAdminRights = isAdmin || isOfficeAdmin || isSuperAdmin;
   
   // Mapeamento dos dados do banco para o formato da UI
   const clients = dbClientes.map(c => ({
