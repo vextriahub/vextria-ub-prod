@@ -107,11 +107,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
             justica_gratuita: newRecord.justicaGratuita
           }
         ])
-        .select(`
-          *,
-          cliente:clientes!cliente_id(nome),
-          responsavel:profiles(full_name)
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
@@ -158,11 +154,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         })
         .eq('id', id)
         .eq('office_id', user.office_id)
-        .select(`
-          *,
-          cliente:clientes!cliente_id(nome),
-          responsavel:profiles(full_name)
-        `)
+        .select('*')
         .single();
 
       if (error) throw error;
