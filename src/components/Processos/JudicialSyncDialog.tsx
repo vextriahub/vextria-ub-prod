@@ -30,7 +30,8 @@ import {
   Users,
   Loader2, 
   ChevronRight,
-  Database
+  Database,
+  Info
 } from 'lucide-react';
 import {
   Select,
