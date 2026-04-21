@@ -61,7 +61,36 @@ const extractPartesFromTexto = (html: string): string | null => {
     return `${reqMatch[1].trim()} x ${respMatch[1].trim()}`;
   }
 
+  // Padrão: "proposta por NOME" / "em face de NOME"
+  const propostaMatch = cleanText.match(/proposta por\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\s+em face|\s+contra|\.|$)/i);
+  const emFaceMatch = cleanText.match(/em face de\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\.|$)/i);
+  
+  if (propostaMatch && emFaceMatch) {
+    return `${propostaMatch[1].trim()} x ${emFaceMatch[1].trim()}`;
+  }
+
   return null;
+};
+
+/**
+ * Limpa título removendo texto de SENTENÇA, decisão, etc.
+ */
+const cleanTitle = (title: string): string => {
+  if (!title) return '';
+  // Remove tudo a partir de SENTENÇA, DECISÃO, Vistos, DESPACHO, Trata-se
+  let cleaned = title;
+  cleaned = cleaned.replace(/\bSENTENÇA\b.*/i, '').trim();
+  cleaned = cleaned.replace(/\bDECISÃO\b.*/i, '').trim();
+  cleaned = cleaned.replace(/\bVistos\b.*/i, '').trim();
+  cleaned = cleaned.replace(/\bDESPACHO\b.*/i, '').trim();
+  cleaned = cleaned.replace(/\bTrata-se\b.*/i, '').trim();
+  // Remove vírgula final
+  cleaned = cleaned.replace(/,\s*$/, '').trim();
+  // Limita a 120 caracteres
+  if (cleaned.length > 120) {
+    cleaned = cleaned.substring(0, 120).trim() + '...';
+  }
+  return cleaned || title.substring(0, 80);
 };
 
 const mapProcess = (hit: any, tribunalSigla?: string) => {
@@ -164,19 +193,34 @@ serve(async (req) => {
             
             // Tenta extrair nomes do texto se o título for genérico
             const extractedPartes = extractPartesFromTexto(item.texto_comunicacao || item.texto || '');
-            const finalTitle = item.titulo_processo || item.tituloProcesso || extractedPartes || `Processo ${numProc}`;
+            const rawTitle = item.titulo_processo || item.tituloProcesso || extractedPartes || `Processo ${numProc}`;
+            const finalTitle = cleanTitle(rawTitle);
+
+            // Determinar tribunal real pela sigla/nome ou pelo número do processo
+            const cleanNum = numProc.replace(/[.-]/g, '');
+            const j = cleanNum.length >= 14 ? cleanNum.substring(13, 14) : '';
+            const rr = cleanNum.length >= 16 ? cleanNum.substring(14, 16) : '';
+            let tribunalReal = item.nome_tribunal || item.sigla_tribunal || item.nomeTribunal || '';
+            if (!tribunalReal || tribunalReal === 'PJE' || tribunalReal === 'PJe') {
+              // Deduzir tribunal do número do processo
+              if (j === '8' && rr === '07') tribunalReal = 'TJDFT';
+              else if (j === '8') tribunalReal = `TJ${ufUpper}`;
+              else if (j === '4') tribunalReal = `TRF${rr.replace(/^0/, '')}`;
+              else if (j === '5') tribunalReal = `TRT${rr.replace(/^0/, '')}`;
+              else tribunalReal = `TJ${ufUpper}`;
+            }
 
             return {
               id: item.id || numProc,
               numeroProcesso: numProc,
               titulo: finalTitle,
               partes: extractedPartes || finalTitle,
-              tribunal: item.nome_tribunal || item.sigla_tribunal || item.nomeTribunal || 'PJE',
+              tribunal: tribunalReal,
               ultimoAndamento: {
                 descricao: item.texto_comunicacao || item.textoComunicacao || 'Comunicação PJe',
                 data: item.data_disponibilizacao || item.dataDisponibilizacao
               },
-              faseProcessual: item.nome_classe || 'Comunicado PJe',
+              faseProcessual: item.nome_classe || 'Não identificada',
               valorCausa: 0,
               vara: item.nome_orgao || item.nomeOrgao || '',
               comarca: ufUpper

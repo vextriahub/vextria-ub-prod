@@ -204,7 +204,7 @@ export const ProcessoDetailsDrawer: React.FC<ProcessoDetailsDrawerProps> = ({
             <div className="space-y-4 pb-8">
               <div className="flex items-center gap-2 font-semibold text-sm">
                 <History className="h-4 w-4 text-primary" />
-                Dernières Updates
+                Últimas Atualizações
               </div>
               <div className="flex gap-4 p-4 rounded-xl border bg-muted/10">
                 <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
