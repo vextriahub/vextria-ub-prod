@@ -298,7 +298,6 @@ const Clientes = () => {
       ) : showEmptyState ? (
         <ClientsEmptyState 
           onNewClient={() => setNovoClienteDialogOpen(true)} 
-          onLoadSampleData={() => toast({title: "Em breve", description: "Carregamento de dados de exemplo em construção."})} 
         />
       ) : (
         <div className="space-y-6">

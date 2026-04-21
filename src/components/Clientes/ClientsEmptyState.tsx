@@ -6,12 +6,10 @@ import { PermissionGuard } from '@/components/Auth/PermissionGuard';
 
 interface ClientsEmptyStateProps {
   onNewClient: () => void;
-  onLoadSampleData: () => void;
 }
 
 export const ClientsEmptyState: React.FC<ClientsEmptyStateProps> = ({
-  onNewClient,
-  onLoadSampleData
+  onNewClient
 }) => {
   return (
     <Card className="border-dashed border-2 p-8">
@@ -20,7 +18,7 @@ export const ClientsEmptyState: React.FC<ClientsEmptyStateProps> = ({
         <div className="text-center space-y-2">
           <h3 className="text-xl font-semibold">Nenhum cliente cadastrado</h3>
           <p className="text-muted-foreground">
-            Você ainda não possui clientes cadastrados. Comece adicionando seu primeiro cliente ou carregue dados de exemplo.
+            Você ainda não possui clientes cadastrados. Comece adicionando seu primeiro cliente no sistema.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
@@ -30,9 +28,6 @@ export const ClientsEmptyState: React.FC<ClientsEmptyStateProps> = ({
               Adicionar Cliente
             </Button>
           </PermissionGuard>
-          <Button variant="outline" onClick={onLoadSampleData}>
-            Carregar Dados de Exemplo
-          </Button>
         </div>
       </CardContent>
     </Card>
