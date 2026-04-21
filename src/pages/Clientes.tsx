@@ -285,9 +285,10 @@ const Clientes = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <ClientsSelectionControls
-                selectedCount={multiSelect.selectedIds.length}
+                isAllSelected={multiSelect.isAllSelected}
+                selectedCount={multiSelect.selectedCount}
                 totalCount={filteredClients.length}
-                onSelectAll={() => multiSelect.selectAll(filteredClients.map(c => c.id))}
+                onSelectAll={multiSelect.selectAll}
                 onClearSelection={multiSelect.clearSelection}
                 onDeleteSelected={handleDeleteSelected}
               />
@@ -326,8 +327,8 @@ const Clientes = () => {
             {viewMode === "grid" ? (
               <ClientsGrid
                 clients={filteredClients}
-                selectedIds={multiSelect.selectedIds}
-                onToggleSelect={multiSelect.toggleSelect}
+                selectedIds={multiSelect.getSelectedItems().map(item => item.id)}
+                onToggleSelect={multiSelect.toggleItem}
                 onClientClick={handleClientClick}
                 onEditClient={handleEditClient}
                 onViewProcesses={handleViewProcesses}
@@ -337,8 +338,8 @@ const Clientes = () => {
             ) : (
               <ClientsTable
                 clients={filteredClients}
-                selectedIds={multiSelect.selectedIds}
-                onToggleSelect={multiSelect.toggleSelect}
+                selectedIds={multiSelect.getSelectedItems().map(item => String(item.id))}
+                onToggleSelect={(id) => multiSelect.toggleItem(id)}
                 onClientClick={handleClientClick}
                 onEditClient={handleEditClient}
                 onViewProcesses={handleViewProcesses}
