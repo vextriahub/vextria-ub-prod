@@ -33,7 +33,16 @@ serve(async (req) => {
     const { oab, uf } = await req.json();
     if (!oab || !uf) throw new Error("OAB e UF são obrigatórios");
 
-    const tribunalSigla = `tj${uf.toLowerCase()}`;
+    const UF_TO_TRIBUNAL: Record<string, string> = {
+      "AC": "tjac", "AL": "tjal", "AM": "tjam", "AP": "tjap", "BA": "tjba",
+      "CE": "tjce", "DF": "tjdft", "ES": "tjes", "GO": "tjgo", "MA": "tjma",
+      "MG": "tjmg", "MS": "tjms", "MT": "tjmt", "PA": "tjpa", "PB": "tjpb",
+      "PE": "tjpe", "PI": "tjpi", "PR": "tjpr", "RJ": "tjrj", "RN": "tjrn",
+      "RO": "tjro", "RR": "tjrr", "RS": "tjrs", "SC": "tjsc", "SE": "tjse",
+      "SP": "tjsp", "TO": "tjto",
+    };
+
+    const tribunalSigla = UF_TO_TRIBUNAL[uf.toUpperCase()] || `tj${uf.toLowerCase()}`;
     const apiUrl = `https://api-publica.datajud.cnj.jus.br/api_publica_${tribunalSigla}/_search`;
     
     console.log(`[FETCH-BY-OAB] Buscando no tribunal: ${tribunalSigla} para OAB: ${oab}-${uf}`);

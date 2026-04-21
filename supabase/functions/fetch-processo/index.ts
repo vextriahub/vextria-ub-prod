@@ -29,6 +29,7 @@ const UF_TO_TRIBUNAL: Record<string, string> = {
   "PE": "tjpe", "PI": "tjpi", "PR": "tjpr", "RJ": "tjrj", "RN": "tjrn",
   "RO": "tjro", "RR": "tjrr", "RS": "tjrs", "SC": "tjsc", "SE": "tjse",
   "SP": "tjsp", "TO": "tjto",
+};
 
 const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
