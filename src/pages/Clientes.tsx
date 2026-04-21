@@ -296,7 +296,10 @@ const Clientes = () => {
           <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Sincronizando Base de Clientes...</p>
         </div>
       ) : showEmptyState ? (
-        <ClientsEmptyState onAddClient={() => setNovoClienteDialogOpen(true)} />
+        <ClientsEmptyState 
+          onNewClient={() => setNovoClienteDialogOpen(true)} 
+          onLoadSampleData={() => toast({title: "Em breve", description: "Carregamento de dados de exemplo em construção."})} 
+        />
       ) : (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
