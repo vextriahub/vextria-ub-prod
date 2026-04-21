@@ -33,7 +33,8 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
       comarca: dbRecord.comarca,
       requerido: dbRecord.requerido,
       segredoJustica: dbRecord.segredo_justica,
-      justicaGratuita: dbRecord.justica_gratuita
+      justicaGratuita: dbRecord.justica_gratuita,
+      observacoes: dbRecord.observacoes
     };
   };
 
@@ -53,7 +54,6 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
           cliente:clientes!cliente_id(nome),
           responsavel:profiles(full_name)
         `)
-        .eq('office_id', user.office_id)
         .eq('deletado', false)
         .order('created_at', { ascending: false });
 
@@ -87,7 +87,6 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         .from('processos')
         .insert([
           {
-            office_id: user.office_id,
             user_id: user.id,
             titulo: newRecord.titulo,
             cliente_id: newRecord.clienteId,
@@ -98,7 +97,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
             responsavel_id: newRecord.responsavelId || user.id,
             proximo_prazo: newRecord.proximoPrazo,
             valor_causa: newRecord.valorCausa,
-            descricao: newRecord.descricao,
+            observacoes: newRecord.descricao || newRecord.observacoes,
             tribunal: newRecord.tribunal,
             vara: newRecord.vara,
             comarca: newRecord.comarca,
@@ -143,7 +142,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
           responsavel_id: updates.responsavelId,
           proximo_prazo: updates.proximoPrazo,
           valor_causa: updates.valorCausa,
-          descricao: updates.descricao,
+          observacoes: updates.descricao || (updates as any).observacoes,
           tribunal: updates.tribunal,
           vara: updates.vara,
           comarca: updates.comarca,
@@ -153,7 +152,6 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .eq('office_id', user.office_id)
         .select('*')
         .single();
 

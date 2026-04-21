@@ -207,7 +207,7 @@ const Processos = React.memo(() => {
           responsavelId: user?.id,
           proximoPrazo: null,
           valorCausa: proc.valorCausa || 0,
-          descricao: `Importado via OAB. Último andamento: ${proc.ultimoAndamento?.descricao || 'N/A'}`,
+          observacoes: `Importado via OAB. Último andamento: ${proc.ultimoAndamento?.descricao || 'N/A'}`,
           tribunal: proc.tribunal,
           vara: proc.vara || '',
           comarca: proc.comarca || '',
@@ -215,7 +215,7 @@ const Processos = React.memo(() => {
           segredoJustica: false,
           justicaGratuita: false,
           dataInicio: new Date().toISOString().split('T')[0]
-        });
+        } as any);
         if (success) successCount++;
       }
       
