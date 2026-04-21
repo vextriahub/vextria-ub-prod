@@ -82,6 +82,15 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [oab, setOab] = useState('');
+  const [uf, setUf] = useState('DF');
+  const [results, setResults] = useState<JudicialProcessResult[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [itemSelections, setItemSelections] = useState<Record<string, string>>({});
+  const [bulkClientId, setBulkClientId] = useState<string>('');
+  const [clients, setClients] = useState<any[]>([]);
 
   // Carregar clientes para o seletor
   React.useEffect(() => {
@@ -285,7 +294,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
 
       {/* Resultados e Paginação */}
       {results.length > 0 && (
-        <div className="bg-slate-900/50 border border-white/5 p-3 rounded-xl mb-4 flex items-center justify-between px-4">
+        <div className="bg-slate-900/50 border border-white/5 p-3 rounded-xl mb-4 flex items-center justify-between px-4 shrink-0 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Database className="h-4 w-4 text-primary" />
@@ -330,7 +339,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </div>
       )}
 
-      <div className="flex-1 min-h-0 border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-[300px] border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md overflow-hidden flex flex-col mb-4">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {results.length > 0 ? (
             <Table>

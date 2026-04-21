@@ -218,7 +218,7 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
           {trigger || defaultTrigger}
         </DialogTrigger>
         
-        <DialogContent className="sm:max-w-[800px] bg-background/40 backdrop-blur-3xl border-white/5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] p-0 overflow-hidden flex flex-col max-h-[95vh]">
+        <DialogContent className={`sm:max-w-[800px] bg-background/40 backdrop-blur-3xl border-white/5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] p-0 overflow-hidden flex flex-col transition-all duration-300 ${step === 'oab' ? 'h-[90vh] max-h-[90vh]' : 'max-h-[95vh]'}`}>
           <DialogHeader className="p-8 pb-4 border-b border-white/5">
             <div className="flex items-center justify-between">
               <div>
