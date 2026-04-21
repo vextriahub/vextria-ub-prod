@@ -80,15 +80,8 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [oab, setOab] = useState('');
-  const [uf, setUf] = useState('DF');
-  const [results, setResults] = useState<JudicialProcessResult[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [itemSelections, setItemSelections] = useState<Record<string, string>>({});
-  const [bulkClientId, setBulkClientId] = useState<string>('');
-  const [clients, setClients] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   // Carregar clientes para o seletor
   React.useEffect(() => {
@@ -123,6 +116,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     setLoading(true);
     setResults([]);
     setSelectedIds(new Set());
+    setCurrentPage(1);
 
     try {
       console.log(`🔍 Iniciando busca via Edge Function: OAB ${oab}-${uf}`);
@@ -214,8 +208,13 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     }
   };
 
+  // Paginação
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedResults = results.slice(startIndex, startIndex + itemsPerPage);
+
   return (
-    <div className="flex flex-col flex-1 min-h-0 bg-transparent">
+    <div className="flex flex-col flex-1 min-h-0 h-full">
       {/* Busca */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 items-end p-1">
         <div className="space-y-2">
@@ -284,15 +283,41 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </div>
       )}
 
-      <Separator className="mb-6 bg-white/10" />
-
-      {/* Resultados */}
+      {/* Resultados e Paginação */}
       {results.length > 0 && (
         <div className="bg-slate-900/50 border border-white/5 p-3 rounded-xl mb-4 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Database className="h-4 w-4 text-primary" />
-            <span className="text-sm font-bold text-white/90">Resultados encontrados ({results.length})</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4 text-primary" />
+              <span className="text-sm font-bold text-white/90">Resultados encontrados ({results.length})</span>
+            </div>
+            
+            {/* Controles de Paginação */}
+            <div className="flex items-center gap-2 border-l border-white/10 ml-2 pl-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7 text-white/40"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => p - 1)}
+              >
+                <ChevronRight className="h-4 w-4 rotate-180" />
+              </Button>
+              <span className="text-[10px] text-white/40 font-mono">
+                {currentPage} / {totalPages}
+              </span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7 text-white/40"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(p => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
+
           <div className="flex items-center gap-4">
              <span className="text-xs text-white/40">{selectedIds.size} selecionados</span>
              <button 
@@ -306,10 +331,10 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       )}
 
       <div className="flex-1 min-h-0 border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md overflow-hidden flex flex-col">
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           {results.length > 0 ? (
             <Table>
-              <TableHeader className="bg-slate-900 sticky top-0 z-20 shadow-sm">
+              <TableHeader className="bg-slate-950/80 sticky top-0 z-20 backdrop-blur-md">
                 <TableRow className="border-white/5 hover:bg-transparent">
                   <TableHead className="w-[40px] px-4">
                     <Checkbox 
@@ -318,14 +343,14 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       className="border-white/20 data-[state=checked]:bg-primary"
                     />
                   </TableHead>
-                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Processo / Partes</TableHead>
-                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold min-w-[200px]">Vincular Cliente</TableHead>
-                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Resumo / Data</TableHead>
-                  <TableHead className="text-white/60 text-xs uppercase tracking-wider font-bold">Status</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Processo / Partes</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold min-w-[180px]">Cliente</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Andamento</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Classe</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.map((proc) => (
+                {paginatedResults.map((proc) => (
                   <TableRow key={proc.id} className="group border-white/5 hover:bg-white/5 transition-colors">
                     <TableCell className="px-4">
                       <Checkbox 
@@ -336,25 +361,12 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1 py-1">
-                        <span className="font-mono text-xs font-bold text-primary">{proc.numeroProcesso}</span>
+                        <span className="font-mono text-[10px] font-bold text-primary">{proc.numeroProcesso}</span>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <div className="text-sm font-medium line-clamp-1 text-white/90 cursor-default">
-                                {proc.clienteDestaque && proc.partes.includes(proc.clienteDestaque) ? (
-                                  <>
-                                    {proc.partes.split(proc.clienteDestaque).map((segment, i, array) => (
-                                      <React.Fragment key={i}>
-                                        {segment}
-                                        {i < array.length - 1 && (
-                                          <span className="text-primary font-bold">{proc.clienteDestaque}</span>
-                                        )}
-                                      </React.Fragment>
-                                    ))}
-                                  </>
-                                ) : (
-                                  proc.partes
-                                )}
+                              <div className="text-xs font-medium line-clamp-1 text-white/90 cursor-default">
+                                {proc.partes}
                               </div>
                             </TooltipTrigger>
                             <TooltipContent className="bg-slate-800 border-white/10 text-white">
@@ -362,7 +374,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        <span className="text-[10px] text-white/40">{proc.tribunal} {proc.vara && `• ${proc.vara}`}</span>
+                        <span className="text-[9px] text-white/40 truncate max-w-[200px]">{proc.tribunal} {proc.vara && `• ${proc.vara}`}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -370,7 +382,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                         value={itemSelections[proc.id] || ''} 
                         onValueChange={(val) => setItemSelections(prev => ({ ...prev, [proc.id]: val }))}
                       >
-                        <SelectTrigger className="h-8 bg-white/5 border-white/10 text-[11px] hover:bg-white/10 transition-colors">
+                        <SelectTrigger className="h-7 bg-white/5 border-white/10 text-[10px] hover:bg-white/10 transition-colors">
                           <SelectValue placeholder="Vincular a..." />
                         </SelectTrigger>
                         <SelectContent className="bg-slate-900 border-white/10 max-h-[200px]">
@@ -382,16 +394,16 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                     </TableCell>
                     <TableCell>
                       {proc.ultimoAndamento ? (
-                        <div className="flex flex-col gap-1 max-w-[250px]">
-                          <span className="text-[10px] text-primary/70 font-bold uppercase">
+                        <div className="flex flex-col gap-0.5 max-w-[200px]">
+                          <span className="text-[9px] text-primary/70 font-bold uppercase">
                             {new Date(proc.ultimoAndamento.data).toLocaleDateString()}
                           </span>
-                          <span className="text-xs line-clamp-1 italic text-white/50">{proc.ultimoAndamento.descricao}</span>
+                          <span className="text-[10px] line-clamp-1 italic text-white/50">{proc.ultimoAndamento.descricao}</span>
                         </div>
-                      ) : <span className="text-white/20 italic text-[11px]">Sem andamento recente</span>}
+                      ) : <span className="text-white/20 italic text-[10px]">Sem andamento</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[9px] uppercase font-bold bg-white/5 border-white/10 text-white/40 whitespace-nowrap">
+                      <Badge variant="outline" className="text-[8px] h-5 uppercase font-bold bg-white/5 border-white/10 text-white/40 whitespace-nowrap">
                         {proc.faseProcessual}
                       </Badge>
                     </TableCell>
@@ -404,24 +416,24 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="h-10 w-10 animate-spin mb-4 text-primary" />
-                  <p className="text-white/60 animate-pulse">Consultando banco de dados nacional do CNJ...</p>
-                  <p className="text-[10px] text-white/30 mt-2">Isso pode levar alguns segundos dependendo do tribunal.</p>
+                  <p className="text-white/60 animate-pulse">Sincronizando com tribunais...</p>
+                  <p className="text-[10px] text-white/30 mt-2">Isso pode levar alguns segundos.</p>
                 </>
               ) : (
                 <>
-                  <Search className="h-12 w-12 mb-4 opacity-10" />
-                  <p className="text-lg font-medium text-white/40">Pronto para buscar</p>
+                  <Database className="h-12 w-12 mb-4 opacity-10" />
+                  <p className="text-lg font-medium text-white/40">Busca pronta</p>
                   <p className="text-xs mt-2 max-w-[240px] mx-auto text-white/30">
-                    Informe sua OAB principal e o estado do tribunal para sincronizar processos do DataJud.
+                    Informe sua OAB e Estado para sincronizar processos.
                   </p>
                 </>
               )}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+      <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between bg-transparent">
         <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-white/40 hover:text-white hover:bg-white/5">
           Cancelar
         </Button>
@@ -435,6 +447,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </Button>
       </div>
     </div>
+
   );
 };
 

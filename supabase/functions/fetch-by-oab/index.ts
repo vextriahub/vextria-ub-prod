@@ -34,6 +34,36 @@ const isProcessActive = (process: any) => {
   return !INACTIVE_TERMS.some(term => text.includes(term));
 };
 
+/**
+ * Tenta extrair nomes das partes de um texto HTML vindo do PJe
+ */
+const extractPartesFromTexto = (html: string): string | null => {
+  if (!html) return null;
+  
+  // Limpar tags HTML básicas para facilitar a busca
+  const cleanText = html.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+  
+  // Padrão comum: Polo Ativo: NOME Polo Passivo: NOME
+  const ativoMatch = cleanText.match(/Polo Ativo:\s*([^Polo]+)/i);
+  const passivoMatch = cleanText.match(/Polo Passivo:\s*([^<]+)/i);
+  
+  if (ativoMatch && passivoMatch) {
+    const autor = ativoMatch[1].split('Advogado')[0].split('Polo')[0].trim();
+    const reu = passivoMatch[1].split('Advogado')[0].split('Polo')[0].trim();
+    if (autor && reu) return `${autor} x ${reu}`;
+  }
+  
+  // Padrão alternativo: REQUERENTE: ... REQUERIDO: ...
+  const reqMatch = cleanText.match(/REQUERENTE:\s*([^REQUERIDO]+)/i);
+  const respMatch = cleanText.match(/REQUERIDO:\s*([^<]+)/i);
+  
+  if (reqMatch && respMatch) {
+    return `${reqMatch[1].trim()} x ${respMatch[1].trim()}`;
+  }
+
+  return null;
+};
+
 const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
   if (!source) return null;
@@ -84,7 +114,7 @@ serve(async (req) => {
     const numeroOabPuro = oab.replace(/\D/g, '');
     const numeroOabComZero = numeroOabPuro.padStart(6, '0');
 
-    // 1. DATAJUD (Busca paralela com sort por recência e maior size)
+    // 1. DATAJUD (Busca paralela)
     const searchPromises = tribunaisParaBuscar.map(async (tribunal) => {
       try {
         const searchBody = {
@@ -117,7 +147,7 @@ serve(async (req) => {
     const datajudResults = await Promise.all(searchPromises);
     datajudResults.forEach(batch => allResults = [...allResults, ...batch]);
 
-    // 2. COMUNICA PJE (Deep Sync: 5 páginas com filtro de data)
+    // 2. COMUNICA PJE (Deep Sync: 5 páginas)
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const dateStart = oneYearAgo.toISOString().split('T')[0];
@@ -131,17 +161,22 @@ serve(async (req) => {
           return (pjeData.items || []).map((item: any) => {
             const numProc = item.numero_processo || item.numeroProcesso;
             if (!numProc) return null;
+            
+            // Tenta extrair nomes do texto se o título for genérico
+            const extractedPartes = extractPartesFromTexto(item.texto_comunicacao || item.texto || '');
+            const finalTitle = item.titulo_processo || item.tituloProcesso || extractedPartes || `Processo ${numProc}`;
+
             return {
               id: item.id || numProc,
               numeroProcesso: numProc,
-              titulo: item.titulo_processo || item.tituloProcesso || `Processo ${numProc}`,
-              partes: item.partes?.map((p: any) => p.nome).join(' x ') || item.titulo_processo || item.tituloProcesso || 'Não identificado',
+              titulo: finalTitle,
+              partes: extractedPartes || finalTitle,
               tribunal: item.nome_tribunal || item.sigla_tribunal || item.nomeTribunal || 'PJE',
               ultimoAndamento: {
                 descricao: item.texto_comunicacao || item.textoComunicacao || 'Comunicação PJe',
                 data: item.data_disponibilizacao || item.dataDisponibilizacao
               },
-              faseProcessual: 'Comunicado PJe',
+              faseProcessual: item.nome_classe || 'Comunicado PJe',
               valorCausa: 0,
               vara: item.nome_orgao || item.nomeOrgao || '',
               comarca: ufUpper
@@ -166,12 +201,7 @@ serve(async (req) => {
       });
     });
 
-    // 3. FILTRO FINAL: APENAS ATIVOS
     const activeResults = allResults.filter(isProcessActive);
-    
-    console.log(`[SYNC-COMPLETED] Totais: ${allResults.length} Encontrados | ${activeResults.length} Ativos`);
-
-    // Deduplicação final por número de processo
     const uniqueResults = Array.from(new Map(activeResults.map(item => [item.numeroProcesso, item])).values());
 
     return new Response(JSON.stringify(uniqueResults), {
