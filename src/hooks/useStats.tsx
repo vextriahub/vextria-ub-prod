@@ -61,7 +61,8 @@ export function useStats() {
           .from('clientes')
           .select('id', { count: 'exact' })
           .eq('office_id', user.office_id)
-          .eq('deletado', false),
+          .eq('deletado', false)
+          .eq('deletado_pendente', false),
 
         // Tarefas do escritório
         supabase
