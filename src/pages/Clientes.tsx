@@ -7,6 +7,7 @@ import { useMultiSelect } from "@/hooks/useMultiSelect";
 import { Client } from "@/types/client";
 import { Loader2, Users, Plus, Search } from "lucide-react";
 import { useClientes } from "@/hooks/useClientes";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
