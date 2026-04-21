@@ -18,7 +18,7 @@ interface User {
   email: string;
   role: 'user' | 'admin' | 'super_admin';
   office_id?: string | null;
-  office_role?: 'user' | 'admin' | 'super_admin' | null;
+  office_role?: 'user' | 'admin' | 'owner' | 'super_admin' | null;
 }
 
 interface AuthContextType {
@@ -679,7 +679,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isFirstLogin,
     isSuperAdmin: isUserSuperAdmin,
     isAdmin: user?.role === 'admin' || user?.role === 'super_admin' || profile?.role === 'admin' || profile?.role === 'super_admin' || isUserSuperAdmin,
-    isOfficeAdmin: user?.office_role === 'admin' || user?.office_role === 'super_admin' || user?.role === 'super_admin' || profile?.role === 'super_admin',
+    isOfficeAdmin: user?.office_role === 'admin' || user?.office_role === 'owner' || user?.office_role === 'super_admin' || user?.role === 'super_admin' || profile?.role === 'super_admin',
     paymentValidation,
     showPaymentModal,
     setShowPaymentModal,
