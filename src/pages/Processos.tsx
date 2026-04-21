@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessos } from '@/hooks/useProcessos';
-import { FileText, Loader2, RotateCw, Search } from 'lucide-react';
+import { FileText, Loader2, RotateCw, Search, Plus } from 'lucide-react';
 
 // Debug logs
 console.log('%c [VEXTRIA] VERSÃO ATUALIZADA - FIX USEAUTH APLICADO ', 'background: #22c55e; color: #fff; font-weight: bold;');
@@ -406,69 +406,68 @@ const Processos = React.memo(() => {
             </div>
           </div>
 
-      {/* Empty State */}
-      {showEmptyState ? (
-        <EmptyState
-          icon={FileText}
-          title="Nenhum processo cadastrado"
-          description="Seu escritório ainda não possui processos no banco de dados. Comece importando processos via OAB ou cadastrando-os manualmente."
-          actionLabel="Criar Primeiro Processo"
-          onAction={() => setIsNovoProcessoOpen(true)}
-        />
-      ) : (
-        <>
-          {/* Filtros */}
-          <ProcessoFilters
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            clientes={uniqueClientes}
-            numerosProcesso={uniqueNumerosProcesso}
-            activeFiltersCount={activeFiltersCount}
-            onClearFilters={handleClearFilters}
-          />
-
-          {filteredProcessos.length === 0 ? (
-            <Card className="glass-card border-white/5 bg-card/30 p-12 text-center rounded-[2rem] shadow-premium">
-              <CardContent className="space-y-6">
-                <div className="p-6 bg-primary/5 rounded-full inline-block border border-primary/10">
-                  <Search className="h-12 w-12 text-primary opacity-40" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-extrabold">Nenhum processo encontrado</h3>
-                  <p className="text-muted-foreground font-medium max-w-sm mx-auto">
-                    Tente ajustar seus filtros ou faça uma nova busca refinada para encontrar o que procura.
-                  </p>
-                </div>
-                <Button variant="outline" onClick={handleClearFilters} className="rounded-xl font-bold h-12 px-8 border-white/10 hover:bg-white/5">
-                  Limpar Filtros
-                </Button>
-              </CardContent>
-            </Card>
-          ) : view === 'table' ? (
-            <ProcessoTable
-              processos={filteredProcessos as any}
-              onEdit={handleEditProcesso}
-              onDelete={handleDeleteProcesso}
-              onViewDetails={handleViewDetails}
+          {showEmptyState ? (
+            <EmptyState
+              icon={FileText}
+              title="Nenhum processo cadastrado"
+              description="Seu escritório ainda não possui processos no banco de dados. Comece importando processos via OAB ou cadastrando-os manualmente."
+              actionLabel="Criar Primeiro Processo"
+              onAction={() => setActiveTab('novo')}
             />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {filteredProcessos.map((processo) => (
-                <ProcessoCard
-                  key={processo.id}
-                  processo={processo as any}
+            <>
+              <ProcessoFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                clientes={uniqueClientes}
+                numerosProcesso={uniqueNumerosProcesso}
+                activeFiltersCount={activeFiltersCount}
+                onClearFilters={handleClearFilters}
+              />
+
+              {filteredProcessos.length === 0 ? (
+                <Card className="glass-card border-white/5 bg-card/30 p-12 text-center rounded-[2rem] shadow-premium">
+                  <CardContent className="space-y-6">
+                    <div className="p-6 bg-primary/5 rounded-full inline-block border border-primary/10">
+                      <Search className="h-12 w-12 text-primary opacity-40" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-extrabold">Nenhum processo encontrado</h3>
+                      <p className="text-muted-foreground font-medium max-w-sm mx-auto">
+                        Tente ajustar seus filtros ou faça uma nova busca refinada para encontrar o que procura.
+                      </p>
+                    </div>
+                    <Button variant="outline" onClick={handleClearFilters} className="rounded-xl font-bold h-12 px-8 border-white/10 hover:bg-white/5">
+                      Limpar Filtros
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : view === 'table' ? (
+                <ProcessoTable
+                  processos={filteredProcessos as any}
                   onEdit={handleEditProcesso}
                   onDelete={handleDeleteProcesso}
-                  onClienteClick={handleClienteClick}
-                  onClick={() => handleViewDetails(processo as any)}
+                  onViewDetails={handleViewDetails}
                 />
-              ))}
-            </div>
-          )}
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredProcessos.map((processo) => (
+                    <ProcessoCard
+                      key={processo.id}
+                      processo={processo as any}
+                      onEdit={handleEditProcesso}
+                      onDelete={handleDeleteProcesso}
+                      onClienteClick={handleClienteClick}
+                      onClick={() => handleViewDetails(processo as any)}
+                    />
+                  ))}
+                </div>
+              )}
 
-            <div className="text-center text-sm text-muted-foreground pb-8">
-              Mostrando {filteredProcessos.length} de {processos.length} processo(s)
-            </div>
+              <div className="text-center text-sm text-muted-foreground pb-8">
+                Mostrando {filteredProcessos.length} de {processos.length} processo(s)
+              </div>
+            </>
           )}
         </TabsContent>
 
