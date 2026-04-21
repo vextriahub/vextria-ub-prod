@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, User, FileText, Edit, Trash2, Scale, Clock, Building2, MapPin, ChevronRight } from 'lucide-react';
+import { Calendar, FileText, Edit, Trash2, Clock, Building2, MapPin, ChevronRight, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,13 +32,26 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Em andamento':
-        return 'border-blue-500/50 text-blue-500 bg-blue-500/5 font-bold';
+      case 'ativo':
+        return 'border-blue-500/50 text-blue-400 bg-blue-500/5 font-bold';
       case 'Concluído':
-        return 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5 font-bold';
+      case 'encerrado':
+        return 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5 font-bold';
       case 'Suspenso':
-        return 'border-orange-500/50 text-orange-500 bg-orange-500/5 font-bold';
+        return 'border-orange-500/50 text-orange-400 bg-orange-500/5 font-bold';
       default:
         return 'border-muted/30 text-muted-foreground bg-transparent';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'ativo': return 'Ativo';
+      case 'Em andamento': return 'Em andamento';
+      case 'encerrado': return 'Encerrado';
+      case 'Concluído': return 'Concluído';
+      case 'Suspenso': return 'Suspenso';
+      default: return status || 'N/A';
     }
   };
 
@@ -54,62 +67,79 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
     return prazo < hoje;
   };
 
+  const getBarColor = () => {
+    switch (processo.status) {
+      case 'Em andamento':
+      case 'ativo':
+        return 'bg-primary';
+      case 'Concluído':
+      case 'encerrado':
+        return 'bg-emerald-500';
+      case 'Suspenso':
+        return 'bg-orange-500';
+      default:
+        return 'bg-muted';
+    }
+  };
+
   return (
     <Card 
-      className="relative overflow-hidden border-white/5 bg-card/40 backdrop-blur-md group cursor-pointer hover:border-primary/20 transition-all duration-500 rounded-[2.5rem] shadow-premium"
+      className="relative overflow-hidden border-white/5 bg-card/40 backdrop-blur-md group cursor-pointer hover:border-primary/20 transition-all duration-500 rounded-[2rem]"
       onClick={onClick}
     >
-      <div className={`absolute top-0 left-0 w-1.5 h-full opacity-40 group-hover:opacity-100 transition-all duration-500 ${
-        processo.status === 'Em andamento' ? 'bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]' : 
-        processo.status === 'Concluído' ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 
-        processo.status === 'Suspenso' ? 'bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)]' : 'bg-muted'
-      }`} />
+      <div className={`absolute top-0 left-0 w-1 h-full opacity-40 group-hover:opacity-100 transition-all duration-500 ${getBarColor()}`} />
       
-      <CardHeader className="pb-3 pt-6 px-8">
+      <CardHeader className="pb-3 pt-5 px-6">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <Badge variant="outline" className={cn("px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-widest leading-none", getStatusColor(processo.status))}>
-                {processo.status}
+          <div className="flex-1 min-w-0 pr-8">
+            {/* Status Badge */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <Badge variant="outline" className={cn("px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest", getStatusColor(processo.status))}>
+                {getStatusLabel(processo.status)}
               </Badge>
-              <span className="text-[9px] bg-white/5 text-white/60 px-2.5 py-1 rounded-full font-bold uppercase tracking-widest border border-white/5">
-                {processo.faseProcessual || 'Fase Inicial'}
-              </span>
+              {processo.tipoProcesso && (
+                <span className="text-[9px] bg-white/5 text-white/50 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider border border-white/5">
+                  {processo.tipoProcesso}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-primary font-mono text-[10px] font-bold tracking-tight mb-2">
+            {/* Número do processo */}
+            {processo.numeroProcesso && (
+              <div className="flex items-center gap-1.5 text-primary/60 font-mono text-[10px] font-semibold mb-2">
                 <FileText className="h-3 w-3" />
-                <span>{processo.numeroProcesso || 'NÃO IDENTIFICADO'}</span>
+                <span>{processo.numeroProcesso}</span>
               </div>
-              <h3 className="font-extrabold text-lg md:text-xl leading-tight group-hover:text-primary transition-colors pr-8">
-                {processo.titulo}
-              </h3>
-            </div>
+            )}
+
+            {/* Título */}
+            <h3 className="font-bold text-base leading-snug group-hover:text-primary transition-colors">
+              {processo.titulo}
+            </h3>
           </div>
 
-          <div onClick={(e) => e.stopPropagation()} className="absolute top-6 right-6">
+          <div onClick={(e) => e.stopPropagation()}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl hover:bg-white/5">
-                  <MoreHorizontal className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-white/5">
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="glass-card border-white/10 rounded-2xl w-48 p-2">
+              <DropdownMenuContent align="end" className="border-white/10 rounded-xl w-44 p-1">
                 <PermissionGuard permission="canEditProcesses">
-                  <DropdownMenuItem onClick={() => onEdit(processo)} className="rounded-xl py-2.5">
-                    <Edit className="mr-3 h-4 w-4 text-blue-500" />
-                    <span className="font-semibold text-sm">Editar</span>
+                  <DropdownMenuItem onClick={() => onEdit(processo)} className="rounded-lg py-2">
+                    <Edit className="mr-2 h-4 w-4 text-blue-400" />
+                    <span className="font-medium text-sm">Editar</span>
                   </DropdownMenuItem>
                 </PermissionGuard>
                 <PermissionGuard permission="canDeleteProcesses">
                   <DropdownMenuSeparator className="bg-white/5" />
                   <DropdownMenuItem 
                     onClick={() => onDelete(processo)}
-                    className="rounded-xl py-2.5 text-destructive focus:text-destructive focus:bg-destructive/10"
+                    className="rounded-lg py-2 text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-3 h-4 w-4" />
-                    <span className="font-semibold text-sm">Excluir</span>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span className="font-medium text-sm">Excluir</span>
                   </DropdownMenuItem>
                 </PermissionGuard>
               </DropdownMenuContent>
@@ -118,63 +148,50 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
         </div>
       </CardHeader>
 
-      <CardContent className="px-8 pb-8 pt-2 space-y-6">
-        {/* PARTE CONTRÁRIA */}
-        <div className="p-4 rounded-[1.5rem] bg-white/[0.03] border border-white/5 group-hover:bg-white/[0.05] transition-colors">
-          <div className="flex items-center gap-4">
-            <div className="h-10 w-10 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-              <Scale className="h-5 w-5 text-orange-500" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Parte Contrária (Réu)</p>
-              <p className="text-sm font-bold truncate text-foreground/90">{processo.requerido || 'Não identificado'}</p>
-            </div>
+      <CardContent className="px-6 pb-5 pt-0 space-y-4">
+        {/* Tribunal e Comarca */}
+        {(processo.tribunal || processo.comarca) && (
+          <div className="flex items-center gap-4 text-xs text-muted-foreground/70">
+            {processo.tribunal && (
+              <div className="flex items-center gap-1.5">
+                <Building2 className="h-3 w-3" />
+                <span className="font-medium">{processo.tribunal}</span>
+              </div>
+            )}
+            {processo.comarca && (
+              <div className="flex items-center gap-1.5">
+                <MapPin className="h-3 w-3" />
+                <span>{processo.comarca}</span>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* INFO GRID */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="space-y-1.5 pl-2">
-            <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-2">
-              <Building2 className="h-3 w-3 opacity-50" /> Tribunal
-            </p>
-            <p className="text-xs font-bold truncate">{processo.tribunal || 'TJSP'}</p>
+        {/* Valor da causa */}
+        {processo.valorCausa && processo.valorCausa > 0 && (
+          <div className="bg-emerald-500/5 p-2.5 rounded-xl border border-emerald-500/10 flex items-center justify-between">
+            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Valor da Causa</span>
+            <span className="text-sm font-bold text-emerald-400">
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(processo.valorCausa)}
+            </span>
+          </div>
+        )}
+
+        {/* Footer: prazo e data */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50">
+            <Clock className="h-3 w-3" />
+            <span>{formatDate(processo.dataInicio) || '—'}</span>
           </div>
           
-          <div className="space-y-1.5 border-l border-white/5 pl-6">
-            <p className={cn("text-[9px] uppercase font-bold tracking-widest flex items-center gap-2", 
-              isOverdue() ? 'text-red-500' : 'text-muted-foreground'
+          {processo.proximoPrazo && (
+            <div className={cn("flex items-center gap-1.5 text-[10px] font-semibold",
+              isOverdue() ? 'text-red-400' : 'text-orange-400'
             )}>
-              <Calendar className="h-3 w-3 opacity-50" /> Próximo Prazo
-            </p>
-            <p className={cn("text-xs font-bold", isOverdue() ? 'text-red-500' : 'text-foreground')}>
-              {processo.proximoPrazo ? formatDate(processo.proximoPrazo) : '—'}
-            </p>
-          </div>
-        </div>
-
-        {/* FOOTER */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-3">
-             <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-               <User className="h-3.5 w-3.5 text-primary" />
-             </div>
-             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                processo.clienteId && onClienteClick(processo.clienteId);
-              }}
-              className="text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-            >
-              {processo.cliente || 'Sem Cliente'}
-              <ChevronRight className="h-3 w-3" />
-            </button>
-          </div>
-
-          <div className="text-[10px] text-muted-foreground/60 flex items-center gap-2 font-medium">
-            <Clock className="h-3 w-3" />
-            {formatDate(processo.dataInicio)}
-          </div>
+              <Calendar className="h-3 w-3" />
+              <span>Prazo: {formatDate(processo.proximoPrazo)}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -10,7 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Processo } from '@/types/processo';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Edit, Trash2, Scale, User, Building2, MapPin, ExternalLink } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, FileText, Building2, ExternalLink } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,13 +37,26 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Em andamento':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'ativo':
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       case 'Concluído':
-        return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+      case 'encerrado':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
       case 'Suspenso':
-        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
       default:
-        return 'bg-slate-500/10 text-slate-500 border-slate-500/20';
+        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'ativo': return 'Ativo';
+      case 'Em andamento': return 'Em andamento';
+      case 'encerrado': return 'Encerrado';
+      case 'Concluído': return 'Concluído';
+      case 'Suspenso': return 'Suspenso';
+      default: return status || 'N/A';
     }
   };
 
@@ -53,12 +66,12 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow className="border-white/5 hover:bg-transparent">
-              <TableHead className="w-[200px] text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-6 pl-8">Número do Processo</TableHead>
-              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-6">Autor</TableHead>
-              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-6">Réu</TableHead>
-              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-6">Tribunal / Comarca</TableHead>
-              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-6">Fase / Status</TableHead>
-              <TableHead className="text-right py-6 pr-8"></TableHead>
+              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-5 pl-6">Nº Processo</TableHead>
+              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-5">Título / Partes</TableHead>
+              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-5">Tribunal</TableHead>
+              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-5">Tipo</TableHead>
+              <TableHead className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground py-5">Status</TableHead>
+              <TableHead className="text-right py-5 pr-6"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -69,97 +82,83 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
                 onClick={() => onViewDetails(processo)}
               >
                 {/* NÚMERO DO PROCESSO */}
-                <TableCell className="py-6 pl-8">
-                  <div className="flex flex-col gap-1">
-                    <span className="font-mono text-xs font-bold text-primary group-hover:drop-shadow-[0_0_8px_rgba(var(--primary),0.5)] transition-all">
-                      {processo.numeroProcesso || 'NÃO IDENTIFICADO'}
+                <TableCell className="py-5 pl-6">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-3.5 w-3.5 text-primary/50 shrink-0" />
+                    <span className="font-mono text-xs font-semibold text-primary/80 group-hover:text-primary transition-colors">
+                      {processo.numeroProcesso || '—'}
                     </span>
-                    <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity">
-                      <span className="text-[9px] uppercase font-bold tracking-tighter">ID: {processo.id.substring(0, 8)}</span>
-                    </div>
                   </div>
                 </TableCell>
 
-                {/* AUTOR */}
-                <TableCell className="py-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform duration-500">
-                      <User className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex flex-col max-w-[200px]">
-                      <span className="font-bold text-sm truncate">{processo.titulo}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Parte Ativa</span>
-                    </div>
+                {/* TÍTULO / PARTES */}
+                <TableCell className="py-5">
+                  <div className="flex flex-col gap-0.5 max-w-[300px]">
+                    <span className="font-semibold text-sm truncate group-hover:text-primary transition-colors">
+                      {processo.titulo}
+                    </span>
+                    {processo.valorCausa && processo.valorCausa > 0 && (
+                      <span className="text-[10px] text-emerald-500 font-semibold">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(processo.valorCausa)}
+                      </span>
+                    )}
                   </div>
                 </TableCell>
 
-                {/* RÉU */}
-                <TableCell className="py-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
-                      <Scale className="h-4 w-4 text-orange-500" />
+                {/* TRIBUNAL */}
+                <TableCell className="py-5">
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="h-3 w-3 text-muted-foreground/50" />
+                      <span className="text-xs font-medium">{processo.tribunal || '—'}</span>
                     </div>
-                    <div className="flex flex-col max-w-[200px]">
-                      <span className="font-bold text-sm truncate">{processo.requerido || 'NÃO IDENTIFICADO'}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase font-semibold">Parte Passiva</span>
-                    </div>
+                    {processo.comarca && (
+                      <span className="text-[10px] text-muted-foreground/60 pl-[18px]">{processo.comarca}</span>
+                    )}
                   </div>
                 </TableCell>
 
-                {/* TRIBUNAL / COMARCA */}
-                <TableCell className="py-6">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs font-semibold">{processo.tribunal || 'TJSP'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3 w-3 text-muted-foreground/50" />
-                      <span className="text-[10px] text-muted-foreground font-medium">{processo.comarca || 'Comarca não inf.'}</span>
-                    </div>
-                  </div>
+                {/* TIPO */}
+                <TableCell className="py-5">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {processo.tipoProcesso || '—'}
+                  </span>
                 </TableCell>
 
-                {/* FASE / STATUS */}
-                <TableCell className="py-6">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">{processo.faseProcessual || 'Fase Inicial'}</span>
-                    </div>
-                    <Badge variant="outline" className={cn("px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest border", getStatusColor(processo.status))}>
-                      {processo.status}
-                    </Badge>
-                  </div>
+                {/* STATUS */}
+                <TableCell className="py-5">
+                  <Badge variant="outline" className={cn("px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border", getStatusColor(processo.status))}>
+                    {getStatusLabel(processo.status)}
+                  </Badge>
                 </TableCell>
 
                 {/* AÇÕES */}
-                <TableCell className="py-6 pr-8 text-right" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="py-5 pr-6 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-10 w-10 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-all">
-                        <MoreHorizontal className="h-5 w-5" />
+                      <Button variant="ghost" className="h-8 w-8 p-0 rounded-full hover:bg-primary/10 hover:text-primary transition-all">
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="glass-card border-white/10 rounded-2xl w-52 p-2">
-                      <DropdownMenuItem onClick={() => onViewDetails(processo)} className="rounded-xl cursor-pointer py-3 hover:bg-primary/10 transition-colors">
-                        <ExternalLink className="mr-3 h-4 w-4" />
-                        <span className="font-semibold">Ver Detalhes</span>
+                    <DropdownMenuContent align="end" className="border-white/10 rounded-xl w-48 p-1">
+                      <DropdownMenuItem onClick={() => onViewDetails(processo)} className="rounded-lg cursor-pointer py-2.5">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        <span className="font-medium text-sm">Ver Detalhes</span>
                       </DropdownMenuItem>
                       <PermissionGuard permission="canEditProcesses">
-                        <DropdownMenuItem onClick={() => onEdit(processo)} className="rounded-xl cursor-pointer py-3 hover:bg-primary/10 transition-colors">
-                          <Edit className="mr-3 h-4 w-4 text-blue-500" />
-                          <span className="font-semibold">Editar</span>
+                        <DropdownMenuItem onClick={() => onEdit(processo)} className="rounded-lg cursor-pointer py-2.5">
+                          <Edit className="mr-2 h-4 w-4 text-blue-400" />
+                          <span className="font-medium text-sm">Editar</span>
                         </DropdownMenuItem>
                       </PermissionGuard>
                       <PermissionGuard permission="canDeleteProcesses">
                         <DropdownMenuSeparator className="bg-white/5" />
                         <DropdownMenuItem 
                           onClick={() => onDelete(processo)}
-                          className="rounded-xl cursor-pointer py-3 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors"
+                          className="rounded-lg cursor-pointer py-2.5 text-destructive focus:text-destructive focus:bg-destructive/10"
                         >
-                          <Trash2 className="mr-3 h-4 w-4" />
-                          <span className="font-semibold">Excluir</span>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span className="font-medium text-sm">Excluir</span>
                         </DropdownMenuItem>
                       </PermissionGuard>
                     </DropdownMenuContent>
@@ -169,6 +168,13 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
             ))}
           </TableBody>
         </Table>
+      </div>
+      
+      {/* Footer com contagem */}
+      <div className="px-6 py-3 border-t border-white/5 text-center">
+        <span className="text-[11px] text-muted-foreground/60 font-medium">
+          Mostrando {processos.length} de {processos.length} processo(s)
+        </span>
       </div>
     </div>
   );
