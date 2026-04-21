@@ -37,7 +37,7 @@ const isProcessActive = (process: any) => {
 /**
  * Tenta extrair nomes das partes de um texto HTML vindo do PJe
  */
-const extractPartesFromTexto = (html: string): string | null => {
+const extractPartesFromTexto = (html: string): { autor: string | null; reu: string | null } | null => {
   if (!html) return null;
   
   // Limpar tags HTML básicas para facilitar a busca
@@ -50,7 +50,7 @@ const extractPartesFromTexto = (html: string): string | null => {
   if (ativoMatch && passivoMatch) {
     const autor = ativoMatch[1].split('Advogado')[0].split('Polo')[0].trim();
     const reu = passivoMatch[1].split('Advogado')[0].split('Polo')[0].trim();
-    if (autor && reu) return `${autor} x ${reu}`;
+    if (autor && reu) return { autor, reu };
   }
   
   // Padrão alternativo: REQUERENTE: ... REQUERIDO: ...
@@ -58,7 +58,7 @@ const extractPartesFromTexto = (html: string): string | null => {
   const respMatch = cleanText.match(/REQUERIDO:\s*([^<]+)/i);
   
   if (reqMatch && respMatch) {
-    return `${reqMatch[1].trim()} x ${respMatch[1].trim()}`;
+    return { autor: reqMatch[1].trim(), reu: respMatch[1].trim() };
   }
 
   // Padrão: "proposta por NOME" / "em face de NOME"
@@ -66,7 +66,7 @@ const extractPartesFromTexto = (html: string): string | null => {
   const emFaceMatch = cleanText.match(/em face de\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\.|$)/i);
   
   if (propostaMatch && emFaceMatch) {
-    return `${propostaMatch[1].trim()} x ${emFaceMatch[1].trim()}`;
+    return { autor: propostaMatch[1].trim(), reu: emFaceMatch[1].trim() };
   }
 
   return null;
@@ -115,6 +115,8 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
     numeroProcesso: source.numeroProcesso || 'N/A',
     titulo: `${autores} x ${reus}`,
     partes: `${autores} x ${reus}`,
+    autor: autores,
+    reu: reus,
     tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
     ultimoAndamento: lastMovement ? {
       descricao: lastMovement.descricao,
@@ -201,9 +203,10 @@ serve(async (req) => {
             if (!numProc) return null;
             
             // Tenta extrair nomes do texto se o título for genérico
-            const extractedPartes = extractPartesFromTexto(item.texto_comunicacao || item.texto || '');
+            const extractedPartesInfo = extractPartesFromTexto(item.texto_comunicacao || item.texto || '');
+            const combinedExtracted = extractedPartesInfo ? `${extractedPartesInfo.autor} x ${extractedPartesInfo.reu}` : null;
             const formattedNum = formatCNJ(numProc);
-            const rawTitle = item.titulo_processo || item.tituloProcesso || extractedPartes || formattedNum;
+            const rawTitle = item.titulo_processo || item.tituloProcesso || combinedExtracted || formattedNum;
             const finalTitle = cleanTitle(rawTitle);
 
             // Determinar tribunal real pela sigla/nome ou pelo número do processo
@@ -224,7 +227,9 @@ serve(async (req) => {
               id: item.id || numProc,
               numeroProcesso: numProc,
               titulo: finalTitle,
-              partes: extractedPartes || finalTitle,
+              partes: combinedExtracted || finalTitle,
+              autor: extractedPartesInfo?.autor || '',
+              reu: extractedPartesInfo?.reu || '',
               tribunal: tribunalReal,
               ultimoAndamento: {
                 descricao: item.texto_comunicacao || item.textoComunicacao || 'Comunicação PJe',
