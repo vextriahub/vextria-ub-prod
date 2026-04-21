@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessos } from '@/hooks/useProcessos';
@@ -154,7 +154,16 @@ const Processos = React.memo(() => {
   }, [filters, cnjSearch]);
 
   const [isNovoProcessoOpen, setIsNovoProcessoOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('carteira');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'carteira');
+
+  // Sincronizar aba com URL
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && (tab === 'carteira' || tab === 'novo')) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Handlers - todos usando useCallback para evitar re-criações
   const handleAddProcesso = useCallback(async (novoProcesso: any) => {
@@ -361,31 +370,10 @@ const Processos = React.memo(() => {
               </h1>
             </div>
             <p className="text-sm md:text-lg text-muted-foreground font-medium">
-              Gerencie sua carteira ou importe novos processos com inteligência.
+              {activeTab === 'carteira' 
+                ? "Gerencie sua carteira de processos com inteligência." 
+                : "Importe novos processos ou cadastre manualmente."}
             </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <TabsList className="bg-white/5 border border-white/10 p-1 h-12 rounded-2xl">
-              <TabsTrigger value="carteira" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold gap-2">
-                <List className="h-4 w-4" />
-                Meus Processos
-              </TabsTrigger>
-              <TabsTrigger value="novo" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-white font-bold gap-2">
-                <Download className="h-4 w-4" />
-                Importar / Novo
-              </TabsTrigger>
-            </TabsList>
-            
-            {activeTab === 'carteira' && (
-              <Button 
-                onClick={() => setActiveTab('novo')}
-                className="h-12 px-6 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-              >
-                <Plus className="h-5 w-5" />
-                Novo Processo
-              </Button>
-            )}
           </div>
         </div>
 

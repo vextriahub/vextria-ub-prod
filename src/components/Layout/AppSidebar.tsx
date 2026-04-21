@@ -10,6 +10,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   UserCheck,
   Tag,
   BarChart3,
@@ -40,6 +41,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +53,15 @@ import { usePlanFeatures } from '@/hooks/usePlanFeatures';
 
 const menuItems = [
   { title: "Início", url: "/dashboard", icon: Home },
-  { title: "Processos", url: "/processos", icon: FileText },
+  { 
+    title: "Processos", 
+    url: "/processos", 
+    icon: FileText,
+    items: [
+      { title: "Meus Processos", url: "/processos?tab=carteira" },
+      { title: "Importar / Novo", url: "/processos?tab=novo" },
+    ]
+  },
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "CRM", url: "/crm", icon: UserPlus },
   { title: "Agenda", url: "/agenda", icon: CalendarDays },
@@ -217,10 +231,56 @@ export function AppSidebar() {
               <SidebarMenu className="space-y-1">
                 {allMenuItems.map((item) => {
                   const isActive = isLinkActive(item.url);
+                  const hasSubItems = item.items && item.items.length > 0;
+                  
+                  if (hasSubItems) {
+                    return (
+                      <Collapsible
+                        key={item.title}
+                        asChild
+                        defaultOpen={location.pathname.startsWith(item.url)}
+                        className="group/collapsible"
+                      >
+                        <SidebarMenuItem>
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuButton tooltip={item.title} className={getNavClasses(isActive)}>
+                              <item.icon className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                              {(!isCollapsed || isMobile) && (
+                                <>
+                                  <span className="truncate flex-1">{item.title}</span>
+                                  <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+                                </>
+                              )}
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-white/10 px-2.5 py-0.5 mt-1">
+                              {item.items.map((subItem) => (
+                                <NavLink
+                                  key={subItem.title}
+                                  to={subItem.url}
+                                  className={({ isActive }) => 
+                                    `flex h-9 items-center gap-2 rounded-lg px-3 text-sm transition-all duration-300 ${
+                                      isActive 
+                                        ? "text-primary font-bold bg-primary/10" 
+                                        : "text-sidebar-foreground/70 hover:text-primary hover:bg-primary/5"
+                                    }`
+                                  }
+                                >
+                                  {subItem.title}
+                                </NavLink>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </SidebarMenuItem>
+                      </Collapsible>
+                    );
+                  }
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className="p-0" isActive={isActive}>
-                        <NavLink to={item.url} end className={() => getNavClasses(isActive)}>
+                        <NavLink to={item.url} end={!item.url.includes('?')} className={() => getNavClasses(isActive)}>
                           <item.icon className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
                           {(!isCollapsed || isMobile) && <span className="truncate">{item.title}</span>}
                         </NavLink>
