@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useMultiSelect } from "@/hooks/useMultiSelect";
 import { Client } from "@/types/client";
 import { Loader2, Users, Plus, Search } from "lucide-react";
@@ -36,6 +37,8 @@ const Clientes = () => {
     requestMultipleDelete, 
     isEmpty: dbIsEmpty 
   } = useClientes();
+  const { isAdmin, isOfficeAdmin } = usePermissions();
+  const hasAdminRights = isAdmin || isOfficeAdmin;
   
   // Mapeamento dos dados do banco para o formato da UI
   const clients = dbClientes.map(c => ({
@@ -378,8 +381,11 @@ const Clientes = () => {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        title="Excluir Clientes"
-        description={`Tem certeza que deseja excluir ${multiSelect.selectedCount} cliente(s)? Clientes com processos associados não podem ser excluídos.`}
+        title={hasAdminRights ? "Excluir Clientes Definitivamente" : "Solicitar Exclusão de Clientes"}
+        description={hasAdminRights 
+          ? `Tem certeza que deseja excluir ${multiSelect.selectedCount} cliente(s)? Esta ação não poderá ser desfeita.` 
+          : `Você está solicitando a exclusão de ${multiSelect.selectedCount} cliente(s). Um administrador precisará aprovar esta solicitação.`
+        }
         isLoading={isDeleting}
       />
     </div>

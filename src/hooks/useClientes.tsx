@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Cliente, NovoCliente, DatabaseHookResult, ClienteComProcessos } from '@/types/database';
 
 export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoCliente> {
@@ -9,6 +10,7 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const { isAdmin, isOfficeAdmin } = usePermissions();
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -177,35 +179,55 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
 
     try {
       const recordsToDelete = data.filter(item => ids.includes(item.id));
+      const hasAdminRights = isAdmin || isOfficeAdmin;
 
-      const { error: updateError } = await supabase
-        .from('clientes')
-        .update({ deletado_pendente: true })
-        .in('id', ids)
-        .eq('office_id', user.office_id);
+      if (hasAdminRights) {
+        // Direct Deletion (Software Delete)
+        const { error: updateError } = await supabase
+          .from('clientes')
+          .update({ deletado: true })
+          .in('id', ids)
+          .eq('office_id', user.office_id);
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-      const exclusionRecords = recordsToDelete.map(record => ({
-        user_id: user.id,
-        tabela: 'clientes',
-        registro_id: record.id,
-        dados_registro: record,
-        motivo: motivo,
-      }));
+        setData(prev => prev.filter(item => !ids.includes(item.id)));
 
-      const { error: exclusionError } = await supabase
-        .from('exclusoes_pendentes')
-        .insert(exclusionRecords);
+        toast({
+          title: 'Clientes excluídos',
+          description: `${ids.length} cliente(s) foram excluídos com sucesso.`,
+        });
+      } else {
+        // Pending Deletion for non-admins
+        const { error: updateError } = await supabase
+          .from('clientes')
+          .update({ deletado_pendente: true })
+          .in('id', ids)
+          .eq('office_id', user.office_id);
 
-      if (exclusionError) throw exclusionError;
+        if (updateError) throw updateError;
 
-      setData(prev => prev.filter(item => !ids.includes(item.id)));
+        const exclusionRecords = recordsToDelete.map(record => ({
+          user_id: user.id,
+          tabela: 'clientes',
+          registro_id: record.id,
+          dados_registro: record,
+          motivo: motivo,
+        }));
 
-      toast({
-        title: 'Solicitações de exclusão enviadas',
-        description: `${ids.length} solicitação(ões) foram enviadas para aprovação.`,
-      });
+        const { error: exclusionError } = await supabase
+          .from('exclusoes_pendentes')
+          .insert(exclusionRecords);
+
+        if (exclusionError) throw exclusionError;
+
+        setData(prev => prev.filter(item => !ids.includes(item.id)));
+
+        toast({
+          title: 'Solicitações de exclusão enviadas',
+          description: `${ids.length} solicitação(ões) enviadas para aprovação do administrador.`,
+        });
+      }
       
       return true;
     } catch (err) {
