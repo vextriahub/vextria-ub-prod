@@ -71,7 +71,6 @@ const Clientes = () => {
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isRecovering, setIsRecovering] = useState(false);
   const showEmptyState = dbIsEmpty && !loading;
 
   // Atualizar lista filtrada quando os dados ou a busca mudarem
@@ -228,36 +227,6 @@ const Clientes = () => {
     }
   };
 
-  const handleRecoverZombies = async () => {
-    if (!user) return;
-    setIsRecovering(true);
-    try {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('id')
-        .eq('office_id', user.office_id)
-        .eq('deletado_pendente', true);
-        
-      if (data && data.length > 0) {
-        await supabase
-          .from('clientes')
-          .update({ deletado_pendente: false })
-          .eq('office_id', user.office_id)
-          .eq('deletado_pendente', true);
-          
-        window.location.reload();
-      } else {
-        toast({
-          title: "Nenhum fantasma encontrado",
-          description: "Não há clientes presos no limbo.",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsRecovering(false);
-    }
-  };
 
   // Handlers de UI
   const handleSearchChange = (value: string) => {
@@ -288,17 +257,6 @@ const Clientes = () => {
         </div>
         
         <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
-          {hasAdminRights && (
-             <Button 
-               variant="outline" 
-               size="lg" 
-               className="rounded-xl h-12 px-6 font-bold text-orange-400 border-orange-500/30 hover:bg-orange-500/10"
-               onClick={handleRecoverZombies}
-               disabled={isRecovering}
-             >
-               {isRecovering ? "Recuperando..." : "👻 Caça-Fantasmas"}
-             </Button>
-          )}
           <Button 
             onClick={() => setNovoClienteDialogOpen(true)}
             size="lg"
