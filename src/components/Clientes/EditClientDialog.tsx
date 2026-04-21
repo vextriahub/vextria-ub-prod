@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Client {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -30,6 +31,7 @@ interface EditClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (client: Client) => void;
+  onDelete?: (clientId: string) => void;
 }
 
 const origensCliente = [
@@ -51,7 +53,7 @@ const calcularProcessos = (clienteId: number) => {
   return { processosAtivos, processosEncerrados };
 };
 
-export const EditClientDialog = ({ client, open, onOpenChange, onSave }: EditClientDialogProps) => {
+export const EditClientDialog = ({ client, open, onOpenChange, onSave, onDelete }: EditClientDialogProps) => {
   const [formData, setFormData] = useState<Client | null>(client);
 
   useEffect(() => {
@@ -263,13 +265,29 @@ export const EditClientDialog = ({ client, open, onOpenChange, onSave }: EditCli
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave}>
-            Salvar Alterações
-          </Button>
+        <DialogFooter className="flex sm:justify-between items-center w-full mt-4">
+          {onDelete && client ? (
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={() => {
+                onOpenChange(false);
+                onDelete(client.id);
+              }}
+              className="flex gap-2 bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-400 border border-red-500/20"
+            >
+              <Trash2 className="h-4 w-4" />
+              Excluir
+            </Button>
+          ) : <div />}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave}>
+              Salvar Alterações
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -66,6 +66,7 @@ const Clientes = () => {
   const [novoClienteDialogOpen, setNovoClienteDialogOpen] = useState(false);
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const showEmptyState = dbIsEmpty && !loading;
@@ -194,13 +195,21 @@ const Clientes = () => {
     setDeleteDialogOpen(true);
   };
 
+  const handleDeleteSingleClient = (clientId: string) => {
+    setClientToDelete(clientId);
+    setDeleteDialogOpen(true);
+  };
+
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
     try {
-      const selectedIds = multiSelect.getSelectedItems().map(client => client.id);
+      const selectedIds = clientToDelete 
+        ? [clientToDelete] 
+        : multiSelect.getSelectedItems().map(client => client.id);
+        
       const success = await requestMultipleDelete(selectedIds, "Exclusão solicitada pelo usuário");
       
-      if (success) {
+      if (success && !clientToDelete) {
         multiSelect.clearSelection();
       }
     } catch (error) {
@@ -212,6 +221,7 @@ const Clientes = () => {
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
+      setClientToDelete(null);
     }
   };
 
@@ -337,6 +347,7 @@ const Clientes = () => {
                 onViewProcesses={handleViewProcesses}
                 onViewAtendimentos={handleViewAtendimentos}
                 onViewConsultivo={handleViewConsultivo}
+                onDeleteClient={handleDeleteSingleClient}
               />
             ) : (
               <ClientsTable
@@ -348,6 +359,7 @@ const Clientes = () => {
                 onViewProcesses={handleViewProcesses}
                 onViewAtendimentos={handleViewAtendimentos}
                 onViewConsultivo={handleViewConsultivo}
+                onDeleteClient={handleDeleteSingleClient}
               />
             )}
           </div>
@@ -369,6 +381,7 @@ const Clientes = () => {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={handleSaveClient}
+        onDelete={handleDeleteSingleClient}
       />
 
       <NovoClienteDialog
@@ -379,12 +392,15 @@ const Clientes = () => {
 
       <DeleteConfirmDialog
         open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setClientToDelete(null);
+        }}
         onConfirm={handleConfirmDelete}
-        title={hasAdminRights ? "Excluir Clientes Definitivamente" : "Solicitar Exclusão de Clientes"}
+        title={hasAdminRights ? "Excluir Cliente(s) Definitivamente" : "Solicitar Exclusão de Cliente(s)"}
         description={hasAdminRights 
-          ? `Tem certeza que deseja excluir ${multiSelect.selectedCount} cliente(s)? Esta ação não poderá ser desfeita.` 
-          : `Você está solicitando a exclusão de ${multiSelect.selectedCount} cliente(s). Um administrador precisará aprovar esta solicitação.`
+          ? `Tem certeza que deseja excluir ${clientToDelete ? 'este' : multiSelect.selectedCount} cliente(s)? Esta ação não poderá ser desfeita.` 
+          : `Você está solicitando a exclusão de ${clientToDelete ? 'este' : multiSelect.selectedCount} cliente(s). Um administrador precisará aprovar esta solicitação.`
         }
         isLoading={isDeleting}
       />

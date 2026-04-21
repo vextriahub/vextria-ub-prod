@@ -4,8 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Scale, Activity, FileText } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Edit, Scale, Activity, FileText, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface ClientsTableProps {
   clients: Client[];
@@ -16,6 +16,7 @@ interface ClientsTableProps {
   onViewProcesses: (clientId: string, clientName: string) => void;
   onViewAtendimentos: (clientId: string, clientName: string) => void;
   onViewConsultivo: (clientId: string, clientName: string) => void;
+  onDeleteClient?: (clientId: string) => void;
 }
 
 export const ClientsTable: React.FC<ClientsTableProps> = ({
@@ -26,7 +27,8 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
   onEditClient,
   onViewProcesses,
   onViewAtendimentos,
-  onViewConsultivo
+  onViewConsultivo,
+  onDeleteClient
 }) => {
   return (
     <div className="rounded-md border border-white/5 bg-black/20 backdrop-blur-sm overflow-hidden">
@@ -127,6 +129,17 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
                       >
                         <FileText className="h-4 w-4 mr-2" /> Acessar Consultivo
                       </DropdownMenuItem>
+                      {onDeleteClient && (
+                        <>
+                          <DropdownMenuSeparator className="bg-white/10" />
+                          <DropdownMenuItem 
+                            onClick={(e) => { e.stopPropagation(); onDeleteClient(client.id); }}
+                            className="text-red-400 hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" /> Excluir Cliente
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

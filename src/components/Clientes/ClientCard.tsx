@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users } from 'lucide-react';
+import { Users, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ interface ClientCardProps {
   onViewProcesses: (clientId: number, clientName: string) => void;
   onViewAtendimentos: (clientId: number, clientName: string) => void;
   onViewConsultivo: (clientId: number, clientName: string) => void;
+  onDeleteClient?: (clientId: number) => void;
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({
@@ -26,7 +27,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onEditClient,
   onViewProcesses,
   onViewAtendimentos,
-  onViewConsultivo
+  onViewConsultivo,
+  onDeleteClient
 }) => {
   return (
     <Card className={`relative bg-black/20 border-white/5 backdrop-blur-md hover:bg-white/5 hover:border-white/10 hover:shadow-premium hover:-translate-y-1 transition-all duration-300 overflow-hidden group ${
@@ -53,9 +55,26 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                 >
                   {client.name}
                 </CardTitle>
-                <Badge className={`text-[10px] uppercase font-bold tracking-wider ${client.status === "ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-white/5 text-white/40 border-white/10"}`} variant="outline">
-                  {client.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {onDeleteClient && (
+                    <PermissionGuard permission="canEditClients">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-white/30 hover:text-red-400 hover:bg-red-500/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteClient(client.id);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </PermissionGuard>
+                  )}
+                  <Badge className={`text-[10px] uppercase font-bold tracking-wider ${client.status === "ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-white/5 text-white/40 border-white/10"}`} variant="outline">
+                    {client.status}
+                  </Badge>
+                </div>
               </div>
               <p className="text-sm text-white/40 font-medium truncate">{client.email || 'Sem e-mail'}</p>
             </div>
