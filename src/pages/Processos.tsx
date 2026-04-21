@@ -201,27 +201,28 @@ const Processos = React.memo(() => {
         const autorNome = partesArray[0] || proc.titulo;
         const reuNome = partesArray[1] || proc.requerido || '';
 
+        // Build observacoes with all extra info that doesn't have a DB column
+        const obsLines = [];
+        if (reuNome) obsLines.push(`Réu: ${reuNome}`);
+        if (proc.ultimoAndamento?.descricao) obsLines.push(`Último andamento: ${proc.ultimoAndamento.descricao}`);
+        obsLines.push('Importado via OAB');
+
         const success = await create({
           titulo: autorNome,
           clienteId: (proc as any).clienteId || null,
           status: 'Em andamento',
           numeroProcesso: proc.numeroProcesso,
-          tipoProcesso: proc.faseProcessual || 'Cível',
-          faseProcessual: proc.faseProcessual || 'Fase Inicial',
-          responsavelId: user?.id,
+          tipoProcesso: proc.faseProcessual || proc.tipoProcesso || 'Cível',
           proximoPrazo: null,
           valorCausa: proc.valorCausa || 0,
-          observacoes: `Importado via OAB. Último andamento: ${proc.ultimoAndamento?.descricao || 'N/A'}`,
+          descricao: obsLines.join(' | '),
           tribunal: proc.tribunal,
           vara: proc.vara || '',
           comarca: proc.comarca || '',
-          requerido: reuNome,
-          segredoJustica: false,
-          justicaGratuita: false,
-          dataInicio: new Date().toISOString().split('T')[0]
         } as any);
         if (success) successCount++;
       }
+
       
       if (successCount > 0) {
         toast({

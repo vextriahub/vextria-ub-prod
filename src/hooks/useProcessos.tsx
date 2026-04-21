@@ -11,51 +11,88 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Map database row -> frontend Processo
+  // IMPORTANT: Only map columns that ACTUALLY EXIST in the database table.
+  // Real columns: id, user_id, cliente_id, numero_processo, titulo, status,
+  //   tipo_processo, tribunal, comarca, sistema_tribunal, vara, valor_causa,
+  //   data_inicio, data_ultima_atualizacao, proximo_prazo, etiquetas,
+  //   observacoes, deletado, deletado_pendente, created_at, updated_at, office_id
   const mapDatabaseToProcesso = (dbRecord: any): Processo => {
     return {
       id: dbRecord.id,
       titulo: dbRecord.titulo,
       cliente: dbRecord.cliente?.nome || 'Sem cliente',
       clienteId: dbRecord.cliente_id,
-      status: dbRecord.status,
-      dataInicio: dbRecord.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      status: dbRecord.status === 'ativo' ? 'Em andamento' : dbRecord.status,
+      dataInicio: dbRecord.data_inicio || dbRecord.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
       proximoPrazo: dbRecord.proximo_prazo,
-      descricao: dbRecord.descricao,
-      valorCausa: dbRecord.valor_causa,
+      descricao: dbRecord.observacoes,
+      valorCausa: dbRecord.valor_causa ? Number(dbRecord.valor_causa) : undefined,
       numeroProcesso: dbRecord.numero_processo,
       tipoProcesso: dbRecord.tipo_processo,
-      faseProcessual: dbRecord.fase_processual,
-      responsavelId: dbRecord.responsavel_id,
-      responsavelNome: dbRecord.responsavel?.full_name || 'Desconhecido',
-      ultimaMovimentacao: dbRecord.updated_at?.split('T')[0] || dbRecord.created_at?.split('T')[0],
+      faseProcessual: dbRecord.tipo_processo, // No dedicated column; reuse tipo_processo
+      responsavelId: dbRecord.user_id,
+      responsavelNome: undefined, // No join available
+      ultimaMovimentacao: dbRecord.data_ultima_atualizacao || dbRecord.updated_at?.split('T')[0],
       tribunal: dbRecord.tribunal,
       vara: dbRecord.vara,
       comarca: dbRecord.comarca,
-      requerido: dbRecord.requerido,
-      segredoJustica: dbRecord.segredo_justica,
-      justicaGratuita: dbRecord.justica_gratuita,
+      requerido: undefined, // Column does not exist in DB; stored in observacoes
+      segredoJustica: false,
+      justicaGratuita: false,
       observacoes: dbRecord.observacoes
     };
   };
 
   const fetchData = useCallback(async () => {
-    if (!user || !user.office_id) {
-      if (!user) setData([]);
+    if (!user) {
+      setData([]);
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      const { data: result, error: fetchError } = await supabase
-        .from('processos')
-        .select(`
-          *,
-          cliente:clientes!cliente_id(nome)
-        `)
-        .eq('office_id', user.office_id)
-        .eq('deletado', false)
-        .order('created_at', { ascending: false });
+
+      // Try office-based query first (new RLS), fallback to user-based
+      let result: any[] | null = null;
+      let fetchError: any = null;
+
+      if (user.office_id) {
+        const resp = await supabase
+          .from('processos')
+          .select(`
+            *,
+            cliente:clientes!cliente_id(nome)
+          `)
+          .eq('office_id', user.office_id)
+          .eq('deletado', false)
+          .order('created_at', { ascending: false });
+
+        result = resp.data;
+        fetchError = resp.error;
+      }
+
+      // Fallback: if office query fails or returns nothing, try user_id based
+      if (fetchError || !result || result.length === 0) {
+        console.log('📋 Fallback: buscando processos por user_id');
+        const resp2 = await supabase
+          .from('processos')
+          .select(`
+            *,
+            cliente:clientes!cliente_id(nome)
+          `)
+          .eq('user_id', user.id)
+          .eq('deletado', false)
+          .order('created_at', { ascending: false });
+
+        if (!resp2.error) {
+          result = resp2.data;
+          fetchError = null;
+        } else {
+          fetchError = resp2.error;
+        }
+      }
 
       if (fetchError) {
         console.error('Erro detalhado Supabase (Processos):', fetchError);
@@ -83,34 +120,41 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     if (!user) return null;
 
     try {
+      // Build insert payload with ONLY columns that exist in the database
+      const insertPayload: Record<string, any> = {
+        user_id: user.id,
+        titulo: newRecord.titulo,
+        numero_processo: newRecord.numeroProcesso || '',
+        status: newRecord.status === 'Em andamento' ? 'ativo' : newRecord.status,
+        tipo_processo: newRecord.tipoProcesso,
+        tribunal: newRecord.tribunal,
+        vara: newRecord.vara,
+        comarca: newRecord.comarca,
+        valor_causa: newRecord.valorCausa,
+        proximo_prazo: newRecord.proximoPrazo,
+        observacoes: newRecord.descricao || (newRecord as any).observacoes || '',
+      };
+
+      // Only include optional FK fields if they have values
+      if (newRecord.clienteId) {
+        insertPayload.cliente_id = newRecord.clienteId;
+      }
+
+      // Include office_id if user has one
+      if (user.office_id) {
+        insertPayload.office_id = user.office_id;
+      }
+
       const { data: result, error } = await supabase
         .from('processos')
-        .insert([
-          {
-            office_id: user.office_id,
-            user_id: user.id,
-            titulo: newRecord.titulo,
-            cliente_id: newRecord.clienteId,
-            status: newRecord.status,
-            numero_processo: newRecord.numeroProcesso,
-            tipo_processo: newRecord.tipoProcesso,
-            fase_processual: newRecord.faseProcessual,
-            responsavel_id: newRecord.responsavelId || user.id,
-            proximo_prazo: newRecord.proximoPrazo,
-            valor_causa: newRecord.valorCausa,
-            observacoes: newRecord.descricao || (newRecord as any).observacoes,
-            tribunal: newRecord.tribunal,
-            vara: newRecord.vara,
-            comarca: newRecord.comarca,
-            requerido: newRecord.requerido,
-            segredo_justica: newRecord.segredoJustica,
-            justica_gratuita: newRecord.justicaGratuita
-          }
-        ])
+        .insert([insertPayload])
         .select('*')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro detalhado ao criar processo:', error);
+        throw error;
+      }
 
       const mapped = mapDatabaseToProcesso(result);
       setData(prev => [mapped, ...prev]);
@@ -131,31 +175,38 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     if (!user) return null;
 
     try {
-      const { data: result, error } = await supabase
+      // Build update payload with ONLY columns that exist
+      const updatePayload: Record<string, any> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      if (updates.titulo !== undefined) updatePayload.titulo = updates.titulo;
+      if (updates.clienteId !== undefined) updatePayload.cliente_id = updates.clienteId;
+      if (updates.status !== undefined) updatePayload.status = updates.status === 'Em andamento' ? 'ativo' : updates.status;
+      if (updates.numeroProcesso !== undefined) updatePayload.numero_processo = updates.numeroProcesso;
+      if (updates.tipoProcesso !== undefined) updatePayload.tipo_processo = updates.tipoProcesso;
+      if (updates.tribunal !== undefined) updatePayload.tribunal = updates.tribunal;
+      if (updates.vara !== undefined) updatePayload.vara = updates.vara;
+      if (updates.comarca !== undefined) updatePayload.comarca = updates.comarca;
+      if (updates.valorCausa !== undefined) updatePayload.valor_causa = updates.valorCausa;
+      if (updates.proximoPrazo !== undefined) updatePayload.proximo_prazo = updates.proximoPrazo;
+      if (updates.descricao !== undefined || (updates as any).observacoes !== undefined) {
+        updatePayload.observacoes = updates.descricao || (updates as any).observacoes;
+      }
+
+      let query = supabase
         .from('processos')
-        .update({
-          titulo: updates.titulo,
-          cliente_id: updates.clienteId,
-          status: updates.status,
-          numero_processo: updates.numeroProcesso,
-          tipo_processo: updates.tipoProcesso,
-          fase_processual: updates.faseProcessual,
-          responsavel_id: updates.responsavelId,
-          proximo_prazo: updates.proximoPrazo,
-          valor_causa: updates.valorCausa,
-          observacoes: updates.descricao || (updates as any).observacoes,
-          tribunal: updates.tribunal,
-          vara: updates.vara,
-          comarca: updates.comarca,
-          requerido: updates.requerido,
-          segredo_justica: updates.segredoJustica,
-          justica_gratuita: updates.justicaGratuita,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .eq('office_id', user.office_id)
-        .select('*')
-        .single();
+        .update(updatePayload)
+        .eq('id', id);
+
+      // Use the right filter based on available context
+      if (user.office_id) {
+        query = query.eq('office_id', user.office_id);
+      } else {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data: result, error } = await query.select('*').single();
 
       if (error) throw error;
 
@@ -188,11 +239,18 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
       const recordToDelete = data.find(item => item.id === id);
       if (!recordToDelete) return false;
 
-      const { error: updateError } = await supabase
+      let deleteQuery = supabase
         .from('processos')
         .update({ deletado_pendente: true })
-        .eq('id', id)
-        .eq('office_id', user.office_id);
+        .eq('id', id);
+
+      if (user.office_id) {
+        deleteQuery = deleteQuery.eq('office_id', user.office_id);
+      } else {
+        deleteQuery = deleteQuery.eq('user_id', user.id);
+      }
+
+      const { error: updateError } = await deleteQuery;
 
       if (updateError) throw updateError;
 
@@ -235,11 +293,18 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     try {
       const recordsToDelete = data.filter(item => ids.includes(item.id));
 
-      const { error: updateError } = await supabase
+      let deleteQuery = supabase
         .from('processos')
         .update({ deletado_pendente: true })
-        .in('id', ids)
-        .eq('office_id', user.office_id);
+        .in('id', ids);
+
+      if (user.office_id) {
+        deleteQuery = deleteQuery.eq('office_id', user.office_id);
+      } else {
+        deleteQuery = deleteQuery.eq('user_id', user.id);
+      }
+
+      const { error: updateError } = await deleteQuery;
 
       if (updateError) throw updateError;
 

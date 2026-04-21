@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   Sheet,
   SheetContent,
@@ -192,7 +192,7 @@ export const ProcessoDetailsDrawer: React.FC<ProcessoDetailsDrawerProps> = ({
                 <span>Observações</span>
               </div>
               <div className="p-4 bg-muted/20 rounded-xl border italic text-sm text-muted-foreground">
-                {processo.descricao || 'Nenhuma observação cadastrada.'}
+                {(processo as any).observacoes || processo.descricao || 'Nenhuma observação cadastrada.'}
               </div>
             </div>
 
