@@ -352,10 +352,12 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       className="border-white/20 data-[state=checked]:bg-primary"
                     />
                   </TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Processo / Partes</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Processo</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Parte Contrária</TableHead>
                   <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold min-w-[180px]">Cliente</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Fase Processual</TableHead>
+                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Tribunal</TableHead>
                   <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Andamento</TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Classe</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -369,22 +371,25 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       />
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1 py-1">
-                        <span className="font-mono text-[10px] font-bold text-primary">{proc.numeroProcesso}</span>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="text-xs font-medium line-clamp-1 text-white/90 cursor-default">
-                                {proc.partes}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-slate-800 border-white/10 text-white">
+                      <span className="font-mono text-[10px] font-bold text-primary whitespace-nowrap">
+                        {proc.numeroProcesso.replace(/[.-]/g, '').length === 20 
+                          ? proc.numeroProcesso.replace(/[.-]/g, '').replace(/^(\d{7})(\d{2})(\d{4})(\d)(\d{2})(\d{4})$/, '$1-$2.$3.$4.$5.$6')
+                          : proc.numeroProcesso}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-[10px] font-medium line-clamp-2 text-white/90 cursor-default max-w-[200px]">
                               {proc.partes}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <span className="text-[9px] text-white/40 truncate max-w-[200px]">{proc.tribunal} {proc.vara && `• ${proc.vara}`}</span>
-                      </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-slate-800 border-white/10 text-white max-w-sm">
+                            {proc.partes}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableCell>
                     <TableCell>
                       <Select 
@@ -402,6 +407,16 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       </Select>
                     </TableCell>
                     <TableCell>
+                      <Badge variant="outline" className="text-[8px] h-5 uppercase font-bold bg-white/5 border-white/10 text-white/40 whitespace-nowrap">
+                        {proc.faseProcessual}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-[10px] text-white/60 truncate max-w-[120px] inline-block font-medium">
+                        {proc.tribunal} {proc.vara && `• ${proc.vara}`}
+                      </span>
+                    </TableCell>
+                    <TableCell>
                       {proc.ultimoAndamento ? (
                         <div className="flex flex-col gap-0.5 max-w-[200px]">
                           <span className="text-[9px] text-primary/70 font-bold uppercase">
@@ -410,11 +425,6 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                           <span className="text-[10px] line-clamp-1 italic text-white/50">{proc.ultimoAndamento.descricao}</span>
                         </div>
                       ) : <span className="text-white/20 italic text-[10px]">Sem andamento</span>}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-[8px] h-5 uppercase font-bold bg-white/5 border-white/10 text-white/40 whitespace-nowrap">
-                        {proc.faseProcessual}
-                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -481,7 +491,7 @@ export const JudicialSyncDialog: React.FC<JudicialSyncDialogProps> = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] bg-background/45 backdrop-blur-3xl border-white/5 p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
+      <DialogContent className="max-w-[1200px] w-[95vw] bg-background/45 backdrop-blur-3xl border-white/5 p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
         <DialogHeader className="p-8 pb-4 border-b border-white/5 bg-transparent">
           <div className="flex items-center gap-4">
             <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
