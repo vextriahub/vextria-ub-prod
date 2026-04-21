@@ -56,8 +56,8 @@ export const ProcessoDetailsDrawer: React.FC<ProcessoDetailsDrawerProps> = ({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md md:max-w-xl p-0 flex flex-col">
-        <SheetHeader className="text-left space-y-4 p-6 pb-2">
+      <SheetContent side="bottom" className="h-screen w-screen max-w-none p-0 flex flex-col rounded-none">
+        <SheetHeader className="text-left space-y-4 p-6 pb-2 max-w-4xl mx-auto w-full">
           <div className="flex items-center justify-between mt-4">
             <Badge className={getStatusColor(processo.status)}>
               {processo.status}
@@ -69,14 +69,16 @@ export const ProcessoDetailsDrawer: React.FC<ProcessoDetailsDrawerProps> = ({
           <SheetTitle className="text-2xl font-bold leading-tight">
             {processo.titulo}
           </SheetTitle>
-          <SheetDescription className="flex items-center gap-2 font-mono text-sm">
-            <FileText className="h-4 w-4" />
-            {processo.numeroProcesso || 'Não informado'}
-          </SheetDescription>
+          {processo.numeroProcesso && (
+            <SheetDescription className="flex items-center gap-2 font-mono text-sm">
+              <FileText className="h-4 w-4" />
+              {processo.numeroProcesso}
+            </SheetDescription>
+          )}
         </SheetHeader>
 
         <ScrollArea className="flex-1 px-6">
-          <div className="py-6 space-y-8">
+          <div className="py-6 space-y-8 max-w-4xl mx-auto w-full">
             {/* Informações Principais */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10">
