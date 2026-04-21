@@ -197,8 +197,12 @@ const Processos = React.memo(() => {
     let successCount = 0;
     try {
       for (const proc of processes) {
+        const partesArray = proc.titulo?.split(' x ') || [];
+        const autorNome = partesArray[0] || proc.titulo;
+        const reuNome = partesArray[1] || proc.requerido || '';
+
         const success = await create({
-          titulo: proc.titulo,
+          titulo: autorNome,
           clienteId: (proc as any).clienteId || null,
           status: 'Em andamento',
           numeroProcesso: proc.numeroProcesso,
@@ -211,7 +215,7 @@ const Processos = React.memo(() => {
           tribunal: proc.tribunal,
           vara: proc.vara || '',
           comarca: proc.comarca || '',
-          requerido: proc.partes?.split(' x ')?.[1] || '',
+          requerido: reuNome,
           segredoJustica: false,
           justicaGratuita: false,
           dataInicio: new Date().toISOString().split('T')[0]
