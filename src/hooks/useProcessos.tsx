@@ -54,6 +54,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
           cliente:clientes!cliente_id(nome),
           responsavel:profiles(full_name)
         `)
+        .eq('office_id', user.office_id)
         .eq('deletado', false)
         .order('created_at', { ascending: false });
 
@@ -87,6 +88,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         .from('processos')
         .insert([
           {
+            office_id: user.office_id,
             user_id: user.id,
             titulo: newRecord.titulo,
             cliente_id: newRecord.clienteId,
@@ -97,7 +99,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
             responsavel_id: newRecord.responsavelId || user.id,
             proximo_prazo: newRecord.proximoPrazo,
             valor_causa: newRecord.valorCausa,
-            observacoes: newRecord.descricao || newRecord.observacoes,
+            observacoes: newRecord.descricao || (newRecord as any).observacoes,
             tribunal: newRecord.tribunal,
             vara: newRecord.vara,
             comarca: newRecord.comarca,
@@ -152,6 +154,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
+        .eq('office_id', user.office_id)
         .select('*')
         .single();
 
