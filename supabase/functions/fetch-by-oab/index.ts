@@ -91,7 +91,7 @@ serve(async (req) => {
     const ufUpper = uf.toUpperCase();
     const tribunaisParaBuscar = UF_TO_TRIBUNAIS[ufUpper] || [`tj${uf.toLowerCase()}`];
     
-    console.log(`[FETCH-BY-OAB] Iniciando busca abrangente: OAB ${oab}-${ufUpper} em ${tribunaisParaBuscar.length} tribunais`);
+    console.log(`[FETCH-BY-OAB] Iniciando busca abrangente: OAB ${oab}-${ufUpper}`);
     
     let allResults: any[] = [];
     const numeroOabPuro = oab.replace(/\D/g, '');
@@ -134,32 +134,39 @@ serve(async (req) => {
       allResults = [...allResults, ...batch];
     });
 
-    console.log(`[DATAJUD] Total parcial: ${allResults.length} processos`);
+    console.log(`[DATAJUD] Encontrados parcial: ${allResults.length}`);
 
-    // 2. FALLBACK COMUNICA PJE (Especialmente se poucos resultados ou se for DF)
-    if (allResults.length < 10 || ufUpper === 'DF') {
+    // 2. FALLBACK COMUNICA PJE (Aprimorado com snake_case e paginação)
+    if (allResults.length < 50 || ufUpper === 'DF') {
       try {
-        console.log(`[COMUNICA-PJE] Consultando fallback para OAB ${numeroOabPuro}-${ufUpper}`);
-        const pjeResponse = await fetch(`https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${numeroOabPuro}&ufOab=${ufUpper}`);
+        console.log(`[COMUNICA-PJE] Consultando OAB ${numeroOabPuro}-${ufUpper} (100 itens)`);
+        // O PJe utiliza snake_case na resposta e permite itensPorPagina
+        const pjeResponse = await fetch(`https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${numeroOabPuro}&ufOab=${ufUpper}&itensPorPagina=100`);
         if (pjeResponse.ok) {
           const pjeData = await pjeResponse.json();
           const pjeItems = pjeData.items || [];
           
-          const pjeProcesses = pjeItems.map((item: any) => ({
-            id: item.id || item.numeroProcesso,
-            numeroProcesso: item.numeroProcesso,
-            titulo: item.tituloProcesso || `Processo ${item.numeroProcesso}`,
-            partes: item.partes?.map((p: any) => p.nome).join(' x ') || item.tituloProcesso || 'Não identificado',
-            tribunal: item.nomeTribunal || 'PJE',
-            ultimoAndamento: {
-              descricao: item.textoComunicacao || 'Comunicação PJe',
-              data: item.dataDisponibilizacao
-            },
-            faseProcessual: 'Comunicado PJe',
-            valorCausa: 0,
-            vara: item.nomeOrgao || '',
-            comarca: ufUpper
-          }));
+          const pjeProcesses = pjeItems.map((item: any) => {
+            // Mapeando do padrão snake_case da API PJe
+            const numProc = item.numero_processo || item.numeroProcesso;
+            if (!numProc) return null;
+
+            return {
+              id: item.id || numProc,
+              numeroProcesso: numProc,
+              titulo: item.titulo_processo || item.tituloProcesso || `Processo ${numProc}`,
+              partes: item.partes?.map((p: any) => p.nome).join(' x ') || item.titulo_processo || item.tituloProcesso || 'Não identificado',
+              tribunal: item.nome_tribunal || item.sigla_tribunal || item.nomeTribunal || 'PJE',
+              ultimoAndamento: {
+                descricao: item.texto_comunicacao || item.textoComunicacao || 'Comunicação PJe',
+                data: item.data_disponibilizacao || item.dataDisponibilizacao
+              },
+              faseProcessual: 'Comunicado PJe',
+              valorCausa: 0,
+              vara: item.nome_orgao || item.nomeOrgao || '',
+              comarca: ufUpper
+            };
+          }).filter(Boolean);
 
           // Evitar duplicados por número de processo
           const existingNumbers = new Set(allResults.map(p => p.numeroProcesso));
@@ -169,14 +176,14 @@ serve(async (req) => {
               existingNumbers.add(p.numeroProcesso);
             }
           });
-          console.log(`[TOTAL] Final após merge PJe: ${allResults.length}`);
+          console.log(`[COMUNICA-PJE] Total após merge: ${allResults.length}`);
         }
       } catch (e) {
-        console.error("[COMUNICA-PJE] Falha na busca por OAB:", e);
+        console.error("[COMUNICA-PJE] Falha na busca:", e);
       }
     }
 
-    // Remover duplicatas finais por segurança
+    // Remover duplicatas finais
     const uniqueResults = Array.from(new Map(allResults.map(item => [item.numeroProcesso, item])).values());
 
     return new Response(JSON.stringify(uniqueResults), {
