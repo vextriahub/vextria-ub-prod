@@ -25,6 +25,7 @@ export function useClientes(): DatabaseHookResult<ClienteComProcessos, NovoClien
         .select('*, processos!processos_cliente_id_fkey(count)')
         .eq('office_id', user.office_id)
         .eq('deletado', false)
+        .eq('deletado_pendente', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

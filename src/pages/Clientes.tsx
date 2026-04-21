@@ -16,7 +16,9 @@ import { ClientsAdvancedFilters } from "@/components/Clientes/ClientsAdvancedFil
 import { ClientsEmptyState } from "@/components/Clientes/ClientsEmptyState";
 import { ClientsSelectionControls } from "@/components/Clientes/ClientsSelectionControls";
 import { ClientsGrid } from "@/components/Clientes/ClientsGrid";
+import { ClientsTable } from "@/components/Clientes/ClientsTable";
 import { ClientDetailsModal } from "@/components/Clientes/ClientDetailsModal";
+import { LayoutGrid, List } from "lucide-react";
 
 // Componentes existentes mantidos
 import { EditClientDialog } from "@/components/Clientes/EditClientDialog";
@@ -62,6 +64,7 @@ const Clientes = () => {
   const [clientDetailsOpen, setClientDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const showEmptyState = dbIsEmpty && !loading;
 
   // Atualizar lista filtrada quando os dados ou a busca mudarem
@@ -277,31 +280,73 @@ const Clientes = () => {
           <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Sincronizando Base de Clientes...</p>
         </div>
       ) : showEmptyState ? (
-        <ClientsEmptyState onAction={() => setNovoClienteDialogOpen(true)} />
+        <ClientsEmptyState onAddClient={() => setNovoClienteDialogOpen(true)} />
       ) : (
-        <>
-          <ClientsSelectionControls
-            isAllSelected={multiSelect.isAllSelected}
-            selectedCount={multiSelect.selectedCount}
-            totalCount={filteredClients.length}
-            onSelectAll={multiSelect.selectAll}
-            onClearSelection={multiSelect.clearSelection}
-          />
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <ClientsSelectionControls
+                selectedCount={multiSelect.selectedIds.length}
+                totalCount={filteredClients.length}
+                onSelectAll={() => multiSelect.selectAll(filteredClients.map(c => c.id))}
+                onClearSelection={multiSelect.clearSelection}
+                onDeleteSelected={handleDeleteSelected}
+              />
+              
+              <div className="flex items-center p-1 bg-black/20 rounded-lg border border-white/10 backdrop-blur-sm self-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-1.5 h-auto text-sm font-medium transition-all rounded-md ${
+                    viewMode === 'list' 
+                      ? 'bg-orange-500 text-white shadow-sm' 
+                      : 'text-white/50 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <List className="w-4 h-4 mr-2" />
+                  Lista
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={`px-3 py-1.5 h-auto text-sm font-medium transition-all rounded-md ${
+                    viewMode === 'grid' 
+                      ? 'bg-orange-500 text-white shadow-sm' 
+                      : 'text-white/50 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <LayoutGrid className="w-4 h-4 mr-2" />
+                  Cards
+                </Button>
+              </div>
+            </div>
 
-          {/* Clients Grid */}
-          {filteredClients.length > 0 && (
-            <ClientsGrid
-              clients={filteredClients}
-              selectedIds={multiSelect.getSelectedItems().map(item => item.id)}
-              onToggleSelect={multiSelect.toggleItem}
-              onClientClick={handleClientClick}
-              onEditClient={handleEditClient}
-              onViewProcesses={handleViewProcesses}
-              onViewAtendimentos={handleViewAtendimentos}
-              onViewConsultivo={handleViewConsultivo}
-            />
-          )}
-        </>
+            {/* Grid vs Tabela de Clientes */}
+            {viewMode === "grid" ? (
+              <ClientsGrid
+                clients={filteredClients}
+                selectedIds={multiSelect.selectedIds}
+                onToggleSelect={multiSelect.toggleSelect}
+                onClientClick={handleClientClick}
+                onEditClient={handleEditClient}
+                onViewProcesses={handleViewProcesses}
+                onViewAtendimentos={handleViewAtendimentos}
+                onViewConsultivo={handleViewConsultivo}
+              />
+            ) : (
+              <ClientsTable
+                clients={filteredClients}
+                selectedIds={multiSelect.selectedIds}
+                onToggleSelect={multiSelect.toggleSelect}
+                onClientClick={handleClientClick}
+                onEditClient={handleEditClient}
+                onViewProcesses={handleViewProcesses}
+                onViewAtendimentos={handleViewAtendimentos}
+                onViewConsultivo={handleViewConsultivo}
+              />
+            )}
+          </div>
       )}
 
       {/* Modais */}
