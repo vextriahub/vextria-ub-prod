@@ -37,7 +37,7 @@ const Clientes = () => {
     requestMultipleDelete, 
     isEmpty: dbIsEmpty 
   } = useClientes();
-  const { isAdmin, isOfficeAdmin, isSuperAdmin } = useAuth();
+  const { user, isAdmin, isOfficeAdmin, isSuperAdmin } = useAuth();
   const permissions = usePermissions();
   const hasAdminRights = isAdmin || isOfficeAdmin || isSuperAdmin;
   
