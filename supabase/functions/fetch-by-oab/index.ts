@@ -93,6 +93,15 @@ const cleanTitle = (title: string): string => {
   return cleaned || title.substring(0, 80);
 };
 
+/**
+ * Formata número de processo no padrão CNJ: NNNNNNN-DD.YYYY.J.TR.OOOO
+ */
+const formatCNJ = (num: string): string => {
+  const clean = num.replace(/[.-]/g, '');
+  if (clean.length !== 20) return num;
+  return `${clean.substring(0,7)}-${clean.substring(7,9)}.${clean.substring(9,13)}.${clean.substring(13,14)}.${clean.substring(14,16)}.${clean.substring(16,20)}`;
+};
+
 const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
   if (!source) return null;
@@ -193,7 +202,8 @@ serve(async (req) => {
             
             // Tenta extrair nomes do texto se o título for genérico
             const extractedPartes = extractPartesFromTexto(item.texto_comunicacao || item.texto || '');
-            const rawTitle = item.titulo_processo || item.tituloProcesso || extractedPartes || `Processo ${numProc}`;
+            const formattedNum = formatCNJ(numProc);
+            const rawTitle = item.titulo_processo || item.tituloProcesso || extractedPartes || formattedNum;
             const finalTitle = cleanTitle(rawTitle);
 
             // Determinar tribunal real pela sigla/nome ou pelo número do processo
