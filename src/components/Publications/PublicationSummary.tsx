@@ -77,7 +77,7 @@ export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
         value={stats.naoTratadas}
         description="Aguardando ciência ou tratamento"
         icon={Inbox}
-        color="text-indigo-500"
+        color="text-violet-600"
       />
       <SummaryCard
         title="Sem Vínculo"

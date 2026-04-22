@@ -254,7 +254,9 @@ export default function Publicacoes() {
               })}
             />
             
-            <div className="flex items-center justify-end gap-3 px-2">
+            <Separator className="bg-border/30" />
+
+            <div className="flex items-center justify-end gap-4 px-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="h-12 px-6 rounded-2xl border-border bg-card/50 hover:bg-card font-black text-xs uppercase tracking-widest text-primary gap-2 transition-all duration-300 shadow-md">
