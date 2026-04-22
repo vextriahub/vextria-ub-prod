@@ -21,27 +21,30 @@ interface SummaryCardProps {
 }
 
 const SummaryCard = ({ title, value, description, icon: Icon, color, trend }: SummaryCardProps) => (
-  <Card className="border-white/10 bg-[#0c1117] hover:border-primary/30 transition-all duration-300 shadow-xl rounded-3xl">
-    <CardContent className="p-5">
+  <Card className="border-border bg-card hover:border-primary/30 transition-all duration-300 shadow-xl rounded-3xl overflow-hidden relative group">
+    {/* Subtle Background Pattern for Premium Feel */}
+    <div className={cn("absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-5 group-hover:opacity-10 transition-opacity", color.replace('text-', 'bg-'))} />
+    
+    <CardContent className="p-5 relative z-10">
       <div className="flex items-center justify-between mb-4">
-        <div className={cn("p-2.5 rounded-2xl bg-opacity-10", color.replace('text-', 'bg-'))}>
+        <div className={cn("p-2.5 rounded-2xl bg-opacity-10 dark:bg-opacity-20", color.replace('text-', 'bg-'))}>
           <Icon className={cn("h-5 w-5", color)} />
         </div>
         {trend && (
-          <Badge variant="outline" className="text-[9px] font-black text-emerald-500 border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 rounded-lg">
+          <Badge variant="outline" className="text-[10px] font-black text-emerald-500 border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 rounded-lg">
             {trend}
           </Badge>
         )}
       </div>
       
       <div className="space-y-0.5">
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
           {title}
         </p>
-        <h3 className="text-3xl font-black tracking-tighter text-white">
+        <h3 className="text-3xl font-black tracking-tighter text-foreground">
           {value}
         </h3>
-        <p className="text-[11px] text-muted-foreground/60 font-semibold leading-tight pt-1">
+        <p className="text-[11px] text-muted-foreground/50 font-semibold leading-tight pt-1">
           {description}
         </p>
       </div>
@@ -84,12 +87,11 @@ export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
         color="text-orange-500"
       />
       <SummaryCard
-        title="Próximos Andamentos"
+        title="Publicações Hoje"
         value={stats.novosAndamentos}
         description="Atualizações capturadas no diário"
         icon={FilePlus}
         color="text-emerald-500"
-        trend="8 novos"
       />
     </div>
   );

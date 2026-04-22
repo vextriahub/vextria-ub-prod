@@ -142,7 +142,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !user) throw new Error("Authentication error");
 
-    const { oab, uf } = await req.json();
+    const { oab, uf, days } = await req.json();
     if (!oab || !uf) throw new Error("OAB e UF são obrigatórios");
 
     const ufUpper = uf.toUpperCase();
@@ -188,9 +188,10 @@ serve(async (req) => {
     datajudResults.forEach(batch => allResults = [...allResults, ...batch]);
 
     // 2. COMUNICA PJE (Deep Sync: 5 páginas)
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    const dateStart = oneYearAgo.toISOString().split('T')[0];
+    const searchDays = days || 365;
+    const intervalDate = new Date();
+    intervalDate.setDate(intervalDate.getDate() - searchDays);
+    const dateStart = intervalDate.toISOString().split('T')[0];
 
     const pjePromises = [0, 1, 2, 3, 4].map(async (page) => {
       try {

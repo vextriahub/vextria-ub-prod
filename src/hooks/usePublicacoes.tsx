@@ -20,7 +20,7 @@ export interface Publication {
 }
 
 export const usePublicacoes = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +48,77 @@ export const usePublicacoes = () => {
   useEffect(() => {
     fetchPublicacoes();
   }, [user?.office_id]);
+
+  const syncByOab = async (oab: string, uf: string, days: number = 7) => {
+    if (!user?.office_id) return [];
+    
+    try {
+      console.log(`[Sync] Starting sync for OAB: ${oab}-${uf} (${days} days)`);
+      
+      const { data: results, error } = await supabase.functions.invoke('fetch-by-oab', {
+        body: { oab, uf, days }
+      });
+
+      if (error) throw error;
+      if (!results || !Array.isArray(results)) return [];
+
+      const savedResults = [];
+      for (const item of results) {
+        // Simple duplicate check (by process number and content hash or similar)
+        // For now, relies on supabase's RLS or unique constraints if any
+        const newRecord = {
+          titulo: item.titulo || `Publicação ${item.numeroProcesso}`,
+          conteudo: item.ultimoAndamento?.descricao || item.conteudo || '',
+          data_publicacao: item.ultimoAndamento?.data ? new Date(item.ultimoAndamento.data).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          numero_processo: item.numeroProcesso,
+          status: 'nova' as const,
+          urgencia: 'media' as const,
+          tags: ['auto-sync', item.tribunal]
+        };
+
+        // We check if it already exists to avoid duplication
+        const { data: existing } = await supabase
+          .from('publicacoes')
+          .select('id')
+          .eq('office_id', user.office_id)
+          .eq('numero_processo', newRecord.numero_processo)
+          .eq('conteudo', newRecord.conteudo)
+          .maybeSingle();
+
+        if (!existing) {
+          const saved = await createPublication(newRecord as any);
+          if (saved) savedResults.push(saved);
+        }
+      }
+
+      return savedResults;
+    } catch (error) {
+      console.error('Error in syncByOab:', error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    if (!user?.office_id || !profile?.oab || !profile?.oab_uf) return;
+
+    const sessionKey = `last_oab_sync_${user.office_id}_${profile.oab}`;
+    const lastSync = sessionStorage.getItem(sessionKey);
+    
+    // Sync only once per session to avoid excessive API calls
+    if (!lastSync) {
+      console.log('🚀 Triggering auto-sync for OAB in background...');
+      syncByOab(profile.oab, profile.oab_uf).then((news) => {
+        if (news.length > 0) {
+          toast({
+            title: "Sincronização concluída",
+            description: `${news.length} novas publicações encontradas e importadas.`,
+          });
+          fetchPublicacoes(); // Refresh list to show new items
+        }
+        sessionStorage.setItem(sessionKey, new Date().toISOString());
+      });
+    }
+  }, [user?.office_id, profile?.oab]);
 
   const updateStatus = async (id: string, status: Publication['status']) => {
     try {

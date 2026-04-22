@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { AutoPublicationFetcher } from "@/components/Publications/AutoPublicationFetcher";
 import { PublicationDetailsDialog } from "@/components/Publications/PublicationDetailsDialog";
 import { ScheduleDialog } from "@/components/Publications/ScheduleDialog";
 import { PublicationSummary } from "@/components/Publications/PublicationSummary";
@@ -22,7 +21,11 @@ import {
   Download,
   Filter,
   Inbox,
-  X
+  X,
+  RefreshCw,
+  Clock,
+  CalendarDays,
+  CalendarRange
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -41,19 +44,23 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, FileSpreadsheet, FileText as FileTextIcon } from "lucide-react";
 
 import { usePublicacoes } from "@/hooks/usePublicacoes";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Publicacoes() {
   const { toast } = useToast();
-  const { publications, loading, deletePublication, updateStatus, fetchByCnj } = usePublicacoes();
+  const { user, profile } = useAuth();
+  const { publications, loading, deletePublication, updateStatus, syncByOab, refresh } = usePublicacoes();
   const [view, setView] = useState<'grid' | 'table'>('table');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [isConsulting, setIsConsulting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   const [filters, setFilters] = useState({
     search: '',
@@ -108,7 +115,6 @@ export default function Publicacoes() {
       filters.search !== '',
       filters.status !== 'all',
       filters.urgencia !== 'all',
-      filters.cnj !== '',
       filters.dateRange.from !== undefined
     ].filter(Boolean).length;
   }, [filters]);
@@ -133,7 +139,7 @@ export default function Publicacoes() {
     });
     
     for (const id of selectedIds) {
-      await updateStatus(id, newStatus);
+      await updateStatus(id, newStatus as any);
     }
     
     setSelectedIds([]);
@@ -143,54 +149,65 @@ export default function Publicacoes() {
     });
   };
 
-  const handleCnjConsult = async (cnj: string) => {
-    if (!cnj) return;
-    
-    setIsConsulting(true);
+  const handleManualSync = async (days: number) => {
+    if (!profile?.oab || !profile?.oab_uf) {
+      toast({
+        title: "OAB não configurada",
+        description: "Por favor, cadastre sua OAB no perfil para sincronizar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSyncing(true);
+    toast({
+      title: "Sincronizando...",
+      description: `Buscando publicações dos últimos ${days === 1 ? 'dia' : days + ' dias'}...`,
+    });
+
     try {
-      const newPubs = await fetchByCnj(cnj);
-      if (newPubs.length > 0) {
+      const results = await syncByOab(profile.oab, profile.oab_uf, days);
+      if (results.length > 0) {
         toast({
-          title: "Publicações capturadas",
-          description: `${newPubs.length} novas publicações encontradas para o processo ${cnj}.`,
+          title: "Sincronização concluída",
+          description: `${results.length} novas publicações importadas.`,
         });
-        setFilters(prev => ({ ...prev, search: cnj })); // Auto filter to show the results
+        refresh();
       } else {
         toast({
-          title: "Nenhum resultado",
-          description: `Não encontramos novas publicações para o processo ${cnj} no momento.`,
-          variant: "destructive"
+          title: "Tudo atualizado",
+          description: "Não foram encontradas novas publicações neste período.",
         });
       }
     } catch (error) {
       toast({
-        title: "Erro na consulta",
-        description: "Ocorreu um erro ao tentar consultar o CNJ.",
+        title: "Erro na sincronização",
+        description: "Não foi possível conectar aos tribunais no momento.",
         variant: "destructive"
       });
     } finally {
-      setIsConsulting(false);
+      setIsSyncing(false);
     }
   };
 
   return (
-    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden entry-animate">
+    <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden entry-animate bg-background">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20">
-              <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-primary shadow-sm" />
+            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-sm">
+              <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/40">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground">
               Expediente
             </h1>
           </div>
           <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl px-1">
-            Gestão centralizada de intimações e andamentos processuais.
+            Gestão automatizada de intimações e andamentos processuais.
           </p>
         </div>
         
-        <div className="flex items-center gap-2 glass-morphism p-1.5 rounded-2xl border-white/5">
+        <div className="flex items-center gap-2 glass-morphism p-1.5 rounded-2xl border-border bg-card/30">
           <Button 
             variant={view === 'grid' ? "secondary" : "ghost"} 
             size="sm" 
@@ -214,247 +231,277 @@ export default function Publicacoes() {
 
       <PublicationSummary stats={stats} />
 
-      <div className="grid grid-cols-1 gap-10">
-        <div className="glass-card p-1 rounded-[2.5rem] shadow-premium border-white/5 relative overflow-hidden group">
-          <div className="relative z-10">
-            <AutoPublicationFetcher />
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-end px-4 mt-4">
+             <h3 className="text-2xl font-black tracking-tight text-foreground">Lista de Expedientes</h3>
+             <Badge variant="secondary" className="rounded-lg h-7 font-black tracking-[0.1em] text-[10px] uppercase shadow-sm">
+               {filteredPublications.length} Itens Encontrados
+             </Badge>
+          </div>
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <PublicationFilters 
+              filters={filters}
+              setFilters={setFilters}
+              activeFiltersCount={activeFiltersCount}
+              onClear={() => setFilters({
+                search: '',
+                status: 'all',
+                urgencia: 'all',
+                cnj: '',
+                dateRange: { from: undefined, to: undefined }
+              })}
+            />
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="h-12 px-6 rounded-2xl border-border bg-card/50 hover:bg-card font-black text-xs uppercase tracking-widest text-primary gap-2 transition-all duration-300 shadow-md">
+                    <Download className="h-4 w-4" />
+                    Exportar
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-card border-border shadow-2xl">
+                  <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
+                      <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xs uppercase tracking-tight">Excel (.xlsx)</span>
+                      <span className="text-[10px] text-muted-foreground/60 italic">Relatório em planilha</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
+                      <FileTextIcon className="h-4 w-4 text-red-500" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xs uppercase tracking-tight">PDF (.pdf)</span>
+                      <span className="text-[10px] text-muted-foreground/60 italic">Documento formatado</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    disabled={isSyncing}
+                    className="h-12 rounded-2xl px-6 font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300 gap-2"
+                  >
+                    {isSyncing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    Sincronizar
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl bg-card border-border shadow-2xl">
+                  <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Período de Busca</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-border/50" />
+                  <DropdownMenuItem onClick={() => handleManualSync(1)} className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <Clock className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xs uppercase tracking-tight">Diário</span>
+                      <span className="text-[10px] text-muted-foreground/60">Últimas 24 horas</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleManualSync(7)} className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-indigo-500/10 group-hover:bg-indigo-500/20 transition-colors">
+                      <CalendarDays className="h-4 w-4 text-indigo-500" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xs uppercase tracking-tight">Semanal</span>
+                      <span className="text-[10px] text-muted-foreground/60">Últimos 7 dias</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleManualSync(30)} className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-violet-500/10 group-hover:bg-violet-500/20 transition-colors">
+                      <CalendarRange className="h-4 w-4 text-violet-500" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xs uppercase tracking-tight">Mensal</span>
+                      <span className="text-[10px] text-muted-foreground/60">Últimos 30 dias</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-end px-4">
-               <h3 className="text-2xl font-black tracking-tight">Lista de Expedientes</h3>
-               <Badge variant="secondary" className="rounded-lg h-7 font-black tracking-[0.1em] text-[10px] uppercase">
-                 {filteredPublications.length} Itens Encontrados
-               </Badge>
-            </div>
-            
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <PublicationFilters 
-                filters={filters}
-                setFilters={setFilters}
-                activeFiltersCount={activeFiltersCount}
-                isConsulting={isConsulting}
-                onCnjConsult={handleCnjConsult}
-                onClear={() => setFilters({
-                  search: '',
-                  status: 'all',
-                  urgencia: 'all',
-                  cnj: '',
-                  dateRange: { from: undefined, to: undefined }
-                })}
-              />
-              <div className="flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-12 px-6 rounded-2xl border-white/10 hover:bg-white/5 font-black text-xs uppercase tracking-widest text-primary gap-2 transition-all duration-300 shadow-lg">
-                      <Download className="h-4 w-4" />
-                      Exportar
-                      <ChevronDown className="h-3 w-3 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-background/80 backdrop-blur-2xl border-white/10 shadow-2xl">
-                    <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
-                        <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-xs uppercase tracking-tight">Excel (.xlsx)</span>
-                        <span className="text-[10px] text-muted-foreground/60 italic">Relatório em planilha</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
-                        <FileTextIcon className="h-4 w-4 text-red-500" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-xs uppercase tracking-tight">PDF (.pdf)</span>
-                        <span className="text-[10px] text-muted-foreground/60 italic">Documento formatado</span>
-                      </div>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button className="h-12 rounded-2xl px-8 font-black text-xs uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all duration-300">
-                   Consultar
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative">
-            {/* Bulk Actions Bar */}
-            {selectedIds.length > 0 && (
-              <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
-                <Card className="glass-card border-primary/20 bg-primary/10 backdrop-blur-2xl px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-6 border-2">
-                  <div className="flex items-center gap-3 pr-6 border-r border-white/10 text-primary">
-                    <CheckSquare className="h-5 w-5" />
-                    <span className="text-sm font-black uppercase tracking-widest">{selectedIds.length} Selecionados</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleBulkUpdateStatus('lida')}
-                      className="rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-6"
-                    >
-                      Marcar como Lida
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleBulkUpdateStatus('arquivada')}
-                      className="rounded-xl border-white/10 hover:bg-white/5 font-black text-[10px] uppercase tracking-widest h-10 px-6"
-                    >
-                      Arquivar
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="rounded-xl h-10 w-10 p-0 text-red-500 hover:bg-red-500/10"
-                      onClick={() => setSelectedIds([])}
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            )}
-
-            {filteredPublications.length === 0 ? (
-              <div className="py-24 text-center glass-card rounded-[3rem] space-y-6 border-white/5">
-                <div className="p-8 bg-white/5 rounded-full inline-block border border-white/10">
-                  <Inbox className="h-16 w-16 text-muted-foreground/20" />
+        <div className="relative">
+          {/* Bulk Actions Bar */}
+          {selectedIds.length > 0 && (
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
+              <Card className="glass-card border-primary/20 bg-primary/10 backdrop-blur-2xl px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-6 border-2">
+                <div className="flex items-center gap-3 pr-6 border-r border-border text-primary">
+                  <CheckSquare className="h-5 w-5" />
+                  <span className="text-sm font-black uppercase tracking-widest">{selectedIds.length} Selecionados</span>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-xl font-black uppercase tracking-widest text-muted-foreground/40">Caixa de Entrada Vazia</p>
-                  <p className="text-sm text-muted-foreground/60 font-medium">Nenhum registro encontrado para os filtros aplicados.</p>
-                </div>
-              </div>
-            ) : view === 'table' ? (
-              <PublicationTable 
-                publications={filteredPublications}
-                selectedIds={selectedIds}
-                onToggleSelection={handleToggleSelection}
-                onToggleAll={handleToggleAll}
-                onViewDetails={(pub) => {}} // Handle in sync with grid or separate modal
-                onDelete={deletePublication}
-                onUpdateStatus={updateStatus}
-              />
-            ) : (
-              <div className="grid gap-6">
-                {filteredPublications.map((publication) => (
-                  <div 
-                    key={publication.id} 
-                    className={cn(
-                      "glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group relative transition-all duration-300",
-                      selectedIds.includes(publication.id) && "ring-2 ring-primary bg-primary/5"
-                    )}
+                <div className="flex items-center gap-3">
+                  <Button 
+                    size="sm" 
+                    onClick={() => handleBulkUpdateStatus('lida')}
+                    className="rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-6"
                   >
-                    {/* Checkbox Overlay for Card View */}
-                    <div 
-                      className="absolute top-8 left-8 z-10 cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleSelection(publication.id);
-                      }}
-                    >
-                      <Checkbox 
-                        checked={selectedIds.includes(publication.id)}
-                        className="h-6 w-6 rounded-lg border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all scale-110 shadow-lg"
-                      />
-                    </div>
+                    Marcar como Lida
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleBulkUpdateStatus('arquivada')}
+                    className="rounded-xl border-border hover:bg-card font-black text-[10px] uppercase tracking-widest h-10 px-6"
+                  >
+                    Arquivar
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="rounded-xl h-10 w-10 p-0 text-red-500 hover:bg-red-500/10"
+                    onClick={() => setSelectedIds([])}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
 
-                    <div className="flex flex-col lg:flex-row justify-between gap-8 pl-10">
-                      <div className="flex-1 space-y-6">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-2">
-                            <h4 className="text-2xl font-black group-hover:text-primary transition-colors duration-500 leading-tight tracking-tight">
-                              {publication.titulo}
-                            </h4>
-                            <div className="flex items-center gap-3">
-                              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-3 py-1 rounded-lg text-[10px] tracking-widest uppercase">
-                                {publication.numero_processo}
-                              </Badge>
-                              <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider opacity-60">
-                                Publicado em: {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}
-                              </span>
-                            </div>
-                          </div>
-                          <Badge className={cn(
-                            "px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-lg",
-                            publication.status === 'lida' || publication.status === 'processada' ? "bg-emerald-500 text-white" : 
-                            publication.status === 'pendente' ? "bg-sky-500 text-white" :
-                            "bg-primary text-white"
-                          )}>
-                            {
-                              publication.status === 'lida' || publication.status === 'processada' ? 'Tratada' : 
-                              publication.status === 'pendente' ? 'Pendente' : 'Nova'
-                            }
-                          </Badge>
-                        </div>
+          {filteredPublications.length === 0 ? (
+            <div className="py-24 text-center glass-card rounded-[3rem] bg-card/30 space-y-6 border-border shadow-inner">
+              <div className="p-8 bg-background/50 rounded-full inline-block border border-border shadow-sm">
+                <Inbox className="h-16 w-16 text-muted-foreground/20" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xl font-black uppercase tracking-widest text-muted-foreground/40">Caixa de Entrada Vazia</p>
+                <p className="text-sm text-muted-foreground/60 font-medium">Nenhum registro encontrado para os filtros aplicados.</p>
+              </div>
+            </div>
+          ) : view === 'table' ? (
+            <PublicationTable 
+              publications={filteredPublications}
+              selectedIds={selectedIds}
+              onToggleSelection={handleToggleSelection}
+              onToggleAll={handleToggleAll}
+              onViewDetails={(pub) => {}} // Handle in sync with grid or separate modal
+              onDelete={deletePublication}
+              onUpdateStatus={updateStatus}
+            />
+          ) : (
+            <div className="grid gap-6">
+              {filteredPublications.map((publication) => (
+                <div 
+                  key={publication.id} 
+                  className={cn(
+                    "glass-card hover-lift p-8 rounded-[2.5rem] border-border bg-card/40 shadow-premium group relative transition-all duration-300",
+                    selectedIds.includes(publication.id) && "ring-2 ring-primary bg-primary/5"
+                  )}
+                >
+                  {/* Checkbox Overlay for Card View */}
+                  <div 
+                    className="absolute top-8 left-8 z-10 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleSelection(publication.id);
+                    }}
+                  >
+                    <Checkbox 
+                      checked={selectedIds.includes(publication.id)}
+                      className="h-6 w-6 rounded-lg border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all scale-110 shadow-lg"
+                    />
+                  </div>
 
-                        <div className="p-8 bg-white/5 rounded-[2rem] border border-white/5 text-muted-foreground/80 font-medium line-clamp-4 leading-relaxed text-sm backdrop-blur-sm">
-                          {publication.conteudo}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3">
-                          {publication.tags?.map((tag) => (
-                            <Badge key={tag} className="bg-white/5 text-muted-foreground/60 border-white/5 px-4 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-[0.15em] hover:bg-primary/10 hover:text-primary transition-all cursor-default">
-                              #{tag}
+                  <div className="flex flex-col lg:flex-row justify-between gap-8 pl-10">
+                    <div className="flex-1 space-y-6">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <h4 className="text-2xl font-black group-hover:text-primary transition-colors duration-500 leading-tight tracking-tight text-foreground">
+                            {publication.titulo}
+                          </h4>
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-3 py-1 rounded-lg text-[10px] tracking-widest uppercase">
+                              {publication.numero_processo}
                             </Badge>
-                          ))}
+                            <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider opacity-60">
+                              Publicado em: {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
                         </div>
+                        <Badge className={cn(
+                          "px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-[0.2em] shadow-lg",
+                          publication.status === 'lida' || publication.status === 'processada' ? "bg-emerald-500 text-white" : 
+                          publication.status === 'pendente' ? "bg-sky-500 text-white" :
+                          "bg-primary text-white"
+                        )}>
+                          {
+                            publication.status === 'lida' || publication.status === 'processada' ? 'Tratada' : 
+                            publication.status === 'pendente' ? 'Pendente' : 'Nova'
+                          }
+                        </Badge>
                       </div>
 
-                      <div className="lg:w-48 flex flex-col gap-3 justify-center">
-                        <PublicationDetailsDialog publication={publication} />
-                        <div className="h-px bg-white/5 my-2" />
-                        <div className="grid grid-cols-3 gap-2">
-                          <ScheduleDialog 
-                            publicationTitle={publication.titulo}
-                            processNumber={publication.numero_processo}
-                            type="prazo"
-                            iconOnly={true}
-                          />
-                          <ScheduleDialog 
-                            publicationTitle={publication.titulo}
-                            processNumber={publication.numero_processo}
-                            type="audiencia"
-                            iconOnly={true}
-                          />
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" className="h-12 w-full rounded-2xl hover:bg-red-500/10 hover:text-red-500 group/del transition-all duration-300">
-                                <Trash2 className="h-5 w-5 text-red-500/50 group-hover/del:text-red-500" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-[2.5rem] border-white/10 bg-background/80 backdrop-blur-2xl p-10">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-3xl font-black tracking-tighter">Eliminar Expediente</AlertDialogTitle>
-                                <AlertDialogDescription className="text-base font-medium text-muted-foreground">
-                                  Esta publicação será removida permanentemente do sistema. Prosseguir com a exclusão definitiva?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter className="mt-10 gap-4">
-                                <AlertDialogCancel className="rounded-2xl border-white/10 h-14 px-8 font-black uppercase text-xs tracking-widest">Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => deletePublication(publication.id)}
-                                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl h-14 px-10 font-black uppercase text-xs tracking-widest shadow-lg shadow-red-500/20"
-                                >
-                                  Confirmar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
+                      <div className="p-8 bg-background/50 rounded-[2rem] border border-border text-foreground/80 font-medium line-clamp-4 leading-relaxed text-sm shadow-inner">
+                        {publication.conteudo}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {publication.tags?.map((tag) => (
+                          <Badge key={tag} className="bg-background text-muted-foreground/60 border-border px-4 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-[0.15em] hover:bg-primary/10 hover:text-primary transition-all cursor-default shadow-sm">
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="lg:w-48 flex flex-col gap-3 justify-center">
+                      <PublicationDetailsDialog publication={publication} />
+                      <div className="h-px bg-border my-2" />
+                      <div className="grid grid-cols-3 gap-2">
+                        <ScheduleDialog 
+                          publicationTitle={publication.titulo}
+                          processNumber={publication.numero_processo}
+                          type="prazo"
+                          iconOnly={true}
+                        />
+                        <ScheduleDialog 
+                          publicationTitle={publication.titulo}
+                          processNumber={publication.numero_processo}
+                          type="audiencia"
+                          iconOnly={true}
+                        />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" className="h-12 w-full rounded-2xl hover:bg-red-500/10 hover:text-red-500 group/del transition-all duration-300">
+                              <Trash2 className="h-5 w-5 text-red-500/50 group-hover/del:text-red-500" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-[2.5rem] border-border bg-card/80 backdrop-blur-2xl p-10 shadow-2xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-3xl font-black tracking-tighter">Eliminar Expediente</AlertDialogTitle>
+                              <AlertDialogDescription className="text-base font-medium text-muted-foreground">
+                                Esta publicação será removida permanentemente do sistema. Prosseguir com a exclusão definitiva?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter className="mt-10 gap-4">
+                              <AlertDialogCancel className="rounded-2xl border-border h-14 px-8 font-black uppercase text-xs tracking-widest bg-background">Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => deletePublication(publication.id)}
+                                className="bg-red-500 hover:bg-red-600 text-white rounded-2xl h-14 px-10 font-black uppercase text-xs tracking-widest shadow-lg shadow-red-500/20"
+                              >
+                                Confirmar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

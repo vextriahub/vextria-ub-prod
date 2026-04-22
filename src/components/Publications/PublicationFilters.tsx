@@ -30,68 +30,75 @@ interface PublicationFiltersProps {
   setFilters: (filters: any) => void;
   activeFiltersCount: number;
   onClear: () => void;
-  onCnjConsult: (cnj: string) => void;
-  isConsulting: boolean;
 }
 
 export const PublicationFilters = ({
   filters,
   setFilters,
   activeFiltersCount,
-  onClear,
-  onCnjConsult,
-  isConsulting
+  onClear
 }: PublicationFiltersProps) => {
+  const handleQuickFilter = (period: 'today' | 'week' | 'month') => {
+    const from = new Date();
+    from.setHours(0, 0, 0, 0);
+    
+    if (period === 'week') {
+      from.setDate(from.getDate() - 7);
+    } else if (period === 'month') {
+      from.setMonth(from.getMonth() - 1);
+    }
+    
+    setFilters({ ...filters, dateRange: { from, to: new Date() } });
+  };
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* CNJ Search Row */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem] border-white/5 bg-primary/5">
-        <div className="relative group flex-1">
-          <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
-          <Input 
-            placeholder="Número do Processo (CNJ) - Ex: 1234567-89.2025.8.26.0100" 
-            value={filters.cnj}
-            onChange={(e) => setFilters({ ...filters, cnj: e.target.value })}
-            className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/40 transition-all font-bold text-sm"
-          />
-        </div>
+      {/* Quick Filters Row */}
+      <div className="flex flex-wrap items-center gap-2 px-2">
         <Button 
-          onClick={() => onCnjConsult(filters.cnj)}
-          disabled={isConsulting || !filters.cnj}
-          className="h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300"
+          variant="outline" 
+          size="sm" 
+          onClick={() => handleQuickFilter('today')}
+          className="rounded-xl h-8 px-4 font-black text-[10px] uppercase tracking-widest border-primary/20 hover:bg-primary/10 transition-all"
         >
-          {isConsulting ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Consultando...
-            </>
-          ) : (
-            <>
-              <Search className="h-4 w-4 mr-2" />
-              Consultar CNJ
-            </>
-          )}
+          Hoje
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => handleQuickFilter('week')}
+          className="rounded-xl h-8 px-4 font-black text-[10px] uppercase tracking-widest border-primary/20 hover:bg-primary/10 transition-all"
+        >
+          Esta Semana
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => handleQuickFilter('month')}
+          className="rounded-xl h-8 px-4 font-black text-[10px] uppercase tracking-widest border-primary/20 hover:bg-primary/10 transition-all"
+        >
+          Este Mês
         </Button>
       </div>
 
       {/* Main Filter Row */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem] border-white/5">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem] border-white/5 bg-card/10 backdrop-blur-sm">
         <div className="relative group flex-1 md:min-w-[300px]">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
           <Input 
             placeholder="Busca rápida por termo ou resumo..." 
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
+            className="pl-12 h-12 bg-background/50 border-input rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
           />
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
           <Select value={filters.status} onValueChange={(val) => setFilters({ ...filters, status: val })}>
-            <SelectTrigger className="w-[140px] h-12 bg-white/5 border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wider">
+            <SelectTrigger className="w-[140px] h-12 bg-background/50 border-input rounded-2xl font-bold text-xs uppercase tracking-wider">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent className="bg-background/80 backdrop-blur-xl border-white/10 rounded-xl">
+            <SelectContent className="bg-background/80 backdrop-blur-xl border-border rounded-xl">
               <SelectItem value="all">Todos Status</SelectItem>
               <SelectItem value="nova">Novas</SelectItem>
               <SelectItem value="pendente">Pendentes</SelectItem>
@@ -100,10 +107,10 @@ export const PublicationFilters = ({
           </Select>
 
           <Select value={filters.urgencia} onValueChange={(val) => setFilters({ ...filters, urgencia: val })}>
-            <SelectTrigger className="w-[140px] h-12 bg-white/5 border-white/10 rounded-2xl font-bold text-xs uppercase tracking-wider">
+            <SelectTrigger className="w-[140px] h-12 bg-background/50 border-input rounded-2xl font-bold text-xs uppercase tracking-wider">
               <SelectValue placeholder="Urgência" />
             </SelectTrigger>
-            <SelectContent className="bg-background/80 backdrop-blur-xl border-white/10 rounded-xl">
+            <SelectContent className="bg-background/80 backdrop-blur-xl border-border rounded-xl">
               <SelectItem value="all">Todas Urgências</SelectItem>
               <SelectItem value="alta">Alta</SelectItem>
               <SelectItem value="media">Média</SelectItem>
@@ -113,7 +120,7 @@ export const PublicationFilters = ({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="h-12 bg-white/5 border-white/10 rounded-2xl px-4 flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
+              <Button variant="outline" className="h-12 bg-background/50 border-input rounded-2xl px-4 flex items-center gap-2 font-bold text-xs uppercase tracking-wider">
                 <CalendarIcon className="h-4 w-4 text-primary/60" />
                 {filters.dateRange.from ? (
                   filters.dateRange.to ? (
@@ -126,7 +133,7 @@ export const PublicationFilters = ({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 border-white/10 rounded-2xl overflow-hidden" align="end">
+            <PopoverContent className="w-auto p-0 border-border rounded-2xl overflow-hidden shadow-2xl" align="end">
               <Calendar
                 initialFocus
                 mode="range"
