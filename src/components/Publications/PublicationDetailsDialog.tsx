@@ -8,12 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Publication {
   id: string;
-  processNumber: string;
-  title: string;
-  content: string;
-  date: string;
+  numero_processo: string;
+  titulo: string;
+  conteudo: string;
+  data_publicacao: string;
   tags: string[];
-  status: "pending" | "processed";
+  status: 'nova' | 'lida' | 'arquivada' | 'processada';
 }
 
 interface PublicationDetailsDialogProps {
@@ -43,20 +43,20 @@ export const PublicationDetailsDialog = ({ publication }: PublicationDetailsDial
           <div className="space-y-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{publication.title}</h3>
-                <Badge variant={publication.status === 'processed' ? 'default' : 'secondary'}>
-                  {publication.status === 'processed' ? 'Processada' : 'Pendente'}
+                <h3 className="text-lg font-semibold">{publication.titulo}</h3>
+                <Badge variant={publication.status === 'lida' || publication.status === 'processada' ? 'default' : 'secondary'}>
+                  {publication.status === 'lida' || publication.status === 'processada' ? 'Processada' : 'Nova'}
                 </Badge>
               </div>
               
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span>Data: {publication.date}</span>
+                <span>Data: {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}</span>
               </div>
               
               <div className="space-y-1">
                 <label className="text-sm font-medium">Número do Processo:</label>
-                <p className="text-sm font-mono bg-muted p-2 rounded">{publication.processNumber}</p>
+                <p className="text-sm font-mono bg-muted p-2 rounded">{publication.numero_processo}</p>
               </div>
             </div>
             
@@ -79,7 +79,7 @@ export const PublicationDetailsDialog = ({ publication }: PublicationDetailsDial
               <label className="text-sm font-medium">Conteúdo da Publicação:</label>
               <div className="bg-muted p-4 rounded-lg">
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {publication.content}
+                  {publication.conteudo}
                 </p>
               </div>
             </div>

@@ -13,9 +13,10 @@ interface ScheduleDialogProps {
   publicationTitle: string;
   processNumber: string;
   type: "prazo" | "audiencia";
+  iconOnly?: boolean;
 }
 
-export const ScheduleDialog = ({ publicationTitle, processNumber, type }: ScheduleDialogProps) => {
+export const ScheduleDialog = ({ publicationTitle, processNumber, type, iconOnly }: ScheduleDialogProps) => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,9 +44,9 @@ export const ScheduleDialog = ({ publicationTitle, processNumber, type }: Schedu
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="flex-1">
-          {React.createElement(icon, { className: "h-4 w-4 mr-2" })}
-          {title}
+        <Button size="sm" variant="outline" className={iconOnly ? "h-12 w-full rounded-2xl" : "flex-1"} title={title}>
+          {React.createElement(icon, { className: iconOnly ? "h-5 w-5" : "h-4 w-4 mr-2" })}
+          {!iconOnly && title}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">

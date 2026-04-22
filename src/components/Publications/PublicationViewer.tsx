@@ -1,19 +1,13 @@
-
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, CheckCircle, Clock } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { usePublicacoes } from "@/hooks/usePublicacoes";
 
 interface Publication {
   id: string;
-  title: string;
-  date: string;
-  processNumber: string;
-  oabNumber: string;
-  content: string;
-  urgency: "alta" | "media" | "baixa";
+  numero_processo: string;
+  titulo: string;
+  conteudo: string;
+  data_publicacao: string;
+  status: 'nova' | 'lida' | 'arquivada' | 'processada';
+  urgencia: 'baixa' | 'media' | 'alta';
 }
 
 interface PublicationViewerProps {
@@ -22,7 +16,8 @@ interface PublicationViewerProps {
 
 export const PublicationViewer = ({ publication }: PublicationViewerProps) => {
   const { toast } = useToast();
-  const [isProcessed, setIsProcessed] = useState(false);
+  const { updateStatus } = usePublicacoes();
+  const isProcessed = publication.status === 'lida' || publication.status === 'processada';
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
@@ -35,12 +30,14 @@ export const PublicationViewer = ({ publication }: PublicationViewerProps) => {
     }
   };
 
-  const handleProcessPublication = () => {
-    setIsProcessed(true);
-    toast({
-      title: "Publicação tratada",
-      description: "A publicação foi marcada como tratada com sucesso.",
-    });
+  const handleProcessPublication = async () => {
+    const success = await updateStatus(publication.id, 'processada');
+    if (success) {
+      toast({
+        title: "Publicação tratada",
+        description: "A publicação foi marcada como tratada com sucesso.",
+      });
+    }
   };
 
   return (
@@ -63,10 +60,10 @@ export const PublicationViewer = ({ publication }: PublicationViewerProps) => {
           {/* Publication Header */}
           <div className="border-b pb-4">
             <div className="flex items-start justify-between gap-4 mb-3">
-              <h3 className="font-semibold text-lg">{publication.title}</h3>
+              <h3 className="font-semibold text-lg">{publication.titulo}</h3>
               <div className="flex gap-2">
-                <Badge className={getUrgencyColor(publication.urgency)}>
-                  {publication.urgency}
+                <Badge className={getUrgencyColor(publication.urgencia)}>
+                  {publication.urgencia}
                 </Badge>
                 {isProcessed && (
                   <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -77,15 +74,12 @@ export const PublicationViewer = ({ publication }: PublicationViewerProps) => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
               <div>
-                <span className="font-medium">Data:</span> {publication.date}
+                <span className="font-medium">Data:</span> {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}
               </div>
               <div>
-                <span className="font-medium">Processo:</span> {publication.processNumber}
-              </div>
-              <div>
-                <span className="font-medium">OAB:</span> {publication.oabNumber}
+                <span className="font-medium">Processo:</span> {publication.numero_processo}
               </div>
             </div>
           </div>
@@ -94,7 +88,7 @@ export const PublicationViewer = ({ publication }: PublicationViewerProps) => {
           <div className="space-y-3">
             <h4 className="font-medium">Teor da Publicação:</h4>
             <div className="bg-muted/30 p-4 rounded-lg border">
-              <p className="text-sm leading-relaxed">{publication.content}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{publication.conteudo}</p>
             </div>
           </div>
 
