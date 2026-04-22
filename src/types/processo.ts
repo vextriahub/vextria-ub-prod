@@ -14,6 +14,12 @@ export interface Processo {
   responsavelId?: string;
   responsavelNome?: string;
   ultimaMovimentacao?: string; // Data da última movimentação
+  // Histórico completo de movimentações (importado via API DataJud/PJe)
+  andamentos?: Array<{
+      descricao: string;
+      data: string | null;
+  }>;
+  observacoes?: string;
   area?: string; // Área jurídica do processo
   tribunal?: string;
   vara?: string;
