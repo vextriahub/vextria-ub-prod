@@ -47,6 +47,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 import { ChevronDown, FileSpreadsheet, FileText as FileTextIcon } from "lucide-react";
 
 import { usePublicacoes } from "@/hooks/usePublicacoes";
