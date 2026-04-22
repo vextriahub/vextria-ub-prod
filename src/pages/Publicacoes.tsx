@@ -39,6 +39,7 @@ import {
 
 import { usePublicacoes } from "@/hooks/usePublicacoes";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Publicacoes() {
   const { toast } = useToast();
@@ -393,5 +394,4 @@ export default function Publicacoes() {
   );
 }
 
-// Helper icons missing in imports
-import { Checkbox } from "@/components/ui/checkbox";
+
