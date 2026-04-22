@@ -31,9 +31,12 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onDeleteClient
 }) => {
   return (
-    <Card className={`relative bg-black/20 border-white/5 backdrop-blur-md hover:bg-white/5 hover:border-white/10 hover:shadow-premium hover:-translate-y-1 transition-all duration-300 overflow-hidden group ${
-      isSelected ? "ring-2 ring-primary border-primary/50" : ""
-    }`}>
+    <Card 
+      className={`relative bg-black/20 border-white/5 backdrop-blur-md hover:bg-white/5 hover:border-white/10 hover:shadow-premium hover:-translate-y-1 transition-all duration-300 overflow-hidden group cursor-pointer ${
+        isSelected ? "ring-2 ring-primary border-primary/50" : ""
+      }`}
+      onClick={() => onClientClick(client)}
+    >
       {isSelected && <div className="absolute top-0 right-0 w-16 h-16 bg-primary/20 blur-2xl rounded-full" />}
 
       <CardHeader className="pb-3">
@@ -42,6 +45,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             checked={isSelected}
             onCheckedChange={() => onToggleSelect(client.id)}
             className="mt-1"
+            onClick={(e) => e.stopPropagation()}
           />
           <div className="flex items-center gap-4 relative z-10 w-full pr-2">
             <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-inner ${isSelected ? 'bg-primary/20 text-primary' : 'bg-white/5 text-white/50 group-hover:text-white/80 border border-white/5'}`}>
@@ -50,8 +54,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start w-full">
                 <CardTitle 
-                  className="text-lg font-bold text-white/90 cursor-pointer hover:text-primary transition-colors truncate"
-                  onClick={() => onClientClick(client)}
+                  className="text-lg font-bold text-white/90 truncate"
                 >
                   {client.name}
                 </CardTitle>
