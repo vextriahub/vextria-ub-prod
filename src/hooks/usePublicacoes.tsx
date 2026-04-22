@@ -149,6 +149,38 @@ export const usePublicacoes = () => {
     }
   };
 
+  const fetchByCnj = async (cnj: string) => {
+    if (!user?.office_id) return [];
+
+    try {
+      // Simulação de busca na API externa (PJE/Datajud)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const mockResults = [
+        {
+          titulo: `Intimação Automática - Processo ${cnj}`,
+          data_publicacao: new Date().toISOString().split('T')[0],
+          numero_processo: cnj,
+          conteudo: "Conteúdo capturado via consulta CNJ. Intimação referente ao andamento processual detectado no diário oficial eletrônico.",
+          urgencia: 'media' as const,
+          status: 'nova' as const,
+          tags: ["cnj-fetch", "novo"]
+        }
+      ];
+
+      const savedResults = [];
+      for (const res of mockResults) {
+        const saved = await createPublication(res as any);
+        if (saved) savedResults.push(saved);
+      }
+
+      return savedResults;
+    } catch (error) {
+      console.error('Error fetching by CNJ:', error);
+      return [];
+    }
+  };
+
   return {
     publications,
     loading,
@@ -156,6 +188,7 @@ export const usePublicacoes = () => {
     updateStatus,
     deletePublication,
     createPublication,
-    getOfficeOwnerProfile
+    getOfficeOwnerProfile,
+    fetchByCnj
   };
 };

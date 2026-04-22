@@ -24,26 +24,62 @@ interface PublicationFiltersProps {
     search: string;
     status: string;
     urgencia: string;
+    cnj: string;
     dateRange: { from: Date | undefined; to: Date | undefined };
   };
   setFilters: (filters: any) => void;
   activeFiltersCount: number;
   onClear: () => void;
+  onCnjConsult: (cnj: string) => void;
+  isConsulting: boolean;
 }
 
 export const PublicationFilters = ({
   filters,
   setFilters,
   activeFiltersCount,
-  onClear
+  onClear,
+  onCnjConsult,
+  isConsulting
 }: PublicationFiltersProps) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-full">
+      {/* CNJ Search Row */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem] border-white/5 bg-primary/5">
+        <div className="relative group flex-1">
+          <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
+          <Input 
+            placeholder="Número do Processo (CNJ) - Ex: 1234567-89.2025.8.26.0100" 
+            value={filters.cnj}
+            onChange={(e) => setFilters({ ...filters, cnj: e.target.value })}
+            className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/40 transition-all font-bold text-sm"
+          />
+        </div>
+        <Button 
+          onClick={() => onCnjConsult(filters.cnj)}
+          disabled={isConsulting || !filters.cnj}
+          className="h-12 px-8 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-300"
+        >
+          {isConsulting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Consultando...
+            </>
+          ) : (
+            <>
+              <Search className="h-4 w-4 mr-2" />
+              Consultar CNJ
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Main Filter Row */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem] border-white/5">
         <div className="relative group flex-1 md:min-w-[300px]">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
           <Input 
-            placeholder="Buscar por termo, processo ou conteúdo..." 
+            placeholder="Busca rápida por termo ou resumo..." 
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
             className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"

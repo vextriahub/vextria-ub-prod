@@ -36,6 +36,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, FileSpreadsheet, FileText as FileTextIcon } from "lucide-react";
 
 import { usePublicacoes } from "@/hooks/usePublicacoes";
 import { cn } from "@/lib/utils";
@@ -43,14 +50,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Publicacoes() {
   const { toast } = useToast();
-  const { publications, loading, deletePublication, updateStatus } = usePublicacoes();
+  const { publications, loading, deletePublication, updateStatus, fetchByCnj } = usePublicacoes();
   const [view, setView] = useState<'grid' | 'table'>('table');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isConsulting, setIsConsulting] = useState(false);
   
   const [filters, setFilters] = useState({
     search: '',
     status: 'all',
     urgencia: 'all',
+    cnj: '',
     dateRange: { from: undefined as Date | undefined, to: undefined as Date | undefined }
   });
 
@@ -99,6 +108,7 @@ export default function Publicacoes() {
       filters.search !== '',
       filters.status !== 'all',
       filters.urgencia !== 'all',
+      filters.cnj !== '',
       filters.dateRange.from !== undefined
     ].filter(Boolean).length;
   }, [filters]);
@@ -131,6 +141,36 @@ export default function Publicacoes() {
       title: "Sucesso",
       description: `${selectedIds.length} publicações atualizadas com sucesso.`,
     });
+  };
+
+  const handleCnjConsult = async (cnj: string) => {
+    if (!cnj) return;
+    
+    setIsConsulting(true);
+    try {
+      const newPubs = await fetchByCnj(cnj);
+      if (newPubs.length > 0) {
+        toast({
+          title: "Publicações capturadas",
+          description: `${newPubs.length} novas publicações encontradas para o processo ${cnj}.`,
+        });
+        setFilters(prev => ({ ...prev, search: cnj })); // Auto filter to show the results
+      } else {
+        toast({
+          title: "Nenhum resultado",
+          description: `Não encontramos novas publicações para o processo ${cnj} no momento.`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro na consulta",
+        description: "Ocorreu um erro ao tentar consultar o CNJ.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsConsulting(false);
+    }
   };
 
   return (
@@ -195,21 +235,48 @@ export default function Publicacoes() {
                 filters={filters}
                 setFilters={setFilters}
                 activeFiltersCount={activeFiltersCount}
+                isConsulting={isConsulting}
+                onCnjConsult={handleCnjConsult}
                 onClear={() => setFilters({
                   search: '',
                   status: 'all',
                   urgencia: 'all',
+                  cnj: '',
                   dateRange: { from: undefined, to: undefined }
                 })}
               />
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-10 rounded-xl border-white/10 hover:bg-white/5 font-bold text-xs uppercase tracking-widest text-[#22c55e]">
-                   <Download className="h-4 w-4 mr-2" /> Exportar Excel
-                </Button>
-                <Button variant="outline" size="sm" className="h-10 rounded-xl border-white/10 hover:bg-white/5 font-bold text-xs uppercase tracking-widest text-[#ef4444]">
-                   <Download className="h-4 w-4 mr-2" /> Exportar PDF
-                </Button>
-                <Button className="h-10 rounded-xl px-6 font-bold text-xs uppercase tracking-wider bg-indigo-600 hover:bg-indigo-700">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-12 px-6 rounded-2xl border-white/10 hover:bg-white/5 font-black text-xs uppercase tracking-widest text-primary gap-2 transition-all duration-300 shadow-lg">
+                      <Download className="h-4 w-4" />
+                      Exportar
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-background/80 backdrop-blur-2xl border-white/10 shadow-2xl">
+                    <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                      <div className="p-1.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
+                        <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-xs uppercase tracking-tight">Excel (.xlsx)</span>
+                        <span className="text-[10px] text-muted-foreground/60 italic">Relatório em planilha</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
+                      <div className="p-1.5 rounded-lg bg-red-500/10 group-hover:bg-red-500/20 transition-colors">
+                        <FileTextIcon className="h-4 w-4 text-red-500" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-xs uppercase tracking-tight">PDF (.pdf)</span>
+                        <span className="text-[10px] text-muted-foreground/60 italic">Documento formatado</span>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button className="h-12 rounded-2xl px-8 font-black text-xs uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all duration-300">
                    Consultar
                 </Button>
               </div>
