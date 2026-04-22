@@ -1,4 +1,22 @@
+import React from "react";
 import { usePublicacoes } from "@/hooks/usePublicacoes";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Eye, 
+  CheckCircle, 
+  Calendar, 
+  Clock 
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Publication {
   id: string;
