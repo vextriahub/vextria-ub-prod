@@ -20,7 +20,9 @@ import {
   Archive, 
   Eye,
   Download,
-  Filter
+  Filter,
+  Inbox,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -392,5 +394,4 @@ export default function Publicacoes() {
 }
 
 // Helper icons missing in imports
-import { X, Checkbox as CheckboxUI } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
