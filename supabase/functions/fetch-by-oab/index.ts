@@ -163,7 +163,7 @@ serve(async (req) => {
     const ufUpper = uf.toUpperCase();
     const tribunaisParaBuscar = UF_TO_TRIBUNAIS[ufUpper] || [`tj${uf.toLowerCase()}`];
     
-    console.log(`[DEEP-CLEAN-SYNC] OAB ${oab}-${ufUpper}`);
+    console.log(`[FETCH-BY-OAB-REQ] OAB: ${oab}, UF: ${ufUpper}, Days: ${days}`);
     
     let allResults: any[] = [];
     const numeroOabPuro = oab.replace(/\D/g, '');

@@ -91,11 +91,14 @@ serve(async (req) => {
 
     const payload = await req.json();
     const { numeroProcesso, oab, uf } = payload;
+    
+    console.log(`[FETCH-PROCESSO] Request received: ${JSON.stringify({ numeroProcesso: !!numeroProcesso, oab: !!oab, uf })}`);
 
     // BUSCA POR OAB (HÍBRIDA: DATAJUD + COMUNICA PJE)
     if (oab && uf) {
       console.log(`[FETCH-PROCESSO-OAB] Iniciando busca híbrida: OAB ${oab}-${uf}`);
-      const tribunalSigla = UF_TO_TRIBUNAL[uf.toUpperCase()] || `tj${uf.toLowerCase()}`;
+      const ufUpper = uf.toUpperCase();
+      const tribunalSigla = UF_TO_TRIBUNAL[ufUpper] || `tj${uf.toLowerCase()}`;
       
       let allResults: any[] = [];
 
@@ -104,11 +107,11 @@ serve(async (req) => {
         const searchBody = {
           query: {
             query_string: {
-              query: `partes.advogados.oab: "${oab}" AND partes.advogados.uf: "${uf.toUpperCase()}"`,
+              query: `partes.advogados.oab: "${oab}" AND partes.advogados.uf: "${ufUpper}"`,
               default_operator: "AND"
             }
           },
-          size: 50
+          size: 100
         };
 
         const djResponse = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunalSigla}/_search`, {
@@ -124,50 +127,49 @@ serve(async (req) => {
           const djData = await djResponse.json();
           const djProcesses = (djData.hits?.hits || []).map((hit: any) => mapProcess(hit, tribunalSigla));
           allResults = [...allResults, ...djProcesses];
-          console.log(`[DATAJUD] Encontrados: ${djProcesses.length}`);
+          console.log(`[DATAJUD] Encontrados: ${djProcesses.length} em ${tribunalSigla}`);
+        } else {
+          console.error(`[DATAJUD] Erro HTTP ${djResponse.status} em ${tribunalSigla}`);
         }
       } catch (e) {
         console.error("[DATAJUD] Falha na busca:", e);
       }
 
       // 2. TENTAR COMUNICA PJE API (FALLBACK PODEROSO)
-      if (allResults.length === 0 || uf === 'DF') {
-        try {
-          console.log(`[COMUNICA-PJE] Consultando fallback para OAB ${oab}-${uf}`);
-          const pjeResponse = await fetch(`https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${oab}&ufOab=${uf}`);
-          if (pjeResponse.ok) {
-            const pjeData = await pjeResponse.json();
-            const pjeItems = pjeData.items || [];
-            
-            const pjeProcesses = pjeItems.map((item: any) => ({
-              id: item.id || item.numeroProcesso,
-              numeroProcesso: item.numeroProcesso,
-              titulo: item.tituloProcesso || `Processo ${item.numeroProcesso}`,
-              partes: item.partes?.map((p: any) => p.nome).join(' x ') || item.tituloProcesso || 'Não identificado',
-              tribunal: item.nomeTribunal || tribunalSigla?.toUpperCase() || 'PJE',
-              ultimoAndamento: {
-                descricao: item.textoComunicacao || 'Comunicação PJe',
-                data: item.dataDisponibilizacao
-              },
-              faseProcessual: 'Comunicado PJe',
-              valorCausa: 0,
-              vara: item.nomeOrgao || '',
-              comarca: uf
-            }));
+      try {
+        console.log(`[COMUNICA-PJE] Consultando fallback para OAB ${oab}-${uf}`);
+        const pjeResponse = await fetch(`https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${oab}&ufOab=${ufUpper}`);
+        if (pjeResponse.ok) {
+          const pjeData = await pjeResponse.json();
+          const pjeItems = pjeData.items || [];
+          
+          const pjeProcesses = pjeItems.map((item: any) => ({
+            id: item.id || item.numeroProcesso,
+            numeroProcesso: item.numero_processo || item.numeroProcesso,
+            titulo: item.titulo_processo || item.tituloProcesso || `Processo ${item.numero_processo || item.numeroProcesso}`,
+            partes: item.texto_comunicacao?.substring(0, 500) || 'Não identificado',
+            tribunal: item.nome_tribunal || item.nomeTribunal || 'PJE',
+            ultimoAndamento: {
+              descricao: (item.texto_comunicacao || 'Comunicação PJe').substring(0, 200),
+              data: item.data_disponibilizacao || item.dataDisponibilizacao
+            },
+            faseProcessual: item.nome_classe || 'Comunicado PJe',
+            valorCausa: 0,
+            vara: item.nome_orgao || item.nomeOrgao || '',
+            comarca: ufUpper
+          }));
 
-            // Evitar duplicados por número de processo
-            const existingNumbers = new Set(allResults.map(p => p.numeroProcesso));
-            pjeProcesses.forEach((p: any) => {
-              if (!existingNumbers.has(p.numeroProcesso)) {
-                allResults.push(p);
-                existingNumbers.add(p.numeroProcesso);
-              }
-            });
-            console.log(`[COMUNICA-PJE] Encontrados após merge: ${allResults.length}`);
-          }
-        } catch (e) {
-          console.error("[COMUNICA-PJE] Falha na busca:", e);
+          const existingNumbers = new Set(allResults.map(p => p.numeroProcesso));
+          pjeProcesses.forEach((p: any) => {
+            if (!existingNumbers.has(p.numeroProcesso)) {
+              allResults.push(p);
+              existingNumbers.add(p.numeroProcesso);
+            }
+          });
+          console.log(`[COMUNICA-PJE] Encontrados após merge: ${allResults.length}`);
         }
+      } catch (e) {
+        console.error("[COMUNICA-PJE] Falha na busca:", e);
       }
 
       return new Response(JSON.stringify(allResults), {
@@ -176,15 +178,17 @@ serve(async (req) => {
       });
     }
 
-    // BUSCA INDIVIDUAL
+    // BUSCA INDIVIDUAL POR CNJ
     if (numeroProcesso) {
       const cleanNumber = numeroProcesso.replace(/[.-]/g, "");
+      if (cleanNumber.length < 14) throw new Error("Número CNJ incompleto");
+
       const j = cleanNumber.substring(13, 14);
       const rr = cleanNumber.substring(14, 16);
       const tribunalCode = `${j}.${rr}`;
       const tribunalSigla = TRIBUNAL_MAP[tribunalCode] || "tjsp";
 
-      console.log(`[FETCH-PROCESSO] Individual: ${cleanNumber} no tribunal: ${tribunalSigla}`);
+      console.log(`[FETCH-PROCESSO-CNJ] Buscando: ${cleanNumber} (${tribunalSigla})`);
 
       const response = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunalSigla}/_search`, {
         method: 'POST',
@@ -193,17 +197,14 @@ serve(async (req) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          query: {
-            match: {
-              numeroProcesso: cleanNumber
-            }
-          }
+          query: { match: { numeroProcesso: cleanNumber } }
         })
       });
 
       if (!response.ok) {
           const errorText = await response.text();
-          return new Response(JSON.stringify({ error: `Erro no tribunal: ${response.status}`, details: errorText }), {
+          console.error(`[DATAJUD-ERROR] ${response.status}: ${errorText}`);
+          return new Response(JSON.stringify({ error: `Tribunal ${tribunalSigla.toUpperCase()} indisponível no momento.` }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: response.status,
           });
@@ -213,25 +214,27 @@ serve(async (req) => {
       const hits = data.hits?.hits || [];
       
       if (hits.length === 0) {
-        return new Response(JSON.stringify({ error: "Processo não encontrado no DataJud." }), {
+        return new Response(JSON.stringify({ error: "Processo não encontrado. Verifique o número e o tribunal." }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 404,
         });
       }
 
-      // Retorna apenas o primeiro resultado mapeado
       return new Response(JSON.stringify(mapProcess(hits[0], tribunalSigla)), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
-    throw new Error("Parâmetros inválidos.");
-  } catch (error) {
-    console.error(`[FETCH-PROCESSO-CRITICAL-ERROR] ${error.message}`);
-    return new Response(JSON.stringify({ error: error.message }), {
+    throw new Error("Informe o Número CNJ ou OAB para realizar a busca.");
+  } catch (error: any) {
+    console.error(`[FETCH-PROCESSO-CRITICAL] ${error.message}`);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      details: "Tente novamente ou cadastre o processo manualmente se o tribunal estiver fora do ar."
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: error.status || 500,
     });
   }
 });
