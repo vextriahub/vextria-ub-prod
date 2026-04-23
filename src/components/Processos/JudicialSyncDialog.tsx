@@ -109,8 +109,14 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     setCurrentPage(1);
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
       const { data, error } = await supabase.functions.invoke('fetch-by-oab', {
-        body: { oab, uf }
+        body: { oab, uf },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (error) throw error;

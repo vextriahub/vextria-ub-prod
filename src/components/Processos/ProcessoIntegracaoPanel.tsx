@@ -27,8 +27,14 @@ export const ProcessoIntegracaoPanel: React.FC<ProcessoIntegracaoPanelProps> = (
     if (!cnjInput) return;
     setCnjLoading(true);
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
       const { data, error } = await supabase.functions.invoke('fetch-processo', {
-        body: { numeroProcesso: cnjInput }
+        body: { numeroProcesso: cnjInput },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (error) throw error;
