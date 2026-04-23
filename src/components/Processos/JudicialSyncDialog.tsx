@@ -132,7 +132,12 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       const items = data || [];
       const mappedResults = items.map((item: any) => ({
         ...item,
-        id: item.id || item.numeroProcesso
+        id: item.id || item.numeroProcesso,
+        // Garante que campos não venham nulos para o formulário
+        autor: item.autor === 'Não identificado' ? '' : (item.autor || ''),
+        reu: item.reu === 'Não identificado' ? '' : (item.reu || ''),
+        vara: item.vara || '',
+        comarca: item.comarca || ''
       }));
 
       setResults(mappedResults);
@@ -162,6 +167,13 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       setSelectedIds(new Set());
     } else {
       setSelectedIds(new Set(results.map(r => r.id)));
+    }
+  };
+
+  const updateResultLocally = (id: string, updates: Partial<JudicialProcessResult>) => {
+    setResults(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+    if (previewProc?.id === id) {
+      setPreviewProc(curr => curr ? { ...curr, ...updates } : null);
     }
   };
 
@@ -428,7 +440,6 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </Button>
       </div>
 
-      {/* Modal de Detalhes do Processo (Preview) */}
       <Dialog open={!!previewProc} onOpenChange={(open) => !open && setPreviewProc(null)}>
         <DialogContent className="max-w-2xl bg-slate-950 border-white/5 p-8 backdrop-blur-3xl">
           {previewProc && (
@@ -437,73 +448,108 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                   <Gavel className="h-6 w-6" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-xl font-bold">{previewProc.numeroProcesso}</h3>
                   <p className="text-white/40 text-sm">{previewProc.tribunal}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-8">
+                {/* Lado Autor */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-wider">
                     <User className="h-4 w-4" /> Autor / Requerente
                   </div>
-                  <p className="text-white font-medium pl-6">{previewProc.autor || 'Não identificado'}</p>
-                  
-                  <div className="pt-2 pl-6">
+                  <div className="space-y-3">
+                    <Input 
+                      className="bg-white/5 border-white/10 text-xs h-9 focus:ring-primary"
+                      placeholder="Nome do Autor"
+                      value={previewProc.autor}
+                      onChange={(e) => updateResultLocally(previewProc.id, { autor: e.target.value })}
+                    />
                     <Button 
                       variant={clientPolos[previewProc.id] === 'autor' ? 'default' : 'outline'}
                       size="sm"
-                      className="w-full rounded-xl gap-2 font-bold"
+                      className="w-full rounded-xl gap-2 font-bold text-[10px] h-8"
                       onClick={() => setClientPolos({...clientPolos, [previewProc.id]: 'autor'})}
                     >
-                      {clientPolos[previewProc.id] === 'autor' && <ShieldCheck className="h-4 w-4" />}
+                      {clientPolos[previewProc.id] === 'autor' && <ShieldCheck className="h-3 w-3" />}
                       Este é meu cliente
                     </Button>
                   </div>
                 </div>
 
+                {/* Lado Réu */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-wider">
                     <Users className="h-4 w-4" /> Réu / Requerido
                   </div>
-                  <p className="text-white font-medium pl-6">{previewProc.reu || 'Não identificado'}</p>
-
-                  <div className="pt-2 pl-6">
+                  <div className="space-y-3">
+                    <Input 
+                      className="bg-white/5 border-white/10 text-xs h-9 focus:ring-primary"
+                      placeholder="Nome do Réu"
+                      value={previewProc.reu}
+                      onChange={(e) => updateResultLocally(previewProc.id, { reu: e.target.value })}
+                    />
                     <Button 
                       variant={clientPolos[previewProc.id] === 'reu' ? 'default' : 'outline'}
                       size="sm"
-                      className="w-full rounded-xl gap-2 font-bold"
+                      className="w-full rounded-xl gap-2 font-bold text-[10px] h-8"
                       onClick={() => setClientPolos({...clientPolos, [previewProc.id]: 'reu'})}
                     >
-                      {clientPolos[previewProc.id] === 'reu' && <ShieldCheck className="h-4 w-4" />}
+                      {clientPolos[previewProc.id] === 'reu' && <ShieldCheck className="h-3 w-3" />}
                       Este é meu cliente
                     </Button>
                   </div>
+                </div>
+              </div>
+
+              {/* Vara e Comarca */}
+              <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-white/40 uppercase font-bold">Vara / Órgão</Label>
+                  <Input 
+                    className="bg-transparent border-white/10 text-xs h-8"
+                    value={previewProc.vara}
+                    onChange={(e) => updateResultLocally(previewProc.id, { vara: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] text-white/40 uppercase font-bold">Comarca / UF</Label>
+                  <Input 
+                    className="bg-transparent border-white/10 text-xs h-8"
+                    value={previewProc.comarca}
+                    onChange={(e) => updateResultLocally(previewProc.id, { comarca: e.target.value })}
+                  />
                 </div>
               </div>
 
               <Separator className="bg-white/5" />
 
-              <div className="space-y-4">
-                <div className="text-white/60 text-sm font-bold uppercase tracking-wider">Última Movimentação</div>
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
-                   <p className="text-white/80 leading-relaxed text-sm italic">
-                    "{previewProc.ultimoAndamento?.descricao || 'Sem andamentos disponíveis.'}"
+              <div className="space-y-3">
+                <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between">
+                  <span>Última Movimentação</span>
+                  {previewProc.ultimoAndamento && (
+                    <span className="text-primary/70">{new Date(previewProc.ultimoAndamento.data).toLocaleDateString()}</span>
+                  )}
+                </div>
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5 max-h-[120px] overflow-y-auto custom-scrollbar">
+                   <p className="text-white/60 leading-relaxed text-[11px] italic">
+                    {previewProc.ultimoAndamento?.descricao || 'Sem andamentos disponíveis.'}
                    </p>
                 </div>
               </div>
 
-              <DialogFooter className="pt-4">
-                <Button variant="ghost" onClick={() => setPreviewProc(null)} className="text-white/40">Fechar</Button>
+              <DialogFooter className="pt-2">
+                <Button variant="ghost" onClick={() => setPreviewProc(null)} className="text-white/40 text-xs font-bold">Fechar</Button>
                 <Button 
-                  className="bg-primary hover:bg-primary/80 font-bold"
+                  className="bg-primary hover:bg-primary/80 font-bold px-8 shadow-lg shadow-primary/20"
                   onClick={() => {
                     toggleSelect(previewProc.id);
                     setPreviewProc(null);
                   }}
                 >
-                  {selectedIds.has(previewProc.id) ? 'Remover da Seleção' : 'Selecionar para Importação'}
+                  {selectedIds.has(previewProc.id) ? 'Remover Seleção' : 'Selecionar para Importação'}
                 </Button>
               </DialogFooter>
             </div>
