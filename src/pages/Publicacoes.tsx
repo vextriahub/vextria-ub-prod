@@ -86,15 +86,15 @@ export default function Publicacoes() {
   };
 
   const handleRegister = (pub: any) => {
+    setInitialProcessData({
       titulo: pub.titulo || `Processo ${pub.numero_processo}`,
       numeroProcesso: pub.numero_processo,
       tribunal: pub.tribunal,
       vara: pub.vara,
       comarca: pub.comarca,
-      descricao: `Cadastrado a partir da publicação em ${new Date(pub.data_publicacao).toLocaleDateString('pt-BR')}.`
+      descricao: `Cadastrado a partir da publicação em ${pub.data_publicacao ? new Date(pub.data_publicacao).toLocaleDateString('pt-BR') : 'data não identificada'}.`
     });
     setNovoProcessoOpen(true);
-    // Ideal: mark as processed after successful registration
   };
 
   const handleSchedule = (pub: any) => {
