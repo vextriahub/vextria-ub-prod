@@ -7,8 +7,8 @@ import { FileText, Loader2, RotateCw, Search, Plus, Filter, Database } from 'luc
 import { formatCNJ, extractYearFromCNJ } from '@/utils/formatCNJ';
 
 // Debug logs
-console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V20.1 - HARDENED DATA & UI ', 'background: #10b981; color: #000; font-weight: bold; font-size: 16px;');
-console.log('🔍 Processos.tsx - Renderização V20.1 (Final Sync & Scope Fix)');
+console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V20.2 - FINAL STABILITY ', 'background: #10b981; color: #fff; font-weight: bold; font-size: 16px;');
+console.log('🔍 Processos.tsx - Renderização V20.2 (Auth Fix & Broad Search)');
 
 // Componentes UI
 import { Button } from '@/components/ui/button';
