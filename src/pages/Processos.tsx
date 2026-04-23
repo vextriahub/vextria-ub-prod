@@ -6,8 +6,8 @@ import { useProcessos } from '@/hooks/useProcessos';
 import { FileText, Loader2, RotateCw, Search, Plus } from 'lucide-react';
 
 // Debug logs
-console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V13 - ABAS ATIVAS ', 'background: #f59e0b; color: #000; font-weight: bold; font-size: 16px;');
-console.log('🔍 Processos.tsx - Renderização V13 (Manual JWT Auth)');
+console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V13.1 - ABAS ATIVAS ', 'background: #f59e0b; color: #000; font-weight: bold; font-size: 16px;');
+console.log('🔍 Processos.tsx - Renderização V13.1 (Full Deploy)');
 
 // Componentes UI
 import { Button } from '@/components/ui/button';

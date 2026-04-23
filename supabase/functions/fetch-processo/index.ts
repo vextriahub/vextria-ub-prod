@@ -9,6 +9,7 @@ const corsHeaders = {
 };
 
 const PUBLIC_DATAJUD_KEY = "cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw==";
+// v13.1 - Manual JWT Auth Fix
 
 const TRIBUNAL_MAP: Record<string, string> = {
   "8.01": "tjac", "8.02": "tjal", "8.03": "tjam", "8.04": "tjap", "8.05": "tjba",
