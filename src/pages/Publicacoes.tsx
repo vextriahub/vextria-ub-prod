@@ -55,6 +55,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 
+import { NovoProcessoDialog } from "@/components/Processos/NovoProcessoDialog";
+import { NovoPrazoStandaloneDialog } from "@/components/Processos/NovoPrazoStandaloneDialog";
+
 export default function Publicacoes() {
   const { toast } = useToast();
   const { user, profile } = useAuth();
@@ -64,6 +67,27 @@ export default function Publicacoes() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [selectedPub, setSelectedPub] = useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [novoProcessoOpen, setNovoProcessoOpen] = useState(false);
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [initialProcessData, setInitialProcessData] = useState<any>(null);
+  
+  const handleRegister = (pub: any) => {
+    setInitialProcessData({
+      titulo: pub.titulo || `Processo ${pub.numero_processo}`,
+      numeroProcesso: pub.numero_processo,
+      tribunal: pub.tribunal,
+      vara: pub.vara,
+      comarca: pub.comarca,
+      descricao: `Cadastrado a partir da publicação em ${new Date(pub.data_publicacao).toLocaleDateString('pt-BR')}.`
+    });
+    setNovoProcessoOpen(true);
+    // Ideal: mark as processed after successful registration
+  };
+
+  const handleSchedule = (pub: any) => {
+    setSelectedPub(pub);
+    setScheduleDialogOpen(true);
+  };
   
   const [filters, setFilters] = useState({
     search: '',
@@ -461,7 +485,13 @@ export default function Publicacoes() {
                     </div>
 
                     <div className="lg:w-48 flex flex-col gap-3 justify-center">
-                      <PublicationDetailsDialog publication={publication} />
+                      <PublicationDetailsDialog 
+                        publication={publication} 
+                        onRegister={handleRegister}
+                        onSchedule={handleSchedule}
+                        onProcess={(id) => updateStatus(id, 'processada')}
+                        onDelete={deletePublication}
+                      />
                       <div className="h-px bg-border my-2" />
                       <div className="grid grid-cols-3 gap-2">
                         <ScheduleDialog 
@@ -504,6 +534,10 @@ export default function Publicacoes() {
                       <div className="flex items-center gap-4 pt-4 border-t border-border/20">
                         <PublicationDetailsDialog 
                           publication={publication}
+                          onRegister={handleRegister}
+                          onSchedule={handleSchedule}
+                          onProcess={(id) => updateStatus(id, 'processada')}
+                          onDelete={deletePublication}
                           trigger={
                             <Button variant="outline" size="sm" className="rounded-xl border-border hover:bg-card px-6 h-10 font-bold text-xs uppercase tracking-wider gap-2">
                               <Eye className="h-4 w-4" />
@@ -528,8 +562,44 @@ export default function Publicacoes() {
           onOpenChange={setDetailDialogOpen}
           onDelete={deletePublication}
           onProcess={(id) => updateStatus(id, 'processada')}
+          onRegister={handleRegister}
+          onSchedule={handleSchedule}
         />
       )}
+
+      {/* Dialogs de Ação Vinculada */}
+      <NovoProcessoDialog 
+        open={novoProcessoOpen}
+        onOpenChange={setNovoProcessoOpen}
+        initialData={initialProcessData}
+        onAddProcesso={async () => {
+          if (selectedPub?.id) {
+            await updateStatus(selectedPub.id, 'processada');
+            toast({
+              title: "Processo Cadastrado",
+              description: "O processo foi criado e a publicação marcada como tratada."
+            });
+          }
+          setNovoProcessoOpen(false);
+          refresh();
+        }}
+      />
+
+      <NovoPrazoStandaloneDialog 
+        open={scheduleDialogOpen}
+        onOpenChange={setScheduleDialogOpen}
+        onSuccess={async () => {
+          if (selectedPub?.id) {
+            await updateStatus(selectedPub.id, 'processada');
+            toast({
+              title: "Prazo Agendado",
+              description: "O prazo foi criado e a publicação marcada como tratada."
+            });
+          }
+          setScheduleDialogOpen(false);
+          refresh();
+        }}
+      />
     </div>
   );
 }

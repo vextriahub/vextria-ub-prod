@@ -38,13 +38,15 @@ interface NovoProcessoDialogProps {
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  initialData?: Partial<NovoProcessoForm>;
 }
 
 export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
   onAddProcesso,
   trigger,
   open: controlledOpen,
-  onOpenChange: setControlledOpen
+  onOpenChange: setControlledOpen,
+  initialData
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -60,23 +62,34 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
   const [cnjInput, setCnjInput] = useState('');
   
   const [formData, setFormData] = useState<NovoProcessoForm>({
-    titulo: '',
-    cliente: '',
-    status: 'Em andamento',
-    proximoPrazo: '',
-    descricao: '',
-    valorCausa: 0,
-    numeroProcesso: '',
-    tipoProcesso: '',
-    faseProcessual: 'Fase Inicial',
+    titulo: initialData?.titulo || '',
+    cliente: initialData?.cliente || '',
+    status: initialData?.status || 'Em andamento',
+    proximoPrazo: initialData?.proximoPrazo || '',
+    descricao: initialData?.descricao || '',
+    valorCausa: initialData?.valorCausa || 0,
+    numeroProcesso: initialData?.numeroProcesso || '',
+    tipoProcesso: initialData?.tipoProcesso || '',
+    faseProcessual: initialData?.faseProcessual || 'Fase Inicial',
     responsavelId: user?.id || '',
-    tribunal: '',
-    vara: '',
-    comarca: '',
-    requerido: '',
+    tribunal: initialData?.tribunal || '',
+    vara: initialData?.vara || '',
+    comarca: initialData?.comarca || '',
+    requerido: initialData?.requerido || '',
     segredoJustica: false,
     justicaGratuita: false
   });
+
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        ...initialData,
+        responsavelId: prev.responsavelId || user?.id || ''
+      }));
+      setStep('form'); // Pula direto pro form se tiver dados iniciais
+    }
+  }, [initialData, user?.id]);
 
   const resetForm = () => {
     setFormData({

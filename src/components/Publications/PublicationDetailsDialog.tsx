@@ -27,9 +27,11 @@ interface PublicationDetailsDialogProps {
   trigger?: React.ReactNode;
   onDelete?: (id: string) => void;
   onProcess?: (id: string) => void;
+  onRegister?: (publication: Publication) => void;
+  onSchedule?: (publication: Publication) => void;
 }
 
-export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trigger, onDelete, onProcess }: PublicationDetailsDialogProps) => {
+export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trigger, onDelete, onProcess, onRegister, onSchedule }: PublicationDetailsDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
@@ -121,29 +123,41 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
         <div className="p-6 md:p-8 bg-muted/20 shrink-0 border-t border-white/5 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
           <div className="flex flex-col md:flex-row gap-3 w-full">
              <Button 
-                onClick={() => {}}
+                onClick={() => onRegister?.(publication)}
                 variant="outline" 
-                className="rounded-xl border-white/10 hover:bg-primary/10 hover:text-primary px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-2 md:order-1"
+                className="rounded-xl border-white/10 hover:bg-primary/10 hover:text-primary px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-2"
              >
                <PlusCircle className="h-4 w-4" />
                Cadastrar Processo
              </Button>
+             
+             <Button 
+                onClick={() => onSchedule?.(publication)}
+                className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-1 shadow-lg shadow-orange-500/20"
+             >
+               <Calendar className="h-4 w-4" />
+               Agendar Prazo
+             </Button>
+
              <Button 
                 onClick={() => onProcess?.(publication.id)}
                 variant="outline" 
-                className="rounded-xl border-white/10 hover:bg-emerald-500/10 hover:text-emerald-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-1 md:order-2"
+                className="rounded-xl border-white/10 hover:bg-emerald-500/10 hover:text-emerald-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-3"
              >
                <CheckCircle className="h-4 w-4" />
                Marcar como Trata
              </Button>
-             <Button 
-                onClick={() => onDelete?.(publication.id)}
-                variant="ghost" 
-                className="rounded-xl hover:bg-red-500/10 hover:text-red-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-3"
-             >
-               <Trash2 className="h-4 w-4" />
-               Excluir 
-             </Button>
+             
+             <div className="md:ml-auto">
+               <Button 
+                  onClick={() => onDelete?.(publication.id)}
+                  variant="ghost" 
+                  className="rounded-xl hover:bg-red-500/10 hover:text-red-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto"
+               >
+                 <Trash2 className="h-4 w-4" />
+                 Excluir 
+               </Button>
+             </div>
           </div>
         </div>
       </DialogContent>
