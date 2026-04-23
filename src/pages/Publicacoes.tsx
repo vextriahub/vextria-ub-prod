@@ -526,6 +526,8 @@ export default function Publicacoes() {
           publication={selectedPub}
           open={detailDialogOpen}
           onOpenChange={setDetailDialogOpen}
+          onDelete={deletePublication}
+          onProcess={(id) => updateStatus(id, 'processada')}
         />
       )}
     </div>

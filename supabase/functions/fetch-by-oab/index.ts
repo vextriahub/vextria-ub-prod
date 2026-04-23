@@ -40,7 +40,6 @@ const isProcessActive = (process: any) => {
 const extractPartesFromTexto = (html: string): { autor: string | null; reu: string | null } | null => {
   if (!html) return null;
   
-  // Limpar tags HTML básicas para facilitar a busca
   // Limpar tags HTML e converter entidades comuns
   const cleanText = html.replace(/<[^>]*>?/gm, ' ')
     .replace(/&nbsp;/g, ' ')
@@ -209,20 +208,26 @@ serve(async (req) => {
             const numProc = item.numero_processo || item.numeroProcesso;
             if (!numProc) return null;
             
-            // Tenta extrair nomes do texto se o título for genérico
-            const extractedPartesInfo = extractPartesFromTexto(item.texto_comunicacao || item.texto || '');
+            const rawContent = item.texto_comunicacao || item.texto || item.textoComunicacao || '';
+            const itemCleanText = rawContent
+              .replace(/<[^>]*>?/gm, ' ')
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&quot;/g, '"')
+              .replace(/&amp;/g, '&')
+              .replace(/\s+/g, ' ')
+              .trim();
+
+            const extractedPartesInfo = extractPartesFromTexto(rawContent);
             const combinedExtracted = extractedPartesInfo ? `${extractedPartesInfo.autor} x ${extractedPartesInfo.reu}` : null;
             const formattedNum = formatCNJ(numProc);
             const rawTitle = item.titulo_processo || item.tituloProcesso || combinedExtracted || formattedNum;
             const finalTitle = cleanTitle(rawTitle);
 
-            // Determinar tribunal real pela sigla/nome ou pelo número do processo
             const cleanNum = numProc.replace(/[.-]/g, '');
             const j = cleanNum.length >= 14 ? cleanNum.substring(13, 14) : '';
             const rr = cleanNum.length >= 16 ? cleanNum.substring(14, 16) : '';
             let tribunalReal = item.nome_tribunal || item.sigla_tribunal || item.nomeTribunal || '';
             if (!tribunalReal || tribunalReal === 'PJE' || tribunalReal === 'PJe') {
-              // Deduzir tribunal do número do processo
               if (j === '8' && rr === '07') tribunalReal = 'TJDFT';
               else if (j === '8') tribunalReal = `TJ${ufUpper}`;
               else if (j === '4') tribunalReal = `TRF${rr.replace(/^0/, '')}`;
@@ -239,11 +244,11 @@ serve(async (req) => {
               reu: extractedPartesInfo?.reu || '',
               tribunal: tribunalReal,
               ultimoAndamento: {
-                descricao: item.texto || item.texto_comunicacao || item.textoComunicacao || item.meio_comunicacao || 'Comunicação PJe',
+                descricao: itemCleanText.substring(0, 500) + (itemCleanText.length > 500 ? '...' : ''),
                 data: item.data_disponibilizacao || item.dataDisponibilizacao || item.data_comunicacao
               },
               faseProcessual: item.nome_classe || 'Não identificada',
-              conteudo: cleanText, // Texto já limpo de HTML
+              conteudo: itemCleanText, 
               valorCausa: 0,
               vara: item.nome_orgao || item.nomeOrgao || '',
               comarca: ufUpper
@@ -275,7 +280,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[FETCH-BY-OAB-ERROR] ${error.message}`);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

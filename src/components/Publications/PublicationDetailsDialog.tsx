@@ -38,8 +38,8 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-w-2xl max-h-[80vh] border-white/10 bg-background/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl p-0 overflow-hidden">
-        <DialogHeader className="p-8 pb-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] md:max-h-[80vh] border-white/10 bg-background/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl p-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-8 pb-4 shrink-0">
           <DialogTitle className="flex items-center gap-3 text-2xl font-black tracking-tight">
             <div className="p-2 bg-primary/10 rounded-xl">
               <FileText className="h-6 w-6 text-primary" />
@@ -48,8 +48,8 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="max-h-[60vh] p-8">
-          <div className="space-y-6">
+        <ScrollArea className="flex-1 px-8">
+          <div className="space-y-6 pb-8">
             <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <h3 className="text-xl font-bold leading-tight max-w-[80%]">{publication.titulo}</h3>
@@ -115,9 +115,9 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
           </div>
         </ScrollArea>
         
-        <Separator className="bg-white/5" />
+        <Separator className="bg-white/5 shrink-0" />
 
-        <div className="flex flex-wrap items-center justify-between gap-4 p-8 bg-muted/20">
+        <div className="flex flex-wrap items-center justify-between gap-4 p-8 bg-muted/20 shrink-0">
           <div className="flex gap-2">
              <Button 
                 variant="outline" 
