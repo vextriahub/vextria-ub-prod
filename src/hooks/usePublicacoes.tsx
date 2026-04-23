@@ -71,7 +71,7 @@ export const usePublicacoes = () => {
         // For now, relies on supabase's RLS or unique constraints if any
         const newRecord = {
           titulo: item.titulo || `Publicação ${item.numeroProcesso}`,
-          conteudo: item.ultimoAndamento?.descricao || item.conteudo || '',
+          conteudo: item.ultimoAndamento?.descricao || item.conteudo || 'Expediente processual identificado via sincronização automática.',
           data_publicacao: item.ultimoAndamento?.data ? new Date(item.ultimoAndamento.data).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           numero_processo: item.numeroProcesso,
           status: 'nova' as const,
@@ -82,13 +82,21 @@ export const usePublicacoes = () => {
         // We check if it already exists to avoid duplication
         const { data: existing } = await supabase
           .from('publicacoes')
-          .select('id')
+          .select('id, conteudo')
           .eq('office_id', user.office_id)
           .eq('numero_processo', newRecord.numero_processo)
           .eq('conteudo', newRecord.conteudo)
           .maybeSingle();
 
-        if (!existing) {
+        if (existing) {
+          // Se já existe mas o conteúdo novo é maior (mais completo), atualizamos
+          if (newRecord.conteudo.length > (existing.conteudo?.length || 0)) {
+            await supabase
+              .from('publicacoes')
+              .update({ conteudo: newRecord.conteudo })
+              .eq('id', existing.id);
+          }
+        } else {
           const saved = await createPublication(newRecord as any);
           if (saved) savedResults.push(saved);
         }

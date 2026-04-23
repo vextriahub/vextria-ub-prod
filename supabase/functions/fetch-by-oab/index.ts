@@ -233,8 +233,8 @@ serve(async (req) => {
               reu: extractedPartesInfo?.reu || '',
               tribunal: tribunalReal,
               ultimoAndamento: {
-                descricao: item.texto_comunicacao || item.textoComunicacao || 'Comunicação PJe',
-                data: item.data_disponibilizacao || item.dataDisponibilizacao
+                descricao: item.texto || item.texto_comunicacao || item.textoComunicacao || item.meio_comunicacao || 'Comunicação PJe',
+                data: item.data_disponibilizacao || item.dataDisponibilizacao || item.data_comunicacao
               },
               faseProcessual: item.nome_classe || 'Não identificada',
               valorCausa: 0,
