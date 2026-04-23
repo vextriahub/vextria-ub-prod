@@ -109,7 +109,6 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     setCurrentPage(1);
 
     try {
-    try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       
