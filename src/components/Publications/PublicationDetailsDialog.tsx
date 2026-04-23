@@ -31,11 +31,25 @@ interface PublicationDetailsDialogProps {
   onSchedule?: (publication: Publication) => void;
 }
 
+const deepCleanHTML = (html: string): string => {
+  if (!html) return "";
+  let cleaned = html;
+  cleaned = cleaned.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, " ");
+  cleaned = cleaned.replace(/<[^>]*>?/gm, " ");
+  cleaned = cleaned
+    .replace(/&nbsp;/gi, " ").replace(/&quot;/gi, '"').replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
+    .replace(/&ordm;/gi, "º").replace(/&ordf;/gi, "ª");
+  return cleaned.replace(/\s+/g, " ").trim();
+};
+
 export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trigger, onDelete, onProcess, onRegister, onSchedule }: PublicationDetailsDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
   const setIsOpen = isControlled ? onOpenChange : setInternalOpen;
+
+  const cleanContent = React.useMemo(() => deepCleanHTML(publication.conteudo), [publication.conteudo]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -113,7 +127,7 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
               <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Teor da Publicação (Completo):</label>
               <div className="bg-muted/30 p-5 md:p-8 rounded-2xl border border-white/5 shadow-inner">
                 <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap font-medium text-foreground/90">
-                  {publication.conteudo || "O conteúdo integral desta publicação está sendo processado ou não está disponível."}
+                  {cleanContent || "O conteúdo integral desta publicação está sendo processado ou não está disponível."}
                 </p>
               </div>
             </div>

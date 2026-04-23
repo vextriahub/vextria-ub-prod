@@ -39,16 +39,24 @@ export const PublicationFilters = ({
   onClear
 }: PublicationFiltersProps) => {
   const handleQuickFilter = (period: 'today' | 'week' | 'month') => {
-    const from = new Date();
+    const now = new Date();
+    let from = new Date();
     from.setHours(0, 0, 0, 0);
     
     if (period === 'week') {
-      from.setDate(from.getDate() - 7);
+      // Começar da Segunda-feira da semana atual
+      const day = from.getDay();
+      const diff = from.getDate() - day + (day === 0 ? -6 : 1); 
+      from.setDate(diff);
     } else if (period === 'month') {
-      from.setMonth(from.getMonth() - 1);
+      // Começar do dia 1 do mês atual
+      from.setDate(1);
     }
     
-    setFilters({ ...filters, dateRange: { from, to: new Date() } });
+    const to = new Date();
+    to.setHours(23, 59, 59, 999);
+    
+    setFilters({ ...filters, dateRange: { from, to } });
   };
 
   return (

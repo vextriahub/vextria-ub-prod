@@ -18,10 +18,17 @@ interface SummaryCardProps {
   icon: React.ElementType;
   color: string;
   trend?: string;
+  onClick?: () => void;
 }
 
-const SummaryCard = ({ title, value, description, icon: Icon, color, trend }: SummaryCardProps) => (
-  <Card className="border-border bg-card hover:border-primary/30 transition-all duration-300 shadow-xl rounded-3xl overflow-hidden relative group">
+const SummaryCard = ({ title, value, description, icon: Icon, color, trend, onClick }: SummaryCardProps) => (
+  <Card 
+    className={cn(
+      "border-border bg-card transition-all duration-300 shadow-xl rounded-3xl overflow-hidden relative group",
+      onClick ? "cursor-pointer hover:border-primary/50 hover:shadow-primary/5 active:scale-[0.98]" : ""
+    )}
+    onClick={onClick}
+  >
     {/* Subtle Background Pattern for Premium Feel */}
     <div className={cn("absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-5 group-hover:opacity-10 transition-opacity", color.replace('text-', 'bg-'))} />
     
@@ -59,9 +66,10 @@ interface PublicationSummaryProps {
     semVinculo: number;
     novosAndamentos: number;
   };
+  onCardClick?: (type: 'prazos' | 'novas' | 'sem_vinculo' | 'hoje') => void;
 }
 
-export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
+export const PublicationSummary = ({ stats, onCardClick }: PublicationSummaryProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <SummaryCard
@@ -70,7 +78,7 @@ export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
         description="Vencimentos críticos detectados"
         icon={Clock}
         color="text-red-500"
-        trend="+2 hoje"
+        onClick={() => onCardClick?.('prazos')}
       />
       <SummaryCard
         title="Publicações Novas"
@@ -78,6 +86,7 @@ export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
         description="Aguardando ciência ou tratamento"
         icon={Inbox}
         color="text-violet-600"
+        onClick={() => onCardClick?.('novas')}
       />
       <SummaryCard
         title="Sem Vínculo"
@@ -85,6 +94,7 @@ export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
         description="Não associadas a processos/clientes"
         icon={Link2Off}
         color="text-orange-500"
+        onClick={() => onCardClick?.('sem_vinculo')}
       />
       <SummaryCard
         title="Publicações Hoje"
@@ -92,6 +102,7 @@ export const PublicationSummary = ({ stats }: PublicationSummaryProps) => {
         description="Atualizações capturadas no diário"
         icon={FilePlus}
         color="text-emerald-500"
+        onClick={() => onCardClick?.('hoje')}
       />
     </div>
   );

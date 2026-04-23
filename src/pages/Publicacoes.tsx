@@ -71,8 +71,21 @@ export default function Publicacoes() {
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [initialProcessData, setInitialProcessData] = useState<any>(null);
   
+  const handleCardClick = (type: 'prazos' | 'novas' | 'sem_vinculo' | 'hoje') => {
+    if (type === 'hoje') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const to = new Date();
+      to.setHours(23, 59, 59, 999);
+      setFilters({ ...filters, dateRange: { from: today, to }, status: 'all' });
+    } else if (type === 'novas') {
+      setFilters({ ...filters, status: 'nova', dateRange: { from: undefined, to: undefined } });
+    } else if (type === 'sem_vinculo') {
+      setFilters({ ...filters, search: '', status: 'all', dateRange: { from: undefined, to: undefined } });
+    }
+  };
+
   const handleRegister = (pub: any) => {
-    setInitialProcessData({
       titulo: pub.titulo || `Processo ${pub.numero_processo}`,
       numeroProcesso: pub.numero_processo,
       tribunal: pub.tribunal,
@@ -99,14 +112,18 @@ export default function Publicacoes() {
 
   // Cálculo de Estatísticas
   const stats = useMemo(() => {
+    const todayStr = new Date().toISOString().split('T')[0];
     return {
       prazosSemana: publications.filter(p => p.urgencia === 'alta').length,
       naoTratadas: publications.filter(p => p.status === 'nova' || p.status === 'pendente').length,
       semVinculo: publications.filter(p => !p.processo_id).length,
       novosAndamentos: publications.filter(p => {
-        const d = new Date(p.created_at);
-        const now = new Date();
-        return d.toDateString() === now.toDateString();
+        try {
+          const dStr = new Date(p.data_publicacao).toISOString().split('T')[0];
+          return dStr === todayStr;
+        } catch (e) {
+          return false;
+        }
       }).length
     };
   }, [publications]);
@@ -121,15 +138,20 @@ export default function Publicacoes() {
       
       let matchesDate = true;
       if (filters.dateRange.from) {
-        const pubDate = new Date(pub.data_publicacao);
-        const fromDate = new Date(filters.dateRange.from);
-        fromDate.setHours(0, 0, 0, 0);
-        matchesDate = pubDate >= fromDate;
-        
-        if (filters.dateRange.to) {
-          const toDate = new Date(filters.dateRange.to);
-          toDate.setHours(23, 59, 59, 999);
-          matchesDate = matchesDate && pubDate <= toDate;
+        // Normalizar para DATE STRING local para comparar apenas o dia
+        try {
+          const pubDateStr = new Date(pub.data_publicacao).toISOString().split('T')[0];
+          const fromDateStr = filters.dateRange.from.toISOString().split('T')[0];
+          
+          if (filters.dateRange.to) {
+            const toDateStr = filters.dateRange.to.toISOString().split('T')[0];
+            matchesDate = pubDateStr >= fromDateStr && pubDateStr <= toDateStr;
+          } else {
+            matchesDate = pubDateStr >= fromDateStr;
+          }
+        } catch (e) {
+          console.error("Erro ao processar data:", pub.data_publicacao);
+          matchesDate = true;
         }
       }
       
@@ -252,7 +274,7 @@ export default function Publicacoes() {
         </div>
       </div>
 
-      <PublicationSummary stats={stats} />
+      <PublicationSummary stats={stats} onCardClick={handleCardClick} />
 
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
