@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Eye, Calendar, FileText, Scale, Building2, MapPin, CheckCircle, Link } from "lucide-react";
+import { Eye, Calendar, FileText, Scale, Building2, MapPin, CheckCircle, Link, PlusCircle, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Publication {
