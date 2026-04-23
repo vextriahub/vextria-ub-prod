@@ -18,19 +18,20 @@ interface Publication {
 
 interface PublicationDetailsDialogProps {
   publication: Publication;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
 }
 
-export const PublicationDetailsDialog = ({ publication }: PublicationDetailsDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trigger }: PublicationDetailsDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : internalOpen;
+  const setIsOpen = isControlled ? onOpenChange : setInternalOpen;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
-          <Eye className="h-4 w-4 mr-2" />
-          Ver Detalhes
-        </Button>
-      </DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

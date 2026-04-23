@@ -55,11 +55,14 @@ export const usePublicacoes = () => {
     try {
       console.log(`[Sync] Starting sync for OAB: ${oab}-${uf} (${days} days)`);
       
-      const { data: results, error } = await supabase.functions.invoke('fetch-by-oab', {
+      const { data: results, error: invokeError } = await supabase.functions.invoke('fetch-by-oab', {
         body: { oab, uf, days }
       });
 
-      if (error) throw error;
+      if (invokeError) {
+        console.error('[Sync] Invoke Error:', invokeError);
+        throw new Error(`Erro na API de busca: ${invokeError.message}`);
+      }
       if (!results || !Array.isArray(results)) return [];
 
       const savedResults = [];
@@ -92,33 +95,49 @@ export const usePublicacoes = () => {
       }
 
       return savedResults;
-    } catch (error) {
-      console.error('Error in syncByOab:', error);
+    } catch (error: any) {
+      console.error('[Sync] Critical Error in syncByOab:', error);
+      toast({
+        title: "Erro na sincronização",
+        description: error.message || "Não foi possível conectar aos tribunais no momento.",
+        variant: "destructive"
+      });
       return [];
     }
   };
 
   useEffect(() => {
-    if (!user?.office_id || !profile?.oab || !profile?.oab_uf) return;
+    if (!user?.office_id) return;
 
-    const sessionKey = `last_oab_sync_${user.office_id}_${profile.oab}`;
-    const lastSync = sessionStorage.getItem(sessionKey);
-    
-    // Sync only once per session to avoid excessive API calls
-    if (!lastSync) {
-      console.log('🚀 Triggering auto-sync for OAB in background...');
-      syncByOab(profile.oab, profile.oab_uf).then((news) => {
+    const runAutoSync = async () => {
+      // Buscar OAB do Proprietário do Escritório (Admin)
+      const ownerProfile = await getOfficeOwnerProfile();
+      
+      if (!ownerProfile?.oab || !ownerProfile?.oab_uf) {
+        console.log('⚠️ OAB do Admin não configurada. Auto-sync cancelado.');
+        return;
+      }
+
+      const sessionKey = `last_office_oab_sync_${user.office_id}_${ownerProfile.oab}`;
+      const lastSync = sessionStorage.getItem(sessionKey);
+      
+      if (!lastSync) {
+        console.log(`🚀 Sincronizando OAB Mestra (${ownerProfile.oab}) em segundo plano...`);
+        const news = await syncByOab(ownerProfile.oab, ownerProfile.oab_uf);
+        
         if (news.length > 0) {
           toast({
             title: "Sincronização concluída",
-            description: `${news.length} novas publicações encontradas e importadas.`,
+            description: `${news.length} novas publicações para Dr. ${ownerProfile.full_name} encontradas.`,
           });
-          fetchPublicacoes(); // Refresh list to show new items
+          fetchPublicacoes();
         }
         sessionStorage.setItem(sessionKey, new Date().toISOString());
-      });
-    }
-  }, [user?.office_id, profile?.oab]);
+      }
+    };
+
+    runAutoSync();
+  }, [user?.office_id]);
 
   const updateStatus = async (id: string, status: Publication['status']) => {
     try {
@@ -207,7 +226,7 @@ export const usePublicacoes = () => {
       // 2. Pegar o perfil do dono
       const { data: ownerProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('full_name, oab')
+        .select('full_name, oab, oab_uf')
         .eq('user_id', office.created_by)
         .single();
 
@@ -260,6 +279,7 @@ export const usePublicacoes = () => {
     deletePublication,
     createPublication,
     getOfficeOwnerProfile,
-    fetchByCnj
+    fetchByCnj,
+    syncByOab
   };
 };

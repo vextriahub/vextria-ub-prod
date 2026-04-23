@@ -62,6 +62,8 @@ export default function Publicacoes() {
   const [view, setView] = useState<'grid' | 'table'>('table');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [selectedPub, setSelectedPub] = useState<any>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   
   const [filters, setFilters] = useState({
     search: '',
@@ -181,11 +183,7 @@ export default function Publicacoes() {
         });
       }
     } catch (error) {
-      toast({
-        title: "Erro na sincronização",
-        description: "Não foi possível conectar aos tribunais no momento.",
-        variant: "destructive"
-      });
+      console.error('Manual Sync Failed:', error);
     } finally {
       setIsSyncing(false);
     }
@@ -389,7 +387,11 @@ export default function Publicacoes() {
               selectedIds={selectedIds}
               onToggleSelection={handleToggleSelection}
               onToggleAll={handleToggleAll}
-              onViewDetails={(pub) => {}} // Handle in sync with grid or separate modal
+              onToggleAll={handleToggleAll}
+              onViewDetails={(pub) => {
+                setSelectedPub(pub);
+                setDetailDialogOpen(true);
+              }}
               onDelete={deletePublication}
               onUpdateStatus={updateStatus}
             />
@@ -500,6 +502,17 @@ export default function Publicacoes() {
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
+                      <div className="flex items-center gap-4 pt-4 border-t border-border/20">
+                        <PublicationDetailsDialog 
+                          publication={publication}
+                          trigger={
+                            <Button variant="outline" size="sm" className="rounded-xl border-border hover:bg-card px-6 h-10 font-bold text-xs uppercase tracking-wider gap-2">
+                              <Eye className="h-4 w-4" />
+                              Ver Conteúdo Completo
+                            </Button>
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -508,6 +521,14 @@ export default function Publicacoes() {
           )}
         </div>
       </div>
+
+      {selectedPub && (
+        <PublicationDetailsDialog 
+          publication={selectedPub}
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+        />
+      )}
     </div>
   );
 }
