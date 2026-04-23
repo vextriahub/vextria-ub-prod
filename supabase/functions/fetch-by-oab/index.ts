@@ -35,20 +35,40 @@ const isProcessActive = (process: any) => {
 };
 
 /**
+ * Limpeza profunda de HTML para Deno
+ */
+const deepCleanHTML = (html: string): string => {
+  if (!html) return "";
+  
+  let cleaned = html;
+  // 1. Remover blocos de script e style por completo
+  cleaned = cleaned.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, " ");
+  // 2. Remover todas as tags HTML
+  cleaned = cleaned.replace(/<[^>]*>?/gm, " ");
+  // 3. Converter entidades HTML comuns
+  cleaned = cleaned
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&quot;/gi, '"')
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&ordm;/gi, "º")
+    .replace(/&ordf;/gi, "ª")
+    .replace(/&aacute;/gi, "á").replace(/&eacute;/gi, "é").replace(/&iacute;/gi, "í").replace(/&oacute;/gi, "ó").replace(/&uacute;/gi, "ú")
+    .replace(/&atilde;/gi, "ã").replace(/&otilde;/gi, "õ").replace(/&ccedil;/gi, "ç");
+  // 4. Limpar excesso de espaços e quebras
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  
+  return cleaned;
+};
+
+/**
  * Tenta extrair nomes das partes de um texto HTML vindo do PJe
  */
 const extractPartesFromTexto = (html: string): { autor: string | null; reu: string | null } | null => {
   if (!html) return null;
+  const cleanText = deepCleanHTML(html);
   
-  // Limpar tags HTML e converter entidades comuns
-  const cleanText = html.replace(/<[^>]*>?/gm, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  // Padrão comum: Polo Ativo: NOME Polo Passivo: NOME
   const ativoMatch = cleanText.match(/Polo Ativo:\s*([^Polo]+)/i);
   const passivoMatch = cleanText.match(/Polo Passivo:\s*([^<]+)/i);
   
@@ -58,7 +78,6 @@ const extractPartesFromTexto = (html: string): { autor: string | null; reu: stri
     if (autor && reu) return { autor, reu };
   }
   
-  // Padrão alternativo: REQUERENTE: ... REQUERIDO: ...
   const reqMatch = cleanText.match(/REQUERENTE:\s*([^REQUERIDO]+)/i);
   const respMatch = cleanText.match(/REQUERIDO:\s*([^<]+)/i);
   
@@ -66,7 +85,6 @@ const extractPartesFromTexto = (html: string): { autor: string | null; reu: stri
     return { autor: reqMatch[1].trim(), reu: respMatch[1].trim() };
   }
 
-  // Padrão: "proposta por NOME" / "em face de NOME"
   const propostaMatch = cleanText.match(/proposta por\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\s+em face|\s+contra|\.|$)/i);
   const emFaceMatch = cleanText.match(/em face de\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\.|$)/i);
   
@@ -77,30 +95,21 @@ const extractPartesFromTexto = (html: string): { autor: string | null; reu: stri
   return null;
 };
 
-/**
- * Limpa título removendo texto de SENTENÇA, decisão, etc.
- */
 const cleanTitle = (title: string): string => {
   if (!title) return '';
-  // Remove tudo a partir de SENTENÇA, DECISÃO, Vistos, DESPACHO, Trata-se
   let cleaned = title;
   cleaned = cleaned.replace(/\bSENTENÇA\b.*/i, '').trim();
   cleaned = cleaned.replace(/\bDECISÃO\b.*/i, '').trim();
   cleaned = cleaned.replace(/\bVistos\b.*/i, '').trim();
   cleaned = cleaned.replace(/\bDESPACHO\b.*/i, '').trim();
   cleaned = cleaned.replace(/\bTrata-se\b.*/i, '').trim();
-  // Remove vírgula final
   cleaned = cleaned.replace(/,\s*$/, '').trim();
-  // Limita a 120 caracteres
   if (cleaned.length > 120) {
     cleaned = cleaned.substring(0, 120).trim() + '...';
   }
   return cleaned || title.substring(0, 80);
 };
 
-/**
- * Formata número de processo no padrão CNJ: NNNNNNN-DD.YYYY.J.TR.OOOO
- */
 const formatCNJ = (num: string): string => {
   const clean = num.replace(/[.-]/g, '');
   if (clean.length !== 20) return num;
@@ -124,13 +133,14 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
     reu: reus,
     tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
     ultimoAndamento: lastMovement ? {
-      descricao: lastMovement.descricao,
+      descricao: deepCleanHTML(lastMovement.descricao),
       data: lastMovement.dataHora
     } : null,
     faseProcessual: source.classe?.nome || 'Não identificada',
     valorCausa: source.valorCausa || 0,
     vara: source.orgaoJulgador?.nome || '',
     comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '',
+    conteudo: deepCleanHTML(lastMovement?.descricao || '')
   };
 };
 
@@ -153,13 +163,13 @@ serve(async (req) => {
     const ufUpper = uf.toUpperCase();
     const tribunaisParaBuscar = UF_TO_TRIBUNAIS[ufUpper] || [`tj${uf.toLowerCase()}`];
     
-    console.log(`[DEEP-SYNC] OAB ${oab}-${ufUpper} | Filtrando Ativos`);
+    console.log(`[DEEP-CLEAN-SYNC] OAB ${oab}-${ufUpper}`);
     
     let allResults: any[] = [];
     const numeroOabPuro = oab.replace(/\D/g, '');
     const numeroOabComZero = numeroOabPuro.padStart(6, '0');
 
-    // 1. DATAJUD (Busca paralela)
+    // 1. DATAJUD
     const searchPromises = tribunaisParaBuscar.map(async (tribunal) => {
       try {
         const searchBody = {
@@ -192,13 +202,13 @@ serve(async (req) => {
     const datajudResults = await Promise.all(searchPromises);
     datajudResults.forEach(batch => allResults = [...allResults, ...batch]);
 
-    // 2. COMUNICA PJE (Deep Sync: 5 páginas)
+    // 2. COMUNICA PJE
     const searchDays = days || 365;
     const intervalDate = new Date();
     intervalDate.setDate(intervalDate.getDate() - searchDays);
     const dateStart = intervalDate.toISOString().split('T')[0];
 
-    const pjePromises = [0, 1, 2, 3, 4].map(async (page) => {
+    const pjePromises = [0, 1, 2].map(async (page) => {
       try {
         const pjeUrl = `https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${numeroOabPuro}&ufOab=${ufUpper}&itensPorPagina=100&pagina=${page}&dataDisponibilizacaoInicio=${dateStart}`;
         const pjeResponse = await fetch(pjeUrl);
@@ -209,13 +219,12 @@ serve(async (req) => {
             if (!numProc) return null;
             
             const rawContent = item.texto_comunicacao || item.texto || item.textoComunicacao || '';
-            const itemCleanText = rawContent
-              .replace(/<[^>]*>?/gm, ' ')
-              .replace(/&nbsp;/g, ' ')
-              .replace(/&quot;/g, '"')
-              .replace(/&amp;/g, '&')
-              .replace(/\s+/g, ' ')
-              .trim();
+            const itemCleanText = deepCleanHTML(rawContent);
+
+            // Se ainda estiver vazio ou for só "placeholder", tenta descrever o que é
+            const finalContent = (itemCleanText.length > 5) 
+              ? itemCleanText 
+              : `Comunicação Judicial via ${item.meio_comunicacao || 'PJE'}. Tipo: ${item.tipo_comunicacao || 'Intimação'}. ${item.nome_tribunal || ''}`;
 
             const extractedPartesInfo = extractPartesFromTexto(rawContent);
             const combinedExtracted = extractedPartesInfo ? `${extractedPartesInfo.autor} x ${extractedPartesInfo.reu}` : null;
@@ -244,11 +253,11 @@ serve(async (req) => {
               reu: extractedPartesInfo?.reu || '',
               tribunal: tribunalReal,
               ultimoAndamento: {
-                descricao: itemCleanText.substring(0, 500) + (itemCleanText.length > 500 ? '...' : ''),
+                descricao: finalContent.substring(0, 500) + (finalContent.length > 500 ? '...' : ''),
                 data: item.data_disponibilizacao || item.dataDisponibilizacao || item.data_comunicacao
               },
               faseProcessual: item.nome_classe || 'Não identificada',
-              conteudo: itemCleanText, 
+              conteudo: finalContent, 
               valorCausa: 0,
               vara: item.nome_orgao || item.nomeOrgao || '',
               comarca: ufUpper
