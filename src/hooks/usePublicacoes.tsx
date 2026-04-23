@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -88,18 +87,25 @@ export const usePublicacoes = () => {
         // We check if it already exists to avoid duplication
         const { data: existing } = await supabase
           .from('publicacoes')
-          .select('id, conteudo')
+          .select('id, conteudo, tags')
           .eq('office_id', user.office_id)
           .eq('numero_processo', newRecord.numero_processo)
           .eq('conteudo', newRecord.conteudo)
           .maybeSingle();
 
         if (existing) {
-          // Se já existe mas o conteúdo novo é maior (mais completo), atualizamos
-          if (newRecord.conteudo.length > (existing.conteudo?.length || 0)) {
+          // Se já existe mas o conteúdo novo é maior (mais completo) ou tem tags antigas, atualizamos
+          const oldTags = existing.tags || [];
+          const hasAutoSync = oldTags.includes('auto-sync');
+          const contentImproved = newRecord.conteudo.length > (existing.conteudo?.length || 0);
+
+          if (contentImproved || hasAutoSync) {
             await supabase
               .from('publicacoes')
-              .update({ conteudo: newRecord.conteudo })
+              .update({ 
+                conteudo: newRecord.conteudo,
+                tags: newRecord.tags // Remove 'auto-sync' se estiver presente
+              })
               .eq('id', existing.id);
           }
         } else {
