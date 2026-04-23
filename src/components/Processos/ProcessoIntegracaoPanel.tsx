@@ -30,14 +30,22 @@ export const ProcessoIntegracaoPanel: React.FC<ProcessoIntegracaoPanelProps> = (
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
 
-      const { data, error } = await supabase.functions.invoke('fetch-processo', {
-        body: { numeroProcesso: cnjInput },
+      const response = await fetch(`https://xrtmyhuqbbtaelczemag.supabase.co/functions/v1/fetch-processo`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': 'sb_publishable_RQVoreC1A29Ix5EtrxsB7A_nkvwR7xQ'
+        },
+        body: JSON.stringify({ numeroProcesso: cnjInput })
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || `Erro ${response.status}: Processo não localizado.`);
+      }
+
+      const data = await response.json();
       if (data) {
         // Mapear para o formato que onAddProcesso espera ou abrir o form manual pré-preenchido
         // Para simplificar agora, vamos direto para o formulário manual mas com os dados injetados

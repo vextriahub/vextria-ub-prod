@@ -109,17 +109,26 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     setCurrentPage(1);
 
     try {
+    try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-
-      const { data, error } = await supabase.functions.invoke('fetch-by-oab', {
-        body: { oab, uf },
+      
+      const response = await fetch(`https://xrtmyhuqbbtaelczemag.supabase.co/functions/v1/fetch-by-oab`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': 'sb_publishable_RQVoreC1A29Ix5EtrxsB7A_nkvwR7xQ'
+        },
+        body: JSON.stringify({ oab, uf })
       });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || `Erro ${response.status}: Falha na comunicação com o servidor judicial.`);
+      }
+
+      const data = await response.json();
       
       const items = data || [];
       const mappedResults = items.map((item: any) => ({

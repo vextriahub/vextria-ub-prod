@@ -149,13 +149,31 @@ serve(async (req) => {
 
   try {
     const processKey = Deno.env.get("PROCESSO_API_KEY") || PUBLIC_DATAJUD_KEY;
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    const authHeader = req.headers.get("Authorization") || req.headers.get("authorization");
+    console.log(`[AUTH-DEBUG] Authorization header: ${authHeader ? 'Present (' + authHeader.substring(0, 20) + '...)' : 'MISSING'}`);
+    
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Sua sessão expirou ou é inválida. Por favor, faça login novamente." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
-    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "", 
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !user) throw new Error("Authentication error");
+    
+    if (userError || !user) {
+      console.error(`[AUTH-ERROR] getUser failed: ${userError?.message}`);
+      return new Response(JSON.stringify({ error: "Falha na autenticação do usuário. Sessão corrompida." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
     const { oab, uf, days } = await req.json();
     if (!oab || !uf) throw new Error("OAB e UF são obrigatórios");
