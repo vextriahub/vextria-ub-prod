@@ -146,7 +146,7 @@ export const PublicationTable = ({
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
                       <Building2 className="h-3 w-3 text-primary/50" />
-                      <span className="text-[11px] font-bold">{pub.tribunal || 'TRIMUNAL'}</span>
+                      <span className="text-[11px] font-bold">{pub.tribunal || 'TRIBUNAL'}</span>
                     </div>
                     {pub.comarca && (
                       <span className="text-[10px] text-muted-foreground/60 font-medium pl-4">

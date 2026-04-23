@@ -79,7 +79,7 @@ export const usePublicacoes = () => {
           numero_processo: item.numeroProcesso,
           status: 'nova' as const,
           urgencia: 'media' as const,
-          tags: [item.tribunal?.toUpperCase() || 'TRIMUNAL'],
+          tags: [item.tribunal?.toUpperCase() || 'TRIBUNAL'],
           tribunal: item.tribunal,
           comarca: item.comarca,
           vara: item.vara
