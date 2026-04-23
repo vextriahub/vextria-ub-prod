@@ -120,31 +120,49 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
   if (!source) return null;
 
-  console.log(`[DEBUG-MAP] Mapping hit ${hit._id} for tribunal ${tribunalSigla}. Partes length: ${source.partes?.length || 0}`);
+  // 1. Tenta extrair autores e réus do array formal de 'partes'
+  const autoresList: string[] = [];
+  const reusList: string[] = [];
+  const unknownList: string[] = [];
 
-  // Tenta extrair autores e réus com mais flexibilidade
-  const autoresList = source.partes?.filter((p: any) => 
-    p.tipo?.toLowerCase().includes('ativa') || 
-    p.tipo?.toLowerCase().includes('requerente') || 
-    p.tipo?.toLowerCase().includes('autor') ||
-    p.tipo?.toLowerCase().includes('exequente') ||
-    p.tipo?.toLowerCase().includes('reclamante')
-  ).map((p: any) => p.nome);
+  source.partes?.forEach((p: any) => {
+    const nome = p.nome || '';
+    const tipo = (p.tipo || '').toLowerCase();
+    const polo = p.polo;
 
-  const reusList = source.partes?.filter((p: any) => 
-    p.tipo?.toLowerCase().includes('passiva') || 
-    p.tipo?.toLowerCase().includes('requerido') || 
-    p.tipo?.toLowerCase().includes('réu') ||
-    p.tipo?.toLowerCase().includes('executado') ||
-    p.tipo?.toLowerCase().includes('reclamado') ||
-    p.tipo?.toLowerCase().includes('passivo')
-  ).map((p: any) => p.nome);
+    if (tipo.includes('ativa') || tipo.includes('requerente') || tipo.includes('autor') || 
+        tipo.includes('exequente') || tipo.includes('reclamante') || polo === 1 || polo === "1") {
+      autoresList.push(nome);
+    } else if (tipo.includes('passiva') || tipo.includes('requerido') || tipo.includes('réu') || 
+               tipo.includes('executado') || tipo.includes('reclamado') || polo === 2 || polo === "2") {
+      reusList.push(nome);
+    } else {
+      unknownList.push(nome);
+    }
+  });
 
-  const autores = autoresList?.length > 0 ? autoresList.join(', ') : 'Não identificado';
-  const reus = reusList?.length > 0 ? reusList.join(', ') : 'Não identificado';
+  // 2. Fallback: Se não encontrou no array formal, tenta extrair dos textos de andamento (Forte no PJE/TJDFT)
+  const movements = source.movimentacoes || [];
+  const bestMovement = movements.find((m: any) => (m.descricao || '').length > 20) || movements[0] || null;
+  const movementDesc = bestMovement?.descricao || '';
+
+  if (autoresList.length === 0 || reusList.length === 0) {
+    const extracted = extractPartesFromTexto(movementDesc);
+    if (extracted && extracted.autor && extracted.reu) {
+      if (autoresList.length === 0) autoresList.push(extracted.autor);
+      if (reusList.length === 0) reusList.push(extracted.reu);
+    }
+  }
+
+  // 3. Ultra Fallback: Se ainda estiver vazio mas tiver unknown, usa os unknown
+  if (autoresList.length === 0 && unknownList.length > 0) {
+    autoresList.push(unknownList[0]);
+    if (unknownList.length > 1) reusList.push(unknownList[1]);
+  }
+
+  const autores = autoresList.length > 0 ? autoresList.join(', ') : 'Não identificado';
+  const reus = reusList.length > 0 ? reusList.join(', ') : 'Não identificado';
   
-  const lastMovement = source.movimentacoes?.[0] || null;
-
   return {
     id: hit._id,
     numeroProcesso: source.numeroProcesso || 'N/A',
@@ -153,15 +171,15 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
     autor: autores,
     reu: reus,
     tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
-    ultimoAndamento: lastMovement ? {
-      descricao: deepCleanHTML(lastMovement.descricao || ''),
-      data: lastMovement.dataHora
+    ultimoAndamento: bestMovement ? {
+      descricao: deepCleanHTML(movementDesc).substring(0, 500),
+      data: bestMovement.dataHora
     } : null,
     faseProcessual: source.classe?.nome || 'Não identificada',
     valorCausa: source.valorCausa || 0,
     vara: source.orgaoJulgador?.nome || '',
     comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '',
-    conteudo: deepCleanHTML(lastMovement?.descricao || '')
+    conteudo: deepCleanHTML(movementDesc)
   };
 };
 
