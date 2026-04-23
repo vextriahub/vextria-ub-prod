@@ -344,8 +344,8 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="text-[10px] font-medium line-clamp-2 text-white/90 cursor-default max-w-[200px]">
-                              {proc.partes}
+                            <div className="text-[10px] font-bold line-clamp-1 text-white/90 cursor-default max-w-[200px]">
+                              {proc.autor || 'Não identificado'}
                             </div>
                           </TooltipTrigger>
                           <TooltipContent className="bg-slate-800 border-white/10 text-white max-w-sm">
@@ -427,6 +427,89 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           {importing ? 'Importando...' : `Importar ${selectedIds.size} Processos`}
         </Button>
       </div>
+
+      {/* Modal de Detalhes do Processo (Preview) */}
+      <Dialog open={!!previewProc} onOpenChange={(open) => !open && setPreviewProc(null)}>
+        <DialogContent className="max-w-2xl bg-slate-950 border-white/5 p-8 backdrop-blur-3xl">
+          {previewProc && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Gavel className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{previewProc.numeroProcesso}</h3>
+                  <p className="text-white/40 text-sm">{previewProc.tribunal}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-wider">
+                    <User className="h-4 w-4" /> Autor / Requerente
+                  </div>
+                  <p className="text-white font-medium pl-6">{previewProc.autor || 'Não identificado'}</p>
+                  
+                  <div className="pt-2 pl-6">
+                    <Button 
+                      variant={clientPolos[previewProc.id] === 'autor' ? 'default' : 'outline'}
+                      size="sm"
+                      className="w-full rounded-xl gap-2 font-bold"
+                      onClick={() => setClientPolos({...clientPolos, [previewProc.id]: 'autor'})}
+                    >
+                      {clientPolos[previewProc.id] === 'autor' && <ShieldCheck className="h-4 w-4" />}
+                      Este é meu cliente
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-wider">
+                    <Users className="h-4 w-4" /> Réu / Requerido
+                  </div>
+                  <p className="text-white font-medium pl-6">{previewProc.reu || 'Não identificado'}</p>
+
+                  <div className="pt-2 pl-6">
+                    <Button 
+                      variant={clientPolos[previewProc.id] === 'reu' ? 'default' : 'outline'}
+                      size="sm"
+                      className="w-full rounded-xl gap-2 font-bold"
+                      onClick={() => setClientPolos({...clientPolos, [previewProc.id]: 'reu'})}
+                    >
+                      {clientPolos[previewProc.id] === 'reu' && <ShieldCheck className="h-4 w-4" />}
+                      Este é meu cliente
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="bg-white/5" />
+
+              <div className="space-y-4">
+                <div className="text-white/60 text-sm font-bold uppercase tracking-wider">Última Movimentação</div>
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                   <p className="text-white/80 leading-relaxed text-sm italic">
+                    "{previewProc.ultimoAndamento?.descricao || 'Sem andamentos disponíveis.'}"
+                   </p>
+                </div>
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button variant="ghost" onClick={() => setPreviewProc(null)} className="text-white/40">Fechar</Button>
+                <Button 
+                  className="bg-primary hover:bg-primary/80 font-bold"
+                  onClick={() => {
+                    toggleSelect(previewProc.id);
+                    setPreviewProc(null);
+                  }}
+                >
+                  {selectedIds.has(previewProc.id) ? 'Remover da Seleção' : 'Selecionar para Importação'}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
 
   );
