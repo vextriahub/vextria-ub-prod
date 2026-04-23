@@ -158,7 +158,6 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
              </Button>
           </div>
         </div>
-    </div>
       </DialogContent>
     </Dialog>
   );
