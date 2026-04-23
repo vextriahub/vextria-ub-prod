@@ -21,6 +21,7 @@ export const ProcessoIntegracaoPanel: React.FC<ProcessoIntegracaoPanelProps> = (
   const [mode, setMode] = useState<'choice' | 'oab' | 'cnj' | 'manual'>('choice');
   const [cnjLoading, setCnjLoading] = useState(false);
   const [cnjInput, setCnjInput] = useState('');
+  const [capturedData, setCapturedData] = useState<any>(null);
   const { toast } = useToast();
 
   const handleCnjSearch = async () => {
@@ -47,27 +48,64 @@ export const ProcessoIntegracaoPanel: React.FC<ProcessoIntegracaoPanelProps> = (
 
       const data = await response.json();
       if (data) {
-        // Mapear para o formato que onAddProcesso espera ou abrir o form manual pré-preenchido
-        // Para simplificar agora, vamos direto para o formulário manual mas com os dados injetados
-        // No futuro, isso pode ser integrado melhor
+        console.log('📋 Dados capturados CNJ:', data);
+        setCapturedData(data);
         toast({
           title: "Processo encontrado!",
-          description: "Dados básicos capturados. Finalize o cadastro manualmente.",
+          description: "Dados básicos capturados. Finalize o cadastro abaixo.",
         });
         setMode('manual');
+      } else {
+        throw new Error("Dados não retornados pela API.");
       }
     } catch (error: any) {
       console.error('Erro ao buscar CNJ:', error);
       toast({
         title: "Não encontrado",
-        description: "Não conseguimos localizar este processo no DataJud. Você pode cadastrar manualmente.",
+        description: error.message || "Não conseguimos localizar este processo. Verifique o número ou cadastre manualmente.",
         variant: "destructive"
       });
-      setMode('manual');
+      // Mesmo com erro, permite ir pro manual se quiser
+      if (error.message?.includes('não localizado')) {
+          setMode('manual');
+      }
     } finally {
       setCnjLoading(false);
     }
   };
+
+  if (mode === 'manual') {
+    return (
+      <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+        <div className="flex items-center gap-4 mb-8">
+          <Button variant="ghost" size="icon" onClick={() => {
+            setMode('choice');
+            setCapturedData(null);
+          }} className="rounded-full">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold text-white">Finalizar Cadastro</h2>
+            <p className="text-white/40 text-sm">Revise os dados capturados e complete o registro</p>
+          </div>
+        </div>
+        
+        <div className="max-w-4xl mx-auto w-full">
+          <ManualProcessoForm 
+            initialData={capturedData} 
+            onSave={async (data) => {
+              await onAddProcesso(data);
+              onSuccess();
+            }}
+            onCancel={() => {
+              setMode('choice');
+              setCapturedData(null);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (mode === 'oab') {
     return (
@@ -237,5 +275,144 @@ export const ProcessoIntegracaoPanel: React.FC<ProcessoIntegracaoPanelProps> = (
         <p>A sincronização judicial consome créditos do seu plano. Novos advogados possuem limites diferenciados para a busca profunda da OAB.</p>
       </div>
     </div>
+  );
+};
+
+interface ManualProcessoFormProps {
+  initialData?: any;
+  onSave: (data: any) => Promise<void>;
+  onCancel: () => void;
+}
+
+const ManualProcessoForm: React.FC<ManualProcessoFormProps> = ({ initialData, onSave, onCancel }) => {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    titulo: initialData?.titulo || '',
+    numeroProcesso: initialData?.numeroProcesso || '',
+    status: 'Em andamento',
+    tipoProcesso: initialData?.classeNome || 'Cível',
+    tribunal: initialData?.tribunal || '',
+    comarca: initialData?.comarca || '',
+    vara: initialData?.vara || '',
+    requerido: initialData?.partes?.[1]?.nome || initialData?.requerido || '',
+    valorCausa: initialData?.valorCausa || 0,
+    descricao: initialData?.descricao || initialData?.movimentacoes?.[0]?.descricao || ''
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await onSave(formData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card className="p-8 bg-white/5 border-white/5 rounded-[2.5rem] shadow-2xl backdrop-blur-3xl">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 md:col-span-2">
+            <Label className="text-white/60 ml-1">Título do Processo / Autor *</Label>
+            <Input 
+              required
+              value={formData.titulo}
+              onChange={(e) => setFormData({...formData, titulo: e.target.value})}
+              placeholder="Ex: João da Silva x Banco SA"
+              className="h-12 bg-white/10 border-white/10 rounded-xl focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white/60 ml-1">Número do Processo (CNJ)</Label>
+            <Input 
+              value={formData.numeroProcesso}
+              onChange={(e) => setFormData({...formData, numeroProcesso: formatCNJ(e.target.value)})}
+              placeholder="0000000-00.0000.0.00.0000"
+              className="h-12 bg-white/10 border-white/10 rounded-xl font-mono"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white/60 ml-1">Tipo / Classe Processual</Label>
+            <Input 
+              value={formData.tipoProcesso}
+              onChange={(e) => setFormData({...formData, tipoProcesso: e.target.value})}
+              placeholder="Ex: Procedimento Comum Cível"
+              className="h-12 bg-white/10 border-white/10 rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white/60 ml-1">Tribunal</Label>
+            <Input 
+              value={formData.tribunal}
+              onChange={(e) => setFormData({...formData, tribunal: e.target.value})}
+              placeholder="Ex: TJSP"
+              className="h-12 bg-white/10 border-white/10 rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white/60 ml-1">Vara / Secretaria</Label>
+            <Input 
+              value={formData.vara}
+              onChange={(e) => setFormData({...formData, vara: e.target.value})}
+              placeholder="Ex: 2ª Vara Cível"
+              className="h-12 bg-white/10 border-white/10 rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white/60 ml-1">Comarca</Label>
+            <Input 
+              value={formData.comarca}
+              onChange={(e) => setFormData({...formData, comarca: e.target.value})}
+              placeholder="Ex: São Paulo"
+              className="h-12 bg-white/10 border-white/10 rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-white/60 ml-1">Parte Ré / Requerido</Label>
+            <Input 
+              value={formData.requerido}
+              onChange={(e) => setFormData({...formData, requerido: e.target.value})}
+              placeholder="Ex: Empresa de Energia S.A."
+              className="h-12 bg-white/10 border-white/10 rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label className="text-white/60 ml-1">Observações / Último Andamento</Label>
+            <Textarea 
+              value={formData.descricao}
+              onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+              placeholder="Informações adicionais sobre o processo..."
+              className="bg-white/10 border-white/10 rounded-xl min-h-[100px]"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-4 pt-4">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            onClick={onCancel}
+            className="flex-1 h-12 rounded-xl text-white/60 hover:text-white hover:bg-white/5"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            disabled={loading}
+            type="submit" 
+            className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/80 font-bold"
+          >
+            {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Concluir Cadastro"}
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 };
