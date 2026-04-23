@@ -119,6 +119,7 @@ export default function Publicacoes() {
       semVinculo: publications.filter(p => !p.processo_id).length,
       novosAndamentos: publications.filter(p => {
         try {
+          if (!p.data_publicacao) return false;
           const dStr = new Date(p.data_publicacao).toISOString().split('T')[0];
           return dStr === todayStr;
         } catch (e) {
@@ -131,26 +132,31 @@ export default function Publicacoes() {
   // Filtragem
   const filteredPublications = useMemo(() => {
     return publications.filter(pub => {
-      const matchesSearch = pub.titulo.toLowerCase().includes(filters.search.toLowerCase()) ||
-                           pub.numero_processo.includes(filters.search);
+      const searchTerm = filters.search.toLowerCase();
+      const matchesSearch = (pub.titulo || '').toLowerCase().includes(searchTerm) ||
+                           (pub.numero_processo || '').includes(filters.search) ||
+                           (pub.conteudo || '').toLowerCase().includes(searchTerm);
+      
       const matchesStatus = filters.status === 'all' || pub.status === filters.status;
       const matchesUrgencia = filters.urgencia === 'all' || pub.urgencia === filters.urgencia;
       
       let matchesDate = true;
       if (filters.dateRange.from) {
-        // Normalizar para DATE STRING local para comparar apenas o dia
         try {
-          const pubDateStr = new Date(pub.data_publicacao).toISOString().split('T')[0];
-          const fromDateStr = filters.dateRange.from.toISOString().split('T')[0];
-          
-          if (filters.dateRange.to) {
-            const toDateStr = filters.dateRange.to.toISOString().split('T')[0];
-            matchesDate = pubDateStr >= fromDateStr && pubDateStr <= toDateStr;
+          if (!pub.data_publicacao) {
+            matchesDate = false;
           } else {
-            matchesDate = pubDateStr >= fromDateStr;
+            const pubDateStr = new Date(pub.data_publicacao).toISOString().split('T')[0];
+            const fromDateStr = filters.dateRange.from.toISOString().split('T')[0];
+            
+            if (filters.dateRange.to) {
+              const toDateStr = filters.dateRange.to.toISOString().split('T')[0];
+              matchesDate = pubDateStr >= fromDateStr && pubDateStr <= toDateStr;
+            } else {
+              matchesDate = pubDateStr >= fromDateStr;
+            }
           }
         } catch (e) {
-          console.error("Erro ao processar data:", pub.data_publicacao);
           matchesDate = true;
         }
       }
