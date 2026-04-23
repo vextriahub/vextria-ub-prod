@@ -120,8 +120,29 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
   if (!source) return null;
 
-  const autores = source.partes?.filter((p: any) => p.tipo === 'Ativa' || p.tipo === 'Requerente')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
-  const reus = source.partes?.filter((p: any) => p.tipo === 'Passiva' || p.tipo === 'Requerido')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
+  console.log(`[DEBUG-MAP] Mapping hit ${hit._id} for tribunal ${tribunalSigla}. Partes length: ${source.partes?.length || 0}`);
+
+  // Tenta extrair autores e réus com mais flexibilidade
+  const autoresList = source.partes?.filter((p: any) => 
+    p.tipo?.toLowerCase().includes('ativa') || 
+    p.tipo?.toLowerCase().includes('requerente') || 
+    p.tipo?.toLowerCase().includes('autor') ||
+    p.tipo?.toLowerCase().includes('exequente') ||
+    p.tipo?.toLowerCase().includes('reclamante')
+  ).map((p: any) => p.nome);
+
+  const reusList = source.partes?.filter((p: any) => 
+    p.tipo?.toLowerCase().includes('passiva') || 
+    p.tipo?.toLowerCase().includes('requerido') || 
+    p.tipo?.toLowerCase().includes('réu') ||
+    p.tipo?.toLowerCase().includes('executado') ||
+    p.tipo?.toLowerCase().includes('reclamado') ||
+    p.tipo?.toLowerCase().includes('passivo')
+  ).map((p: any) => p.nome);
+
+  const autores = autoresList?.length > 0 ? autoresList.join(', ') : 'Não identificado';
+  const reus = reusList?.length > 0 ? reusList.join(', ') : 'Não identificado';
+  
   const lastMovement = source.movimentacoes?.[0] || null;
 
   return {
@@ -133,7 +154,7 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
     reu: reus,
     tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
     ultimoAndamento: lastMovement ? {
-      descricao: deepCleanHTML(lastMovement.descricao),
+      descricao: deepCleanHTML(lastMovement.descricao || ''),
       data: lastMovement.dataHora
     } : null,
     faseProcessual: source.classe?.nome || 'Não identificada',
