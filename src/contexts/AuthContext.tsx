@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .eq('user_id', userId)
           .single(),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 20000)
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 45000) // Aumentado para 45s
         )
       ]) as any;
 
@@ -155,6 +155,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
+        // Se já existir (409 Conflict), tentamos buscar novamente em vez de falhar
+        if (error.code === '23505' || error.status === 409) {
+          console.warn('⚠️ Profile already exists (409). Fetching existing one...');
+          const { data: existing } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+          if (existing) {
+            console.log('✅ Recovered existing profile:', existing);
+            return existing;
+          }
+        }
         console.error('❌ Error creating profile:', error);
         return null;
       }

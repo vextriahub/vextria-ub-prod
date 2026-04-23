@@ -229,15 +229,18 @@ serve(async (req) => {
     // 1. DATAJUD
     const searchPromises = tribunaisParaBuscar.map(async (tribunal) => {
       try {
+        // Query mais abrangente tentando vários formatos de OAB
+        const queryString = `(partes.advogados.oab: "${numeroOabPuro}" OR partes.advogados.oab: "${numeroOabComZero}" OR partes.advogados.oab: "${numeroOabPuro}${ufUpper}") AND partes.advogados.uf: "${ufUpper}"`;
+        
         const searchBody = {
           query: {
             query_string: {
-              query: `(partes.advogados.oab: "${numeroOabPuro}" OR partes.advogados.oab: "${numeroOabComZero}") AND partes.advogados.uf: "${ufUpper}"`,
+              query: queryString,
               default_operator: "AND"
             }
           },
           sort: [{ "dataHora": { "order": "desc" } }],
-          size: 300
+          size: 150
         };
 
         const response = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunal}/_search`, {
@@ -248,6 +251,7 @@ serve(async (req) => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log(`[DATAJUD] ${tribunal}: ${data.hits?.total?.value || 0} hits`);
           return (data.hits?.hits || []).map((hit: any) => mapProcess(hit, tribunal)).filter(Boolean);
         }
       } catch (e) {
@@ -271,6 +275,7 @@ serve(async (req) => {
         const pjeResponse = await fetch(pjeUrl);
         if (pjeResponse.ok) {
           const pjeData = await pjeResponse.json();
+          console.log(`[PJE] Página ${page}: ${pjeData.items?.length || 0} itens`);
           return (pjeData.items || []).map((item: any) => {
             const numProc = item.numero_processo || item.numeroProcesso;
             if (!numProc) return null;
@@ -282,7 +287,7 @@ serve(async (req) => {
                descricao: rawContent
             }]);
 
-            let tribunalReal = item.nome_tribunal || item.sigla_tribunal || 'TJ';
+            const tribunalReal = item.nome_tribunal || item.sigla_tribunal || 'TJ';
             
             return {
               id: item.id || numProc,
@@ -322,8 +327,12 @@ serve(async (req) => {
       });
     });
 
-    const activeResults = allResults.filter(isProcessActive);
-    const uniqueResults = Array.from(new Map(activeResults.map(item => [item.numeroProcesso, item])).values());
+    console.log(`[FETCH-BY-OAB-TOTAL] Encontrados ${allResults.length} processos únicos (antes do filtro ativo)`);
+    
+    // Filtro ativo mais permissivo para não ocultar processos legítimos
+    const uniqueResults = Array.from(new Map(allResults.map(item => [item.numeroProcesso, item])).values());
+    
+    console.log(`[FETCH-BY-OAB-SUCCESS] Retornando ${uniqueResults.length} resultados.`);
 
     return new Response(JSON.stringify({ status: "ok", items: uniqueResults }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
