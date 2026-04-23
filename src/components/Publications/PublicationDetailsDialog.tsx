@@ -117,11 +117,11 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
         
         <Separator className="bg-white/5 shrink-0" />
 
-        <div className="flex flex-wrap items-center justify-between gap-4 p-8 bg-muted/20 shrink-0">
-          <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-6 md:p-8 bg-muted/20 shrink-0">
+          <div className="flex flex-col md:flex-row gap-3 w-full">
              <Button 
                 variant="outline" 
-                className="rounded-xl border-white/10 hover:bg-primary/10 hover:text-primary px-5 font-bold text-xs uppercase tracking-widest gap-2 h-11 transition-all"
+                className="rounded-xl border-white/10 hover:bg-primary/10 hover:text-primary px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-2 md:order-1"
              >
                <PlusCircle className="h-4 w-4" />
                Cadastrar Processo
@@ -129,7 +129,7 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
              <Button 
                 onClick={() => onProcess?.(publication.id)}
                 variant="outline" 
-                className="rounded-xl border-white/10 hover:bg-emerald-500/10 hover:text-emerald-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-11 transition-all"
+                className="rounded-xl border-white/10 hover:bg-emerald-500/10 hover:text-emerald-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-1 md:order-2"
              >
                <CheckCircle className="h-4 w-4" />
                Marcar como Trata
@@ -137,15 +137,12 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
              <Button 
                 onClick={() => onDelete?.(publication.id)}
                 variant="ghost" 
-                className="rounded-xl hover:bg-red-500/10 hover:text-red-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-11 transition-all"
+                className="rounded-xl hover:bg-red-500/10 hover:text-red-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-3"
              >
                <Trash2 className="h-4 w-4" />
                Excluir 
              </Button>
           </div>
-          <Button onClick={() => setIsOpen(false)} className="rounded-[1.2rem] px-10 h-11 font-black text-xs uppercase tracking-[0.15em] shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-            Fechar
-          </Button>
         </div>
       </DialogContent>
     </Dialog>

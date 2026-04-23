@@ -73,7 +73,7 @@ export const usePublicacoes = () => {
         // For now, relies on supabase's RLS or unique constraints if any
         const newRecord = {
           titulo: item.titulo || `Publicação ${item.numeroProcesso}`,
-          conteudo: item.ultimoAndamento?.descricao || item.conteudo || 'Expediente processual identificado via sincronização automática.',
+          conteudo: item.conteudo || item.ultimoAndamento?.descricao || 'Expediente processual identificado via sincronização automática.',
           data_publicacao: item.ultimoAndamento?.data ? new Date(item.ultimoAndamento.data).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           numero_processo: item.numeroProcesso,
           status: 'nova' as const,
