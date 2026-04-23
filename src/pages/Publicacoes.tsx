@@ -387,7 +387,6 @@ export default function Publicacoes() {
               selectedIds={selectedIds}
               onToggleSelection={handleToggleSelection}
               onToggleAll={handleToggleAll}
-              onToggleAll={handleToggleAll}
               onViewDetails={(pub) => {
                 setSelectedPub(pub);
                 setDetailDialogOpen(true);

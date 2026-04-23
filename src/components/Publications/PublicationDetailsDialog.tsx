@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -19,7 +20,7 @@ interface Publication {
   comarca?: string;
 }
 
-iinterface PublicationDetailsDialogProps {
+interface PublicationDetailsDialogProps {
   publication: Publication;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -148,7 +149,5 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
   );
 };
