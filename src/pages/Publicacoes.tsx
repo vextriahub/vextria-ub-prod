@@ -424,10 +424,10 @@ export default function Publicacoes() {
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
                           <h4 className="text-2xl font-black group-hover:text-primary transition-colors duration-500 leading-tight tracking-tight text-foreground">
-                            {publication.titulo}
+                            {publication.titulo === publication.numero_processo ? `Publicação no ${publication.tribunal || 'Tribunal'}` : publication.titulo}
                           </h4>
                           <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-3 py-1 rounded-lg text-[10px] tracking-widest uppercase">
+                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-3 py-1 rounded-lg text-xs font-mono uppercase">
                               {publication.numero_processo}
                             </Badge>
                             <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider opacity-60">

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Eye, Calendar, FileText } from "lucide-react";
+import { Eye, Calendar, FileText, Scale, Building2, MapPin, CheckCircle, Link } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Publication {
@@ -14,6 +14,9 @@ interface Publication {
   data_publicacao: string;
   tags: string[];
   status: 'nova' | 'lida' | 'arquivada' | 'processada';
+  tribunal?: string;
+  vara?: string;
+  comarca?: string;
 }
 
 interface PublicationDetailsDialogProps {
@@ -55,10 +58,27 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
                 <span>Data: {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}</span>
               </div>
               
-              <div className="space-y-1">
-                <label className="text-sm font-medium">Número do Processo:</label>
-                <p className="text-sm font-mono bg-muted p-2 rounded">{publication.numero_processo}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Número do Processo:</label>
+                  <p className="text-sm font-mono bg-primary/5 border border-primary/10 p-2.5 rounded-xl font-bold">{publication.numero_processo}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Tribunal / Vara:</label>
+                  <div className="flex items-center gap-2 bg-muted/30 p-2.5 rounded-xl">
+                    <Building2 className="h-4 w-4 text-primary/60" />
+                    <span className="text-sm font-bold">{publication.tribunal || 'PJE/Datajud'}</span>
+                    {publication.vara && <span className="text-xs text-muted-foreground">({publication.vara})</span>}
+                  </div>
+                </div>
               </div>
+
+              {publication.comarca && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                  <MapPin className="h-3 w-3" />
+                  <span>{publication.comarca}</span>
+                </div>
+              )}
             </div>
             
             <Separator />
@@ -77,18 +97,30 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
             <Separator />
             
             <div className="space-y-3">
-              <label className="text-sm font-medium">Conteúdo da Publicação:</label>
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                  {publication.conteudo}
+              <label className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">Conteúdo da Publicação:</label>
+              <div className="bg-muted/40 p-5 rounded-2xl border border-white/5 shadow-inner">
+                <p className="text-sm leading-relaxed whitespace-pre-wrap font-medium text-foreground/90">
+                  {publication.conteudo || "Sem conteúdo disponível para este expediente."}
                 </p>
               </div>
             </div>
           </div>
         </ScrollArea>
         
-        <div className="flex justify-end pt-4">
-          <Button onClick={() => setIsOpen(false)}>
+        <Separator className="bg-white/5" />
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex gap-2">
+             <Button variant="outline" className="rounded-xl border-border px-4 font-bold text-xs uppercase tracking-widest gap-2">
+               <Link className="h-4 w-4" />
+               Vincular Processo
+             </Button>
+             <Button variant="outline" className="rounded-xl border-border px-4 font-bold text-xs uppercase tracking-widest gap-2">
+               <CheckCircle className="h-4 w-4" />
+               Marcar como Trata
+             </Button>
+          </div>
+          <Button onClick={() => setIsOpen(false)} variant="secondary" className="rounded-xl px-8 font-black text-xs uppercase tracking-widest shadow-lg">
             Fechar
           </Button>
         </div>

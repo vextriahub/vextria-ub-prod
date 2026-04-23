@@ -131,7 +131,7 @@ export const PublicationTable = ({
                 <TableCell className="py-5">
                   <div className="flex flex-col gap-1 max-w-[350px]">
                     <span className="font-bold text-sm truncate group-hover:text-primary transition-colors">
-                      {pub.titulo}
+                      {pub.titulo === pub.numero_processo ? `Expediente no ${pub.tribunal || 'Tribunal'}` : pub.titulo}
                     </span>
                     <div className="flex items-center gap-2">
                        <Scale className="h-3 w-3 text-muted-foreground/40" />
@@ -146,11 +146,13 @@ export const PublicationTable = ({
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
                       <Building2 className="h-3 w-3 text-primary/50" />
-                      <span className="text-[11px] font-bold">{pub.tribunal || 'PJE/Datajud'}</span>
+                      <span className="text-[11px] font-bold">{pub.tribunal || 'TRIMUNAL'}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground/60 font-medium pl-4">
-                      {pub.comarca || 'Comarca Geral'}
-                    </span>
+                    {pub.comarca && (
+                      <span className="text-[10px] text-muted-foreground/60 font-medium pl-4">
+                        {pub.comarca}
+                      </span>
+                    )}
                   </div>
                 </TableCell>
 

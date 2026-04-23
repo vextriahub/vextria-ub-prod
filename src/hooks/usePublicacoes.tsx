@@ -17,6 +17,9 @@ export interface Publication {
   tags: string[];
   cliente_id?: string;
   processo_id?: string;
+  tribunal?: string;
+  comarca?: string;
+  vara?: string;
 }
 
 export const usePublicacoes = () => {
@@ -76,7 +79,10 @@ export const usePublicacoes = () => {
           numero_processo: item.numeroProcesso,
           status: 'nova' as const,
           urgencia: 'media' as const,
-          tags: ['auto-sync', item.tribunal]
+          tags: [item.tribunal?.toUpperCase() || 'TRIMUNAL'],
+          tribunal: item.tribunal,
+          comarca: item.comarca,
+          vara: item.vara
         };
 
         // We check if it already exists to avoid duplication
@@ -98,7 +104,11 @@ export const usePublicacoes = () => {
           }
         } else {
           const saved = await createPublication(newRecord as any);
-          if (saved) savedResults.push(saved);
+          if (saved) {
+            savedResults.push(saved);
+            // Auto-cadastro do processo se for novo
+            await autoRegisterProcesso(newRecord as any);
+          }
         }
       }
 
@@ -111,6 +121,37 @@ export const usePublicacoes = () => {
         variant: "destructive"
       });
       return [];
+    }
+  };
+
+  const autoRegisterProcesso = async (pub: Partial<Publication>) => {
+    if (!user || !pub.numero_processo) return;
+
+    try {
+      // 1. Verificar se o processo já existe no escritório
+      const { data: existing } = await supabase
+        .from('processos')
+        .select('id')
+        .eq('office_id', user.office_id)
+        .eq('numero_processo', pub.numero_processo)
+        .maybeSingle();
+
+      if (existing) return;
+
+      console.log(`[Auto-Reg] Cadastrando novo processo: ${pub.numero_processo}`);
+      
+      // 2. Criar cadastro básico do processo
+      await supabase.from('processos').insert({
+        numero_processo: pub.numero_processo,
+        titulo: `Processo ${pub.numero_processo} (Auto)`,
+        jurisdicao: pub.tribunal,
+        vara: pub.vara,
+        office_id: user.office_id,
+        user_id: user.id,
+        status: 'ativo'
+      });
+    } catch (err) {
+      console.error('[Sync] Erro no auto-cadastro do processo:', err);
     }
   };
 

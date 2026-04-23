@@ -41,7 +41,13 @@ const extractPartesFromTexto = (html: string): { autor: string | null; reu: stri
   if (!html) return null;
   
   // Limpar tags HTML básicas para facilitar a busca
-  const cleanText = html.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+  // Limpar tags HTML e converter entidades comuns
+  const cleanText = html.replace(/<[^>]*>?/gm, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
   
   // Padrão comum: Polo Ativo: NOME Polo Passivo: NOME
   const ativoMatch = cleanText.match(/Polo Ativo:\s*([^Polo]+)/i);
@@ -227,7 +233,7 @@ serve(async (req) => {
             return {
               id: item.id || numProc,
               numeroProcesso: numProc,
-              titulo: finalTitle,
+              titulo: finalTitle || `Publicação no ${tribunalReal}`,
               partes: combinedExtracted || finalTitle,
               autor: extractedPartesInfo?.autor || '',
               reu: extractedPartesInfo?.reu || '',
@@ -237,6 +243,7 @@ serve(async (req) => {
                 data: item.data_disponibilizacao || item.dataDisponibilizacao || item.data_comunicacao
               },
               faseProcessual: item.nome_classe || 'Não identificada',
+              conteudo: cleanText, // Texto já limpo de HTML
               valorCausa: 0,
               vara: item.nome_orgao || item.nomeOrgao || '',
               comarca: ufUpper
