@@ -27,6 +27,16 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
+
+interface Movimentacao {
+  id: string;
+  data_movimentacao: string;
+  descricao: string;
+  detalhes?: string;
+  tipo?: string;
+}
 
 interface ProcessoDetailsDrawerProps {
   processo: Processo | null;
@@ -40,6 +50,34 @@ export const ProcessoDetailsDrawer: React.FC<ProcessoDetailsDrawerProps> = ({
   onOpenChange
 }) => {
   if (!processo) return null;
+
+  const [movements, setMovements] = useState<Movimentacao[]>([]);
+  const [loadingMovements, setLoadingMovements] = useState(false);
+
+  useEffect(() => {
+    const fetchMovements = async () => {
+      if (!processo?.id || !open) return;
+      
+      setLoadingMovements(true);
+      try {
+        const { data, error } = await supabase
+          .from('movimentacoes_processo')
+          .select('*')
+          .eq('processo_id', processo.id)
+          .order('data_movimentacao', { ascending: false });
+
+        if (!error && data) {
+          setMovements(data);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar movimentações:', err);
+      } finally {
+        setLoadingMovements(false);
+      }
+    };
+
+    fetchMovements();
+  }, [processo?.id, open]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -200,21 +238,62 @@ export const ProcessoDetailsDrawer: React.FC<ProcessoDetailsDrawerProps> = ({
 
             <Separator />
 
-            {/* Histórico Simples */}
-            <div className="space-y-4 pb-8">
-              <div className="flex items-center gap-2 font-semibold text-sm">
-                <History className="h-4 w-4 text-primary" />
-                Últimas Atualizações
-              </div>
-              <div className="flex gap-4 p-4 rounded-xl border bg-muted/10">
-                <div className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">Última movimentação registrada</p>
-                  <p className="text-xs text-muted-foreground">
-                    {processo.ultimaMovimentacao ? new Date(processo.ultimaMovimentacao).toLocaleDateString() : 'Não disponível'}
-                  </p>
+            {/* Histórico Real (Timeline) */}
+            <div className="space-y-6 pb-12">
+              <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                <div className="flex items-center gap-2 font-bold text-sm uppercase tracking-widest text-primary">
+                  <History className="h-4 w-4" />
+                  Linha do Tempo
                 </div>
+                <Badge variant="outline" className="text-[10px] opacity-40">
+                  {movements.length} eventos
+                </Badge>
               </div>
+
+              {loadingMovements ? (
+                 <div className="flex flex-col items-center justify-center py-12 space-y-4 opacity-40">
+                   <Clock className="h-10 w-10 animate-pulse text-primary" />
+                   <p className="text-xs font-bold uppercase tracking-tighter">Carregando andamentos...</p>
+                 </div>
+              ) : movements.length > 0 ? (
+                <div className="space-y-6 relative pl-4 border-l-2 border-primary/10 ml-2">
+                  {movements.map((mov, idx) => (
+                    <div key={mov.id} className="relative group">
+                      {/* Pontinho da linha do tempo */}
+                      <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary ring-4 ring-slate-950 ring-offset-0 group-hover:scale-125 transition-transform" />
+                      
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] font-bold text-primary/70 uppercase">
+                            {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR')}
+                          </p>
+                          {mov.tipo && (
+                            <Badge variant="outline" className="text-[8px] py-0 h-4 border-primary/20 text-primary/60">
+                              {mov.tipo}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium leading-relaxed group-hover:text-primary transition-colors">
+                          {mov.descricao}
+                        </p>
+                        {mov.detalhes && (
+                          <div className="mt-2 p-3 rounded-lg bg-white/5 border border-white/5 text-[11px] text-muted-foreground leading-relaxed italic">
+                            {mov.detalhes}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4 opacity-30 text-center">
+                  <AlertCircle className="h-12 w-12" />
+                  <div className="space-y-1">
+                    <p className="font-bold uppercase text-[10px]">Nenhum histórico</p>
+                    <p className="text-[10px] max-w-[200px]">Ainda não há movimentações registradas para este processo.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </ScrollArea>

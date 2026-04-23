@@ -30,16 +30,16 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
       valorCausa: dbRecord.valor_causa ? Number(dbRecord.valor_causa) : undefined,
       numeroProcesso: dbRecord.numero_processo,
       tipoProcesso: dbRecord.tipo_processo,
-      faseProcessual: dbRecord.tipo_processo, // No dedicated column; reuse tipo_processo
+      faseProcessual: dbRecord.tipo_processo,
       responsavelId: dbRecord.user_id,
-      responsavelNome: undefined, // No join available
+      responsavelNome: undefined,
       ultimaMovimentacao: dbRecord.data_ultima_atualizacao || dbRecord.updated_at?.split('T')[0],
       tribunal: dbRecord.tribunal,
       vara: dbRecord.vara,
       comarca: dbRecord.comarca,
-      requerido: undefined, // Column does not exist in DB; stored in observacoes
-      segredoJustica: false,
-      justicaGratuita: false,
+      requerido: dbRecord.requerido,
+      segredoJustica: dbRecord.segredo_justica || false,
+      justicaGratuita: dbRecord.justica_gratuita || false,
       observacoes: dbRecord.observacoes
     };
   };
@@ -135,6 +135,9 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
         valor_causa: newRecord.valorCausa,
         proximo_prazo: newRecord.proximoPrazo,
         observacoes: newRecord.descricao || (newRecord as any).observacoes || '',
+        requerido: newRecord.requerido || (newRecord as any).requerido || '',
+        segredo_justica: newRecord.segredoJustica || false,
+        justica_gratuita: newRecord.justicaGratuita || false,
       };
 
       // Only include optional FK fields if they have values
@@ -192,6 +195,10 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
       if (updates.comarca !== undefined) updatePayload.comarca = updates.comarca;
       if (updates.valorCausa !== undefined) updatePayload.valor_causa = updates.valorCausa;
       if (updates.proximoPrazo !== undefined) updatePayload.proximo_prazo = updates.proximoPrazo;
+      if (updates.requerido !== undefined) updatePayload.requerido = updates.requerido;
+      if (updates.segredoJustica !== undefined) updatePayload.segredo_justica = updates.segredoJustica;
+      if (updates.justicaGratuita !== undefined) updatePayload.justica_gratuita = updates.justicaGratuita;
+      
       if (updates.descricao !== undefined || (updates as any).observacoes !== undefined) {
         updatePayload.observacoes = updates.descricao || (updates as any).observacoes;
       }
@@ -343,6 +350,30 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     }
   };
 
+  const addMovimentacao = async (processoId: string, data: any) => {
+    if (!user) return null;
+    try {
+      const { data: result, error } = await supabase
+        .from('movimentacoes_processo')
+        .insert([{
+          processo_id: processoId,
+          office_id: user.office_id,
+          data_movimentacao: data.data || new Date().toISOString(),
+          descricao: data.descricao,
+          detalhes: data.detalhes || '',
+          tipo: data.tipo || 'andamento'
+        }])
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      return result;
+    } catch (err) {
+      console.error('Erro ao adicionar movimentação:', err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [user]);
@@ -356,6 +387,7 @@ export function useProcessos(): DatabaseHookResult<Processo, NovoProcesso> {
     update,
     requestDelete,
     requestMultipleDelete,
+    addMovimentacao,
     isEmpty: data.length === 0 && !loading,
   };
 }

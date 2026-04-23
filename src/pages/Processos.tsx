@@ -6,8 +6,8 @@ import { useProcessos } from '@/hooks/useProcessos';
 import { FileText, Loader2, RotateCw, Search, Plus } from 'lucide-react';
 
 // Debug logs
-console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V16 - ABAS ATIVAS ', 'background: #f59e0b; color: #000; font-weight: bold; font-size: 16px;');
-console.log('🔍 Processos.tsx - Renderização V16 (Omni-Search Enabled)');
+console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V18 - TIMELINE SYSTEM ', 'background: #f59e0b; color: #000; font-weight: bold; font-size: 16px;');
+console.log('🔍 Processos.tsx - Renderização V18 (Full Persistence & Timeline)');
 
 // Componentes UI
 import { Button } from '@/components/ui/button';
@@ -201,17 +201,14 @@ const Processos = React.memo(() => {
     let successCount = 0;
     try {
       for (const proc of processes) {
-        const partesArray = proc.titulo?.split(' x ') || [];
-        const autorNome = partesArray[0] || proc.titulo;
-        const reuNome = partesArray[1] || proc.requerido || '';
+        // Use manually edited names from preview if available, fallback to title splitting
+        const autorNome = proc.autor || proc.titulo?.split(' x ')[0] || proc.titulo;
+        const reuNome = proc.reu || proc.titulo?.split(' x ')[1] || '';
 
-        // Build observacoes with all extra info that doesn't have a DB column
-        const obsLines = [];
-        if (reuNome) obsLines.push(`Réu: ${reuNome}`);
-        if (proc.ultimoAndamento?.descricao) obsLines.push(`Último andamento: ${proc.ultimoAndamento.descricao}`);
-        obsLines.push('Importado via OAB');
+        // Build observation with description if exists
+        const obs = proc.ultimoAndamento?.descricao || 'Importado via Sincronização Judicial';
 
-        const success = await create({
+        const createdProc = await create({
           titulo: autorNome,
           clienteId: (proc as any).clienteId || null,
           status: 'Em andamento',
@@ -219,15 +216,36 @@ const Processos = React.memo(() => {
           tipoProcesso: proc.faseProcessual || proc.tipoProcesso || 'Cível',
           proximoPrazo: null,
           valorCausa: proc.valorCausa || 0,
-          descricao: obsLines.join(' | '),
+          descricao: obs,
           tribunal: proc.tribunal,
           vara: proc.vara || '',
           comarca: proc.comarca || '',
+          requerido: reuNome,
+          segredoJustica: proc.segredoJustica || false,
+          justicaGratuita: proc.justicaGratuita || false
         } as any);
-        if (success) successCount++;
+
+        if (createdProc) {
+          successCount++;
+          
+          // Add initial movement to the timeline
+          if (proc.ultimoAndamento && (create as any).addMovimentacao) {
+            await (create as any).addMovimentacao(createdProc.id, {
+               data: proc.ultimoAndamento.data,
+               descricao: proc.ultimoAndamento.descricao,
+               tipo: 'andamento'
+            });
+          } else if (addMovimentacao) {
+             // If addMovimentacao is available from hook result
+             await addMovimentacao(createdProc.id, {
+               data: proc.ultimoAndamento?.data || new Date().toISOString(),
+               descricao: proc.ultimoAndamento?.descricao || 'Processo importado para o sistema.',
+               tipo: 'andamento'
+            });
+          }
+        }
       }
 
-      
       if (successCount > 0) {
         toast({
           title: "Importação concluída",
@@ -242,7 +260,7 @@ const Processos = React.memo(() => {
         variant: "destructive"
       });
     }
-  }, [create, user, toast]);
+  }, [create, addMovimentacao, toast]);
 
   const handleEditProcesso = useCallback((processo: Processo) => {
     setEditingProcesso(processo);

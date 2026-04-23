@@ -34,13 +34,24 @@ interface PublicationDetailsDialogProps {
 const deepCleanHTML = (html: string): string => {
   if (!html) return "";
   let cleaned = html;
+  
+  // Substituir quebras de linha HTML por quebras reais antes de limpar tags
+  cleaned = cleaned.replace(/<br\s*\/?>/gi, "\n");
+  cleaned = cleaned.replace(/<\/p>/gi, "\n\n");
+  cleaned = cleaned.replace(/<\/div>/gi, "\n");
+  
   cleaned = cleaned.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, " ");
+  // Limpar todas as outras tags mantendo o conteúdo
   cleaned = cleaned.replace(/<[^>]*>?/gm, " ");
+  
+  // Decodificar entidades HTML comuns
   cleaned = cleaned
     .replace(/&nbsp;/gi, " ").replace(/&quot;/gi, '"').replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">")
     .replace(/&ordm;/gi, "º").replace(/&ordf;/gi, "ª");
-  return cleaned.replace(/\s+/g, " ").trim();
+    
+  // Normalizar espaços mas manter quebras de linha únicas
+  return cleaned.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n\n');
 };
 
 export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trigger, onDelete, onProcess, onRegister, onSchedule }: PublicationDetailsDialogProps) => {

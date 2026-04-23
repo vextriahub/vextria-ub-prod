@@ -34,146 +34,133 @@ const isProcessActive = (process: any) => {
   return !INACTIVE_TERMS.some(term => text.includes(term));
 };
 
-/**
- * Limpeza profunda de HTML para Deno
- */
-const deepCleanHTML = (html: string): string => {
-  if (!html) return "";
-  
-  let cleaned = html;
-  // 1. Remover blocos de script e style por completo
-  cleaned = cleaned.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, " ");
-  // 2. Remover todas as tags HTML
-  cleaned = cleaned.replace(/<[^>]*>?/gm, " ");
-  // 3. Converter entidades HTML comuns
-  cleaned = cleaned
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&quot;/gi, '"')
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&ordm;/gi, "º")
-    .replace(/&ordf;/gi, "ª")
-    .replace(/&aacute;/gi, "á").replace(/&eacute;/gi, "é").replace(/&iacute;/gi, "í").replace(/&oacute;/gi, "ó").replace(/&uacute;/gi, "ú")
-    .replace(/&atilde;/gi, "ã").replace(/&otilde;/gi, "õ").replace(/&ccedil;/gi, "ç");
-  // 4. Limpar excesso de espaços e quebras
-  cleaned = cleaned.replace(/\s+/g, " ").trim();
-  
-  return cleaned;
-};
+// -------- Helpers de extração de partes (Expert Edition) --------
+const ATIVO = [
+  "REQUERENTE", "AUTOR", "AUTORA", "EXEQUENTE", "RECLAMANTE",
+  "APELANTE", "AGRAVANTE", "EMBARGANTE", "RECORRENTE", "IMPETRANTE", "POLO ATIVO",
+];
+const PASSIVO = [
+  "REQUERIDO", "REQUERIDA", "RÉU", "REU", "EXECUTADO", "RECLAMADO",
+  "APELADO", "AGRAVADO", "EMBARGADO", "RECORRIDO", "IMPETRADO", "POLO PASSIVO",
+];
+const TERMINADORES = [
+  ...ATIVO, ...PASSIVO,
+  "ADVOGADO", "ADVOGADA", "ADVOGADO\\(A\\)", "CLASSE", "ASSUNTO",
+  "SENTENÇA", "DECISÃO", "DESPACHO", "CERTIDÃO", "FINALIDADE",
+  "DESTINAT", "OBSERVAÇÃO", "OBSERVACAO", "ATO ORDINATÓRIO", "EMENTA",
+];
 
-/**
- * Tenta extrair nomes das partes de um texto HTML vindo do PJe
- */
-const extractPartesFromTexto = (html: string): { autor: string | null; reu: string | null } | null => {
-  if (!html) return null;
-  const cleanText = deepCleanHTML(html);
-  
-  const ativoMatch = cleanText.match(/Polo Ativo:\s*([^Polo]+)/i);
-  const passivoMatch = cleanText.match(/Polo Passivo:\s*([^<]+)/i);
-  
-  if (ativoMatch && passivoMatch) {
-    const autor = ativoMatch[1].split('Advogado')[0].split('Polo')[0].trim();
-    const reu = passivoMatch[1].split('Advogado')[0].split('Polo')[0].trim();
-    if (autor && reu) return { autor, reu };
-  }
-  
-  const reqMatch = cleanText.match(/REQUERENTE:\s*([^REQUERIDO]+)/i);
-  const respMatch = cleanText.match(/REQUERIDO:\s*([^<]+)/i);
-  
-  if (reqMatch && respMatch) {
-    return { autor: reqMatch[1].trim(), reu: respMatch[1].trim() };
-  }
+function makeRoleRegex(roles: string[]): RegExp {
+  const terms = roles.join("|");
+  const stops = TERMINADORES.join("|");
+  return new RegExp(
+    `(?:${terms})\\s*:?\\s+([^\\n\\r]{2,400}?)(?=\\s+(?:${stops})\\s*:|\\s+(?:${stops})\\b|\\s{2,}|$)`,
+    "i",
+  );
+}
 
-  const propostaMatch = cleanText.match(/proposta por\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\s+em face|\s+contra|\.|$)/i);
-  const emFaceMatch = cleanText.match(/em face de\s+([A-Z\u00C0-\u00DC][A-Z\u00C0-\u00DC\s]+?)(?:\s*,|\.|$)/i);
-  
-  if (propostaMatch && emFaceMatch) {
-    return { autor: propostaMatch[1].trim(), reu: emFaceMatch[1].trim() };
-  }
+const RE_ATIVO   = makeRoleRegex(ATIVO);
+const RE_PASSIVO = makeRoleRegex(PASSIVO);
 
-  return null;
-};
+function cleanName(raw: string | null | undefined): string {
+  if (!raw) return "";
+  let s = raw.replace(/\s+/g, " ").trim();
+  s = s.replace(/\s*-\s*(OAB|CPF|CNPJ).*/i, "")
+       .replace(/\s*\(.*?\)\s*/g, " ")
+       .replace(/\s+e\s+outros\s*$/i, "")
+       .replace(/[;,.\s]+$/g, "")
+       .trim();
+  if (s.split(" ").length > 12) return "";
+  if (s.length < 2) return "";
+  return s;
+}
 
-const cleanTitle = (title: string): string => {
-  if (!title) return '';
-  let cleaned = title;
-  cleaned = cleaned.replace(/\bSENTENÇA\b.*/i, '').trim();
-  cleaned = cleaned.replace(/\bDECISÃO\b.*/i, '').trim();
-  cleaned = cleaned.replace(/\bVistos\b.*/i, '').trim();
-  cleaned = cleaned.replace(/\bDESPACHO\b.*/i, '').trim();
-  cleaned = cleaned.replace(/\bTrata-se\b.*/i, '').trim();
-  cleaned = cleaned.replace(/,\s*$/, '').trim();
-  if (cleaned.length > 120) {
-    cleaned = cleaned.substring(0, 120).trim() + '...';
-  }
-  return cleaned || title.substring(0, 80);
-};
+function extractPartes(text: string): { autor: string; reu: string } {
+  if (!text) return { autor: "", reu: "" };
+  const mA = text.match(RE_ATIVO);
+  const mP = text.match(RE_PASSIVO);
+  return {
+    autor: cleanName(mA?.[1]),
+    reu: cleanName(mP?.[1]),
+  };
+}
 
-const formatCNJ = (num: string): string => {
-  const clean = num.replace(/[.-]/g, '');
-  if (clean.length !== 20) return num;
-  return `${clean.substring(0,7)}-${clean.substring(7,9)}.${clean.substring(9,13)}.${clean.substring(13,14)}.${clean.substring(14,16)}.${clean.substring(16,20)}`;
-};
+// -------- Classificador de fase processual (Expert Edition) --------
+const FASES: Array<[RegExp, string]> = [
+  [/ARQUIVAD[OA]\b|BAIXA\s+DEFINITIVA/i, "Arquivado"],
+  [/CUMPRIMENTO\s+DE\s+SENTEN[ÇC]A/i, "Cumprimento de sentença"],
+  [/EXECU[ÇC][ÃA]O\s+FISCAL/i, "Execução fiscal"],
+  [/EXECU[ÇC][ÃA]O/i, "Execução"],
+  [/RECURSO\s+ESPECIAL|AGRAVO\s+EM\s+RECURSO\s+ESPECIAL/i, "Recurso especial"],
+  [/RECURSO\s+EXTRAORDIN[ÁA]RIO/i, "Recurso extraordinário"],
+  [/APELA[ÇC][ÃA]O/i, "Recurso (apelação)"],
+  [/AGRAVO\s+DE\s+INSTRUMENTO/i, "Recurso (agravo)"],
+  [/EMBARGOS\s+DE\s+DECLARA[ÇC][ÃA]O/i, "Embargos de declaração"],
+  [/SENTEN[ÇC]A/i, "Sentenciado"],
+  [/AUDI[ÊE]NCIA/i, "Audiência designada"],
+  [/DESPACHO|DECIS[ÃA]O\s+INTERLOCUT[ÓO]RIA/i, "Em andamento (decisão)"],
+  [/ATO\s+ORDINAT[ÓO]RIO|INTIMA[ÇC][ÃA]O/i, "Em andamento (intimação)"],
+  [/CONCLUS[ÃA]O/i, "Concluso"],
+  [/CITA[ÇC][ÃA]O/i, "Citação"],
+];
+
+function classifyFase(text: string): string {
+  if (!text) return "Não identificada";
+  for (const [re, label] of FASES) if (re.test(text)) return label;
+  return "Em andamento";
+}
+
+function summarize(descricao: string, max = 160): string {
+  if (!descricao) return "";
+  const clean = descricao.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max).replace(/\s\S*$/, "") + "…";
+}
+
+function buildAndamentos(rawMovs: any[]): Array<{ data: string | null; resumo: string; fase: string }> {
+  if (!Array.isArray(rawMovs)) return [];
+  return rawMovs
+    .slice(0, 15)
+    .map((a: any) => ({
+      data: a?.dataHora ?? a?.data ?? a?.dt ?? null,
+      resumo: summarize(a?.descricao ?? a?.titulo ?? a?.nome ?? a?.texto ?? "", 300),
+      fase: classifyFase(a?.descricao ?? a?.titulo ?? a?.texto ?? ""),
+    }))
+    .filter((a) => a.resumo.length > 0);
+}
 
 const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
   if (!source) return null;
 
-  // 1. Tenta extrair autores e réus do array formal de 'partes'
+  const fullTextForExtraction = [
+    source.classe?.nome,
+    source.movimentacoes?.[0]?.descricao,
+    ...(source.partes?.map((p: any) => p.nome) || [])
+  ].filter(Boolean).join(" \n ");
+
+  const { autor: extAutor, reu: extReu } = extractPartes(fullTextForExtraction);
+  const andamentos = buildAndamentos(source.movimentacoes || []);
+
   const autoresList: string[] = [];
   const reusList: string[] = [];
-  const allNamesFound: string[] = [];
 
   const processPart = (p: any) => {
     const nome = p.nome || p.pessoa?.nome || '';
     if (!nome || nome.length < 3) return;
-    if (!allNamesFound.includes(nome)) allNamesFound.push(nome);
-
     const tipo = (p.tipo || p.tipoParte || '').toLowerCase();
     const polo = p.polo || p.poloParte;
-
-    if (tipo.includes('ativa') || tipo.includes('requerente') || tipo.includes('autor') || 
-        tipo.includes('exequente') || tipo.includes('reclamante') || polo === 1 || polo === "1") {
+    if (tipo.includes('ativa') || tipo.includes('autor') || polo === 1 || polo === "1") {
       if (!autoresList.includes(nome)) autoresList.push(nome);
-    } else if (tipo.includes('passiva') || tipo.includes('requerido') || tipo.includes('réu') || 
-               tipo.includes('executado') || tipo.includes('reclamado') || polo === 2 || polo === "2") {
+    } else if (tipo.includes('passiva') || tipo.includes('réu') || polo === 2 || polo === "2") {
       if (!reusList.includes(nome)) reusList.push(nome);
     }
   };
 
   source.partes?.forEach(processPart);
-  // Alguns tribunais colocam partes em outros níveis
-  source.informacoesGerais?.partes?.forEach(processPart);
-
-  // 2. Extração de Emergência: Se não achou polos, mas achou nomes
-  if (autoresList.length === 0 && allNamesFound.length > 0) {
-    autoresList.push(allNamesFound[0]);
-    if (allNamesFound.length > 1) reusList.push(allNamesFound[1]);
-  }
-
-  // 3. Fallback Extra: Tentar extrair do texto do andamento se ainda estiver vazio
-  const movements = source.movimentacoes || [];
-  // Ignora andamentos genéricos como "Poder Judiciário", "Justiça", etc.
-  const genericTitles = ["poder judiciário", "justiça federal", "justiça estadual", "tribunal de justiça", "pje", "processo"];
   
-  const bestMovement = movements.find((m: any) => {
-    const desc = (m.descricao || '').toLowerCase();
-    return desc.length > 20 && !genericTitles.some(gt => desc.includes(gt));
-  }) || movements.find((m: any) => (m.descricao || '').length > 5) || movements[0] || null;
-
-  const movementDesc = bestMovement?.descricao || '';
-
-  if (autoresList.length === 0) {
-     const extracted = extractPartesFromTexto(movementDesc);
-     if (extracted) {
-       if (extracted.autor) autoresList.push(extracted.autor);
-       if (extracted.reu && reusList.length === 0) reusList.push(extracted.reu);
-     }
-  }
-
-  const autores = autoresList.length > 0 ? autoresList.join(', ') : 'Não identificado';
-  const reus = reusList.length > 0 ? reusList.join(', ') : 'Não identificado';
+  const autores = autoresList.length > 0 ? autoresList.join(', ') : (extAutor || 'Não identificado');
+  const reus = reusList.length > 0 ? reusList.join(', ') : (extReu || 'Não identificado');
   
   return {
     id: hit._id,
@@ -182,16 +169,20 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
     partes: `${autores} x ${reus}`,
     autor: autores,
     reu: reus,
-    tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
-    ultimoAndamento: bestMovement ? {
-      descricao: deepCleanHTML(movementDesc).substring(0, 500),
-      data: bestMovement.dataHora
+    tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Justiça',
+    ultimoAndamento: andamentos[0] ? {
+      descricao: andamentos[0].resumo,
+      data: andamentos[0].data
     } : null,
-    faseProcessual: source.classe?.nome || 'Não identificada',
+    andamentos,
+    faseProcessual: andamentos[0]?.fase ?? classifyFase(fullTextForExtraction),
     valorCausa: source.valorCausa || 0,
     vara: source.orgaoJulgador?.nome || '',
     comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '',
-    conteudo: deepCleanHTML(movementDesc)
+    conteudo: andamentos[0]?.resumo || ''
+  };
+};
+leanHTML(movementDesc)
   };
 };
 
@@ -277,7 +268,7 @@ serve(async (req) => {
     intervalDate.setDate(intervalDate.getDate() - searchDays);
     const dateStart = intervalDate.toISOString().split('T')[0];
 
-    const pjePromises = [0, 1, 2].map(async (page) => {
+    const pjePromises = [0, 1].map(async (page) => {
       try {
         const pjeUrl = `https://comunicaapi.pje.jus.br/api/v1/comunicacao?numeroOab=${numeroOabPuro}&ufOab=${ufUpper}&itensPorPagina=100&pagina=${page}&dataDisponibilizacaoInicio=${dateStart}`;
         const pjeResponse = await fetch(pjeUrl);
@@ -288,47 +279,30 @@ serve(async (req) => {
             if (!numProc) return null;
             
             const rawContent = item.texto_comunicacao || item.texto || item.textoComunicacao || '';
-            const itemCleanText = deepCleanHTML(rawContent);
+            const { autor, reu } = extractPartes(rawContent);
+            const andamentos = buildAndamentos([{
+               data: item.data_disponibilizacao || item.dataDisponibilizacao,
+               descricao: rawContent
+            }]);
 
-            // Se ainda estiver vazio ou for só "placeholder", tenta descrever o que é
-            const finalContent = (itemCleanText.length > 5) 
-              ? itemCleanText 
-              : `Comunicação Judicial via ${item.meio_comunicacao || 'PJE'}. Tipo: ${item.tipo_comunicacao || 'Intimação'}. ${item.nome_tribunal || ''}`;
-
-            const extractedPartesInfo = extractPartesFromTexto(rawContent);
-            const combinedExtracted = extractedPartesInfo ? `${extractedPartesInfo.autor} x ${extractedPartesInfo.reu}` : null;
-            const formattedNum = formatCNJ(numProc);
-            const rawTitle = item.titulo_processo || item.tituloProcesso || combinedExtracted || formattedNum;
-            const finalTitle = cleanTitle(rawTitle);
-
-            const cleanNum = numProc.replace(/[.-]/g, '');
-            const j = cleanNum.length >= 14 ? cleanNum.substring(13, 14) : '';
-            const rr = cleanNum.length >= 16 ? cleanNum.substring(14, 16) : '';
-            let tribunalReal = item.nome_tribunal || item.sigla_tribunal || item.nomeTribunal || '';
-            if (!tribunalReal || tribunalReal === 'PJE' || tribunalReal === 'PJe') {
-              if (j === '8' && rr === '07') tribunalReal = 'TJDFT';
-              else if (j === '8') tribunalReal = `TJ${ufUpper}`;
-              else if (j === '4') tribunalReal = `TRF${rr.replace(/^0/, '')}`;
-              else if (j === '5') tribunalReal = `TRT${rr.replace(/^0/, '')}`;
-              else tribunalReal = `TJ${ufUpper}`;
-            }
-
+            let tribunalReal = item.nome_tribunal || item.sigla_tribunal || 'TJ';
+            
             return {
               id: item.id || numProc,
               numeroProcesso: numProc,
-              titulo: finalTitle || `Publicação no ${tribunalReal}`,
-              partes: combinedExtracted || finalTitle,
-              autor: extractedPartesInfo?.autor || '',
-              reu: extractedPartesInfo?.reu || '',
+              titulo: autor && reu ? `${autor} x ${reu}` : formatCNJ(numProc),
+              partes: autor && reu ? `${autor} x ${reu}` : "",
+              autor: autor || '',
+              reu: reu || '',
               tribunal: tribunalReal,
-              ultimoAndamento: {
-                descricao: finalContent.substring(0, 500) + (finalContent.length > 500 ? '...' : ''),
-                data: item.data_disponibilizacao || item.dataDisponibilizacao || item.data_comunicacao
-              },
-              faseProcessual: item.nome_classe || 'Não identificada',
-              conteudo: finalContent, 
+              ultimoAndamento: andamentos[0] ? {
+                descricao: andamentos[0].resumo,
+                data: andamentos[0].data
+              } : null,
+              andamentos,
+              faseProcessual: classifyFase(rawContent),
               valorCausa: 0,
-              vara: item.nome_orgao || item.nomeOrgao || '',
+              vara: item.nome_orgao || '',
               comarca: ufUpper
             };
           }).filter(Boolean);
@@ -354,7 +328,7 @@ serve(async (req) => {
     const activeResults = allResults.filter(isProcessActive);
     const uniqueResults = Array.from(new Map(activeResults.map(item => [item.numeroProcesso, item])).values());
 
-    return new Response(JSON.stringify(uniqueResults), {
+    return new Response(JSON.stringify({ status: "ok", items: uniqueResults }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

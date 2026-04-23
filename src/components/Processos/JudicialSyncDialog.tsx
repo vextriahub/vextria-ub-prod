@@ -53,22 +53,50 @@ const UFs = [
   'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'
 ];
 
+export interface Andamento {
+  data: string | null;
+  resumo: string;
+  fase?: string;
+}
+
 export interface JudicialProcessResult {
   id: string;
   numeroProcesso: string;
+  numeroFormatado?: string;
   titulo: string;
   partes: string;
   tribunal: string;
-  ultimoAndamento: {
-    descricao: string;
-    data: string;
-  } | null;
+  ultimoAndamento: { descricao: string; data: string | null } | null;
+  andamentos?: Andamento[];
   faseProcessual: string;
-  valorCausa: number;
-  vara: string;
-  comarca: string;
-  autor?: string;
-  reu?: string;
+  valorCausa?: number;
+  vara?: string;
+  comarca?: string;
+  autor: string;
+  reu: string;
+}
+
+interface JudicialSyncContentProps {
+  onImport: (processes: (JudicialProcessResult & { clienteId?: string | null })[]) => Promise<void>;
+  onCancel: () => void;
+}
+
+// ---------- Utils ----------
+function formatCNJ(numero: string | undefined | null): string {
+  const d = (numero ?? '').replace(/\D/g, '');
+  if (d.length !== 20) return numero ?? '';
+  return d.replace(/(\d{7})(\d{2})(\d{4})(\d{1})(\d{2})(\d{4})/, '$1-$2.$3.$4.$5.$6');
+}
+
+function looksLikeContaminatedName(s: string): boolean {
+  if (!s) return false;
+  if (s.length > 120) return true;
+  if (s.split(' ').length > 12) return true;
+  return /\b(SENTEN[ÇC]A|DECIS[ÃA]O|CERTID[ÃA]O|FINALIDADE|DESTINAT|OBSERVA[ÇC][ÃA]O|INTIMA[ÇC][ÃA]O)\b/i.test(s);
+}
+
+function normalizeClientName(s: string): string {
+  return s.replace(/\s+/g, ' ').trim().split(' ').slice(0, 8).join(' ').slice(0, 100);
 }
 
 interface JudicialSyncContentProps {
@@ -89,17 +117,30 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
   const [oab, setOab] = useState('');
   const [uf, setUf] = useState('DF');
   const [results, setResults] = useState<JudicialProcessResult[]>([]);
+  const [searched, setSearched] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [clientPolos, setClientPolos] = useState<Record<string, 'autor' | 'reu'>>({});
   const [previewProc, setPreviewProc] = useState<JudicialProcessResult | null>(null);
 
+  const cache = React.useRef<Map<string, JudicialProcessResult[]>>(new Map());
+
   const handleSearch = async () => {
-    if (!oab || !uf) {
+    const cleanOab = oab.replace(/\D/g, '');
+    if (!cleanOab || !uf) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, informe a OAB e o Estado.",
+        description: "Por favor, informe a OAB (somente números) e o Estado.",
         variant: "destructive"
       });
+      return;
+    }
+
+    const key = `${cleanOab}-${uf}`;
+    if (cache.current.has(key)) {
+      setResults(cache.current.get(key)!);
+      setSearched(true);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
       return;
     }
 
@@ -112,35 +153,38 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       
-      const response = await fetch(`https://xrtmyhuqbbtaelczemag.supabase.co/functions/v1/fetch-by-oab`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': 'sb_publishable_RQVoreC1A29Ix5EtrxsB7A_nkvwR7xQ'
-        },
-        body: JSON.stringify({ oab, uf })
+      const { data, error } = await supabase.functions.invoke('fetch-by-oab', {
+        body: { oab: cleanOab, uf }
       });
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || `Erro ${response.status}: Falha na comunicação com o servidor judicial.`);
+      if (error) {
+        throw new Error(error.message || `Falha na comunicação com o servidor judicial.`);
       }
 
-      const data = await response.json();
-      
-      const items = data || [];
-      const mappedResults = items.map((item: any) => ({
+      const rawItems = Array.isArray(data) ? data : (data?.items ?? []);
+      const status = Array.isArray(data) ? 'ok' : (data?.status ?? 'ok');
+
+      if (status === 'not_found') {
+        toast({
+          title: "OAB não encontrada",
+          description: `Não localizamos registros para OAB ${cleanOab}/${uf}.`,
+          variant: "destructive"
+        });
+        setSearched(true);
+        return;
+      }
+
+      const mappedResults = rawItems.map((item: any) => ({
         ...item,
-        id: item.id || item.numeroProcesso,
-        // Garante que campos não venham nulos para o formulário
+        id: String(item.id || item.numeroProcesso),
         autor: item.autor === 'Não identificado' ? '' : (item.autor || ''),
         reu: item.reu === 'Não identificado' ? '' : (item.reu || ''),
-        vara: item.vara || '',
-        comarca: item.comarca || ''
+        andamentos: Array.isArray(item.andamentos) ? item.andamentos : [],
       }));
 
+      cache.current.set(key, mappedResults);
       setResults(mappedResults);
+      setSearched(true);
     } catch (error: any) {
       toast({
         title: "Erro na sincronização",
@@ -182,16 +226,31 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     try {
       const processesToImport = results.filter(p => selectedIds.has(p.id));
       
+      const flagged = processesToImport.filter(p => 
+        looksLikeContaminatedName(p.autor) || looksLikeContaminatedName(p.reu)
+      );
+
+      if (flagged.length > 0) {
+        toast({
+          title: "Revise antes de importar",
+          description: `${flagged.length} processos têm nomes suspeitos. Por favor, edite-os manualmente.`,
+          variant: "destructive"
+        });
+        setImporting(false);
+        return;
+      }
+
       const finalProcesses = await Promise.all(processesToImport.map(async (proc) => {
         let finalClienteId = null;
         const polo = clientPolos[proc.id];
         
         if (polo) {
-          const nomeCliente = polo === 'autor' ? proc.autor : proc.reu;
-          if (nomeCliente) {
+          const rawName = polo === 'autor' ? proc.autor : proc.reu;
+          if (rawName) {
+            const nomeCliente = normalizeClientName(rawName);
             const { data: novoCliente, error: errCliente } = await supabase
               .from('clientes')
-              .insert({ nome: nomeCliente.substring(0, 100), office_id: user?.office_id })
+              .insert({ nome: nomeCliente, office_id: user?.office_id })
               .select('id').single();
               
             if (!errCliente && novoCliente) {
@@ -412,12 +471,21 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                   <p className="text-white/60 animate-pulse">Sincronizando com tribunais...</p>
                   <p className="text-[10px] text-white/30 mt-2">Isso pode levar alguns segundos.</p>
                 </>
+              ) : searched ? (
+                <>
+                  <AlertCircle className="h-12 w-12 mb-4 text-orange-500 opacity-60" />
+                  <p className="text-lg font-medium text-white/80">Nenhum processo encontrado</p>
+                  <p className="text-xs mt-2 max-w-[300px] mx-auto text-white/40 italic">
+                    Não encontramos processos vinculados à OAB {oab}/{uf} nos tribunais integrados. 
+                    Confira se o número está correto ou tente buscar por outros critérios.
+                  </p>
+                </>
               ) : (
                 <>
                   <Database className="h-12 w-12 mb-4 opacity-10" />
                   <p className="text-lg font-medium text-white/40">Busca pronta</p>
                   <p className="text-xs mt-2 max-w-[240px] mx-auto text-white/30">
-                    Informe sua OAB e Estado para sincronizar processos.
+                    Informe sua OAB e Estado para sincronizar processos diretamente dos tribunais.
                   </p>
                 </>
               )}
@@ -445,12 +513,16 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           {previewProc && (
             <div className="space-y-6">
               <div className="flex items-center gap-4 border-b border-white/5 pb-6">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
                   <Gavel className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold">{previewProc.numeroProcesso}</h3>
-                  <p className="text-white/40 text-sm">{previewProc.tribunal}</p>
+                  <h3 className="text-xl font-bold font-mono text-primary tracking-tight">
+                    {formatCNJ(previewProc.numeroProcesso)}
+                  </h3>
+                  <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">
+                    {previewProc.tribunal} • {previewProc.faseProcessual}
+                  </p>
                 </div>
               </div>
 
@@ -526,17 +598,45 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
 
               <Separator className="bg-white/5" />
 
-              <div className="space-y-3">
-                <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider flex items-center justify-between">
-                  <span>Última Movimentação</span>
-                  {previewProc.ultimoAndamento && (
-                    <span className="text-primary/70">{new Date(previewProc.ultimoAndamento.data).toLocaleDateString()}</span>
-                  )}
+              <div className="space-y-4">
+                <div className="text-white/60 text-[11px] font-bold uppercase tracking-widest flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span>Histórico de Movimentações (Linha do Tempo)</span>
                 </div>
-                <div className="bg-white/5 rounded-xl p-4 border border-white/5 max-h-[120px] overflow-y-auto custom-scrollbar">
-                   <p className="text-white/60 leading-relaxed text-[11px] italic">
-                    {previewProc.ultimoAndamento?.descricao || 'Sem andamentos disponíveis.'}
-                   </p>
+                
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/5 max-h-[250px] overflow-y-auto custom-scrollbar space-y-6 relative pl-8">
+                  {/* Linha vertical da timeline */}
+                  <div className="absolute left-[31px] top-6 bottom-6 w-0.5 bg-primary/20" />
+                  
+                  {previewProc.andamentos && previewProc.andamentos.length > 0 ? (
+                    previewProc.andamentos.map((and, idx) => (
+                      <div key={idx} className="relative">
+                        {/* Pontinho */}
+                        <div className="absolute -left-[37px] top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-slate-950" />
+                        
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black text-primary uppercase">
+                              {and.data ? new Date(and.data).toLocaleDateString('pt-BR') : 'Sem data'}
+                            </span>
+                            {and.fase && (
+                              <Badge variant="outline" className="text-[8px] h-4 py-0 border-primary/30 text-primary/60">
+                                {and.fase}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs font-medium text-white/80 leading-relaxed">
+                            {and.resumo}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 opacity-30">
+                       <AlertCircle className="h-8 w-8 mb-2" />
+                       <p className="text-xs uppercase font-bold tracking-tighter">Nenhum andamento extraído</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
