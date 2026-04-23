@@ -31,7 +31,9 @@ import {
   Loader2, 
   ChevronRight,
   Database,
-  Info
+  Info,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 import {
   Select,

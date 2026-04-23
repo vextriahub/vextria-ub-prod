@@ -3,11 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessos } from '@/hooks/useProcessos';
-import { FileText, Loader2, RotateCw, Search, Plus } from 'lucide-react';
+import { FileText, Loader2, RotateCw, Search, Plus, Filter, Database } from 'lucide-react';
+import { formatCNJ, extractYearFromCNJ } from '@/utils/formatCNJ';
 
 // Debug logs
-console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V18 - TIMELINE SYSTEM ', 'background: #f59e0b; color: #000; font-weight: bold; font-size: 16px;');
-console.log('🔍 Processos.tsx - Renderização V18 (Full Persistence & Timeline)');
+console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V20.1 - HARDENED DATA & UI ', 'background: #10b981; color: #000; font-weight: bold; font-size: 16px;');
+console.log('🔍 Processos.tsx - Renderização V20.1 (Final Sync & Scope Fix)');
 
 // Componentes UI
 import { Button } from '@/components/ui/button';
@@ -39,39 +40,14 @@ const Processos = React.memo(() => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { 
-    data: dbProcessos, 
+    data: dbProcessos = [], 
     loading, 
     create, 
     update, 
     requestDelete, 
-    isEmpty: dbIsEmpty 
+    isEmpty: hookIsEmpty,
+    addMovimentacao
   } = useProcessos();
-
-  // Mapeamento dos dados do banco para o formato da UI
-  const processos = useMemo(() => {
-    return dbProcessos.map(p => ({
-      id: p.id,
-      titulo: p.titulo,
-      cliente: (p as any).cliente?.nome || 'Cliente não identificado',
-      clienteId: (p as any).clienteId || p.cliente_id,
-      status: (p.status || 'Em andamento') as any,
-      dataInicio: (p as any).dataInicio || p.data_inicio || p.created_at,
-      proximoPrazo: (p as any).proximoPrazo || p.proximo_prazo,
-      descricao: p.observacoes,
-      valorCausa: (p as any).valorCausa || p.valor_causa,
-      numeroProcesso: (p as any).numeroProcesso || p.numero_processo,
-      tipoProcesso: (p as any).tipoProcesso || p.tipo_processo,
-      faseProcessual: (p as any).faseProcessual || (p as any).fase_processual || 'Fase Inicial',
-      responsavelId: (p as any).responsavelId || (p as any).responsavel_id,
-      responsavelNome: (p as any).responsavelNome || (p as any).responsavel?.full_name || 'Não atribuído',
-      area: (p as any).tipoProcesso || p.tipo_processo || 'Cível',
-      ultimaMovimentacao: (p as any).ultimaMovimentacao || p.data_ultima_atualizacao || p.created_at,
-      tribunal: (p as any).tribunal,
-      vara: (p as any).vara,
-      comarca: (p as any).comarca,
-      requerido: (p as any).requerido,
-    }));
-  }, [dbProcessos]);
 
   const [view, setView] = useState<'grid' | 'table'>('table');
   const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
@@ -81,21 +57,26 @@ const Processos = React.memo(() => {
     search: '',
     status: 'all',
     cliente: 'all',
-    numeroProcesso: 'all',
     area: 'all',
     movimentacao: 'all'
   });
+  
   const [editingProcesso, setEditingProcesso] = useState<Processo | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [processoToDelete, setProcessoToDelete] = useState<Processo | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [cnjSearch, setCnjSearch] = useState('');
 
-  // Memoized values
-  const showEmptyState = useMemo(() => {
-    return dbIsEmpty && !loading;
-  }, [dbIsEmpty, loading]);
+  // Mapeamento dos dados do banco para o formato da UI
+  const processos = useMemo(() => {
+    return dbProcessos.map(p => ({
+      ...p,
+      cliente: p.cliente || 'Cliente não identificado',
+      faseProcessual: p.faseProcessual || 'Fase Inicial',
+      responsavelNome: 'Não atribuído',
+      area: p.tipoProcesso || 'Cível'
+    }));
+  }, [dbProcessos]);
 
   // Função auxiliar para verificar data de movimentação
   const isWithinDateRange = useCallback((dataMovimentacao: string | undefined, range: string) => {
@@ -107,61 +88,49 @@ const Processos = React.memo(() => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     switch (range) {
-      case '7dias':
-        return diffDays <= 7;
-      case '15dias':
-        return diffDays <= 15;
-      default:
-        return true;
+      case '7dias': return diffDays <= 7;
+      case '15dias': return diffDays <= 15;
+      case '30dias': return diffDays <= 30;
+      default: return true;
     }
   }, []);
 
-  // Filtrar processos - memoizado para evitar recálculos desnecessários
+  // Filtrar processos
   const filteredProcessos = useMemo(() => {
     return processos.filter(processo => {
+      const searchTerms = filters.search.toLowerCase();
       const matchesSearch = filters.search === '' || 
-        processo.titulo.toLowerCase().includes(filters.search.toLowerCase()) ||
-        processo.cliente.toLowerCase().includes(filters.search.toLowerCase());
-      
-      const matchesCnj = cnjSearch === '' || 
-        (processo.numeroProcesso && processo.numeroProcesso.toLowerCase().includes(cnjSearch.toLowerCase()));
+        processo.titulo.toLowerCase().includes(searchTerms) ||
+        processo.cliente.toLowerCase().includes(searchTerms) ||
+        (processo.numeroProcesso && processo.numeroProcesso.includes(searchTerms.replace(/\D/g, '')));
       
       const matchesStatus = filters.status === 'all' || processo.status === filters.status;
       const matchesCliente = filters.cliente === 'all' || processo.cliente === filters.cliente;
-      const matchesNumeroProcesso = filters.numeroProcesso === 'all' || processo.numeroProcesso === filters.numeroProcesso;
       const matchesArea = filters.area === 'all' || processo.area === filters.area;
       const matchesMovimentacao = isWithinDateRange(processo.ultimaMovimentacao, filters.movimentacao);
       
-      return matchesSearch && matchesCnj && matchesStatus && matchesCliente && matchesNumeroProcesso && matchesArea && matchesMovimentacao;
+      return matchesSearch && matchesStatus && matchesCliente && matchesArea && matchesMovimentacao;
     });
-  }, [processos, filters, cnjSearch, isWithinDateRange]);
+  }, [processos, filters, isWithinDateRange]);
 
-  // Listas únicas para filtros - memoizadas
+  // Listas únicas para filtros
   const uniqueClientes = useMemo(() => {
     return Array.from(new Set(processos.map(p => p.cliente).filter(Boolean))).sort();
   }, [processos]);
 
-  const uniqueNumerosProcesso = useMemo(() => {
-    return Array.from(new Set(processos.map(p => p.numeroProcesso).filter(Boolean))).sort();
-  }, [processos]);
-
-  // Contagem de filtros ativos - memoizada
+  // Contagem de filtros ativos
   const activeFiltersCount = useMemo(() => {
     return [
-      filters.search !== '',
       filters.status !== 'all',
       filters.cliente !== 'all',
-      filters.numeroProcesso !== 'all',
       filters.area !== 'all',
       filters.movimentacao !== 'all'
-    ].filter(Boolean).length + (cnjSearch !== '' ? 1 : 0);
-  }, [filters, cnjSearch]);
+    ].filter(Boolean).length;
+  }, [filters]);
 
-  const [isNovoProcessoOpen, setIsNovoProcessoOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'carteira');
 
-  // Sincronizar aba com URL
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab && (tab === 'carteira' || tab === 'novo')) {
@@ -169,218 +138,120 @@ const Processos = React.memo(() => {
     }
   }, [searchParams]);
 
-  // Handlers - todos usando useCallback para evitar re-criações
-  const handleAddProcesso = useCallback(async (novoProcesso: any) => {
-    const success = await create({
-      titulo: novoProcesso.titulo,
-      cliente_id: (novoProcesso as any).clienteId || null,
-      status: novoProcesso.status,
-      numero_processo: novoProcesso.numeroProcesso || '',
-      tipo_processo: novoProcesso.tipoProcesso || 'Cível',
-      valor_causa: novoProcesso.valorCausa || 0,
-      observacoes: novoProcesso.descricao || '',
-      proximo_prazo: novoProcesso.proximoPrazo || null,
-      data_inicio: new Date().toISOString().split('T')[0],
-      tribunal: novoProcesso.tribunal,
-      vara: novoProcesso.vara,
-      comarca: novoProcesso.comarca,
-      requerido: novoProcesso.requerido,
-      segredo_justica: novoProcesso.segredoJustica,
-      justica_gratuita: novoProcesso.justicaGratuita
-    });
-
-    if (success) {
-      toast({
-        title: "Processo criado",
-        description: `Processo "${novoProcesso.titulo}" foi criado com sucesso.`,
-      });
-    }
-  }, [create, toast]);
-
-  const handleImportedSync = useCallback(async (processes: any[]) => {
+  const handleImportedSync = useCallback(async (input: any[] | any) => {
     let successCount = 0;
     try {
-      for (const proc of processes) {
-        // Use manually edited names from preview if available, fallback to title splitting
-        const autorNome = proc.autor || proc.titulo?.split(' x ')[0] || proc.titulo;
-        const reuNome = proc.reu || proc.titulo?.split(' x ')[1] || '';
+      const processes = Array.isArray(input) ? input : [input];
+      
+      console.log(`🚀 Iniciando sincronização de ${processes.length} processo(s)...`);
 
-        // Build observation with description if exists
-        const obs = proc.ultimoAndamento?.descricao || 'Importado via Sincronização Judicial';
+      for (const proc of processes) {
+        const autorNome = proc.autor || proc.titulo?.split(' x ')[0] || proc.titulo;
+        const reuNome = proc.reu || proc.titulo?.split(' x ')[1] || proc.requerido || '';
+        const obs = proc.ultimoAndamento?.descricao || proc.descricao || 'Sincronizado via Vextria Hub.';
+        
+        // Extrair dataInicio do CNJ se possível
+        const cnjYear = extractYearFromCNJ(proc.numeroProcesso || proc.numero_processo);
+        const dataInicioReal = cnjYear ? `${cnjYear}-01-01` : proc.dataInicio || proc.data_inicio || new Date().toISOString().split('T')[0];
 
         const createdProc = await create({
           titulo: autorNome,
-          clienteId: (proc as any).clienteId || null,
+          clienteId: (proc as any).clienteId || (proc as any).cliente_id || null,
           status: 'Em andamento',
-          numeroProcesso: proc.numeroProcesso,
-          tipoProcesso: proc.faseProcessual || proc.tipoProcesso || 'Cível',
-          proximoPrazo: null,
-          valorCausa: proc.valorCausa || 0,
+          numeroProcesso: proc.numeroProcesso || proc.numero_processo,
+          tipoProcesso: proc.faseProcessual || proc.tipoProcesso || proc.tipo_processo || 'Cível',
+          valorCausa: proc.valorCausa || proc.valor_causa || 0,
           descricao: obs,
           tribunal: proc.tribunal,
           vara: proc.vara || '',
           comarca: proc.comarca || '',
           requerido: reuNome,
-          segredoJustica: proc.segredoJustica || false,
-          justicaGratuita: proc.justicaGratuita || false
+          segredoJustica: proc.segredoJustica || proc.segredo_justica || false,
+          justicaGratuita: proc.justicaGratuita || proc.justica_gratuita || false,
+          dataInicio: dataInicioReal
         } as any);
 
-        if (createdProc) {
+        if (createdProc && addMovimentacao) {
           successCount++;
           
-          // Add initial movement to the timeline
-          if (proc.ultimoAndamento && (create as any).addMovimentacao) {
-            await (create as any).addMovimentacao(createdProc.id, {
-               data: proc.ultimoAndamento.data,
-               descricao: proc.ultimoAndamento.descricao,
-               tipo: 'andamento'
+          // Se tiver andamento específico na busca por OAB
+          if (proc.ultimoAndamento) {
+            await addMovimentacao(createdProc.id, {
+              data: proc.ultimoAndamento.data,
+              descricao: proc.ultimoAndamento.descricao,
+              tipo: 'andamento'
             });
-          } else if (addMovimentacao) {
-             // If addMovimentacao is available from hook result
-             await addMovimentacao(createdProc.id, {
-               data: proc.ultimoAndamento?.data || new Date().toISOString(),
-               descricao: proc.ultimoAndamento?.descricao || 'Processo importado para o sistema.',
-               tipo: 'andamento'
-            });
+          } 
+          // Se tiver andamentos (array)
+          else if (Array.isArray(proc.andamentos) && proc.andamentos.length > 0) {
+            for (const and of proc.andamentos) {
+              await addMovimentacao(createdProc.id, {
+                data: and.data,
+                descricao: and.resumo || and.descricao,
+                tipo: 'andamento'
+              });
+            }
           }
         }
       }
 
       if (successCount > 0) {
-        toast({
-          title: "Importação concluída",
-          description: `${successCount} processos foram adicionados com sucesso ao seu escritório.`,
-        });
+        toast({ title: "Sincronização concluída", description: `${successCount} processo(s) processado(s) com sucesso.` });
       }
-    } catch (error) {
-      console.error('Erro ao importar processos da OAB:', error);
-      toast({
-        title: "Erro na importação",
-        description: "Houve um problema ao salvar alguns processos.",
-        variant: "destructive"
+    } catch (error: any) {
+      console.error('Erro ao importar processos:', error);
+      toast({ 
+        title: "Erro na importação", 
+        description: error.message || "Ocorreu um problema ao salvar os dados.",
+        variant: "destructive" 
       });
     }
   }, [create, addMovimentacao, toast]);
-
-  const handleEditProcesso = useCallback((processo: Processo) => {
-    setEditingProcesso(processo);
-    setEditDialogOpen(true);
-  }, []);
 
   const handleViewDetails = useCallback((processo: Processo) => {
     setSelectedProcesso(processo);
     setIsDetailsOpen(true);
   }, []);
 
+  const handleEditProcesso = useCallback((processo: Processo) => {
+    setEditingProcesso(processo);
+    setEditDialogOpen(true);
+  }, []);
+
   const handleSaveEdit = useCallback(async (processoAtualizado: Processo) => {
-    const success = await update(processoAtualizado.id, {
+    await update(processoAtualizado.id, {
       titulo: processoAtualizado.titulo,
       status: processoAtualizado.status,
-      numero_processo: processoAtualizado.numeroProcesso,
-      tipo_processo: processoAtualizado.tipoProcesso,
-      valor_causa: processoAtualizado.valorCausa,
-      observacoes: processoAtualizado.descricao,
-      proximo_prazo: processoAtualizado.proximoPrazo
+      numeroProcesso: processoAtualizado.numeroProcesso,
+      tipoProcesso: processoAtualizado.tipoProcesso,
+      valorCausa: processoAtualizado.valorCausa,
+      descricao: processoAtualizado.descricao,
+      proximoPrazo: processoAtualizado.proximoPrazo,
+      requerido: (processoAtualizado as any).requerido
     });
-    
-    if (success) {
-      toast({
-        title: "Processo atualizado",
-        description: `Processo "${processoAtualizado.titulo}" foi atualizado com sucesso.`,
-      });
-    }
-  }, [update, toast]);
-
-  const handleDeleteProcesso = useCallback((processo: Processo) => {
-    setProcessoToDelete(processo);
-    setDeleteDialogOpen(true);
-  }, []);
+    setEditDialogOpen(false);
+  }, [update]);
 
   const handleConfirmDelete = useCallback(async () => {
     if (!processoToDelete) return;
-
     setIsDeleting(true);
-    
     try {
-      const success = await requestDelete(processoToDelete.id);
-      
-      if (success) {
-        toast({
-          title: "Solicitado",
-          description: `A exclusão do processo "${processoToDelete.titulo}" foi solicitada.`,
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro ao excluir",
-        description: "Ocorreu um erro ao solicitar a exclusão.",
-        variant: "destructive",
-      });
+      await requestDelete(processoToDelete.id);
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
       setProcessoToDelete(null);
     }
-  }, [processoToDelete, requestDelete, toast]);
-
-  const handleClienteClick = useCallback((clienteId: string) => {
-    navigate(`/clientes?filter=${clienteId}`);
-  }, [navigate]);
-
-  const handleLoadSampleData = useCallback(() => {
-    toast({
-      title: "Aviso",
-      description: "A função de carregar dados de exemplo foi desativada em produção para garantir a integridade do seu banco de dados real.",
-    });
-  }, [toast]);
-
-  const handleProcessoEncontradoAPI = useCallback(async (processoAPI: any) => {
-    await create({
-      titulo: processoAPI.titulo,
-      cliente_id: null,
-      status: processoAPI.status,
-      numero_processo: processoAPI.numeroProcesso,
-      tipo_processo: 'Importado via API',
-      valor_causa: 0,
-      observacoes: `Processo importado via API. Última movimentação: ${processoAPI.ultimaMovimentacao.descricao}`,
-      proximo_prazo: null,
-      data_inicio: new Date().toISOString().split('T')[0]
-    });
-    
-    toast({
-      title: "Processo importado",
-      description: `Processo "${processoAPI.titulo}" foi importado com sucesso.`,
-    });
-  }, [toast]);
-
-  const handleFiltersChange = useCallback((newFilters: IProcessoFilters) => {
-    setFilters(newFilters);
-  }, []);
+  }, [processoToDelete, requestDelete]);
 
   const handleClearFilters = useCallback(() => {
     setFilters({
       search: '',
       status: 'all',
       cliente: 'all',
-      numeroProcesso: 'all',
       area: 'all',
       movimentacao: 'all'
     });
-    setCnjSearch('');
-  }, []);
-
-  const handleEditDialogOpenChange = useCallback((open: boolean) => {
-    setEditDialogOpen(open);
-    if (!open) {
-      setEditingProcesso(null);
-    }
-  }, []);
-
-  const handleDeleteDialogOpenChange = useCallback((open: boolean) => {
-    setDeleteDialogOpen(open);
-    if (!open) {
-      setProcessoToDelete(null);
-    }
   }, []);
 
   return (
@@ -393,75 +264,76 @@ const Processos = React.memo(() => {
                 <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
               <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                Processos Jurídicos
+                Gestão de Processos
               </h1>
             </div>
             <p className="text-sm md:text-lg text-muted-foreground font-medium">
               {activeTab === 'carteira' 
-                ? "Gerencie sua carteira de processos com inteligência." 
-                : "Importe novos processos ou cadastre manualmente."}
+                ? "Visualize e gerencie toda sua carteira acumulada." 
+                : "Sincronize processos novos diretamente dos tribunais."}
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+             <Button variant="outline" onClick={() => navigate('/publicacoes')} className="rounded-xl font-bold h-10 border-white/10">
+               Ver Publicações
+             </Button>
+             <Button onClick={() => setActiveTab('novo')} className="rounded-xl font-bold h-10 group">
+               <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
+               Sincronizar Novos
+             </Button>
           </div>
         </div>
 
         <TabsContent value="carteira" className="space-y-8 animate-in fade-in duration-500">
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem]">
-            <div className="relative group flex-1 md:min-w-[300px]">
+            <div className="relative group flex-1">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
               <Input 
-                placeholder="Buscar por número CNJ..." 
-                value={cnjSearch}
-                onChange={(e) => setCnjSearch(e.target.value)}
+                placeholder="Busca global: título, cliente ou número CNJ..." 
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
               />
             </div>
             
-            <div className="flex items-center gap-3 h-12">
-              <ProcessoViewSwitcher view={view} onViewChange={setView} />
-            </div>
+            <ProcessoViewSwitcher view={view} onViewChange={setView} />
           </div>
 
-          {showEmptyState ? (
-            <EmptyState
-              icon={FileText}
-              title="Nenhum processo cadastrado"
-              description="Seu escritório ainda não possui processos no banco de dados. Comece importando processos via OAB ou cadastrando-os manualmente."
-              actionLabel="Criar Primeiro Processo"
-              onAction={() => setActiveTab('novo')}
-            />
+          {hookIsEmpty ? (
+            <div className="flex flex-col items-center justify-center p-16 text-center space-y-6 glass-card rounded-[3rem] border-white/5">
+               <div className="p-6 rounded-full bg-primary/5 border border-primary/10">
+                 <Database className="h-16 w-16 text-primary opacity-40" />
+               </div>
+               <div className="space-y-2">
+                 <h2 className="text-2xl font-black">Sua carteira está limpa</h2>
+                 <p className="text-muted-foreground max-w-sm mx-auto">Importe processos por OAB para começar a gerenciar seus prazos e andamentos de forma automatizada.</p>
+               </div>
+               <Button onClick={() => setActiveTab('novo')} size="lg" className="rounded-2xl font-bold h-14 px-10">
+                 Iniciar Primeira Sincronização
+               </Button>
+            </div>
           ) : (
             <>
               <ProcessoFilters
                 filters={filters}
-                onFiltersChange={handleFiltersChange}
+                onFiltersChange={setFilters}
                 clientes={uniqueClientes}
-                numerosProcesso={uniqueNumerosProcesso}
                 activeFiltersCount={activeFiltersCount}
                 onClearFilters={handleClearFilters}
               />
 
               {filteredProcessos.length === 0 ? (
-                <Card className="glass-card border-white/5 bg-card/30 p-12 text-center rounded-[2rem] shadow-premium">
-                  <CardContent className="space-y-6">
-                    <div className="p-6 bg-primary/5 rounded-full inline-block border border-primary/10">
-                      <Search className="h-12 w-12 text-primary opacity-40" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-2xl font-extrabold">Nenhum processo encontrado</h3>
-                      <p className="text-muted-foreground font-medium max-w-sm mx-auto">
-                        Tente ajustar seus filtros ou faça uma nova busca refinada para encontrar o que procura.
-                      </p>
-                    </div>
-                    <Button variant="outline" onClick={handleClearFilters} className="rounded-xl font-bold h-12 px-8 border-white/10 hover:bg-white/5">
-                      Limpar Filtros
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="p-20 text-center glass-card rounded-[2rem] border-white/5 space-y-4">
+                   <Filter className="h-12 w-12 text-primary/20 mx-auto" />
+                   <p className="text-white/40 font-bold uppercase tracking-tighter">Nenhum processo corresponde aos filtros</p>
+                   <Button variant="link" onClick={handleClearFilters}>Limpar todos os filtros</Button>
+                </div>
               ) : view === 'table' ? (
                 <ProcessoTable
                   processos={filteredProcessos as any}
                   onEdit={handleEditProcesso}
-                  onDelete={handleDeleteProcesso}
+                  onDelete={setProcessoToDelete}
                   onViewDetails={handleViewDetails}
                 />
               ) : (
@@ -471,16 +343,17 @@ const Processos = React.memo(() => {
                       key={processo.id}
                       processo={processo as any}
                       onEdit={handleEditProcesso}
-                      onDelete={handleDeleteProcesso}
-                      onClienteClick={handleClienteClick}
+                      onDelete={() => { setProcessoToDelete(processo as any); setDeleteDialogOpen(true); }}
+                      onClienteClick={() => navigate(`/clientes?id=${processo.clienteId}`)}
                       onClick={() => handleViewDetails(processo as any)}
                     />
                   ))}
                 </div>
               )}
 
-              <div className="text-center text-sm text-muted-foreground pb-8">
-                Mostrando {filteredProcessos.length} de {processos.length} processo(s)
+              <div className="flex items-center justify-between text-xs text-white/30 px-4">
+                <span>V20 • Judicial Sync Hardened</span>
+                <span>Exibindo {filteredProcessos.length} processos de {processos.length} no total</span>
               </div>
             </>
           )}
@@ -494,25 +367,22 @@ const Processos = React.memo(() => {
         </TabsContent>
       </Tabs>
 
-      {/* Modal de Edição */}
       <ProcessoEditDialog
         processo={editingProcesso}
         open={editDialogOpen}
-        onOpenChange={handleEditDialogOpenChange}
+        onOpenChange={setEditDialogOpen}
         onSave={handleSaveEdit}
       />
 
-      {/* Modal de Confirmação de Exclusão */}
       <DeleteConfirmDialog
         open={deleteDialogOpen}
-        onOpenChange={handleDeleteDialogOpenChange}
+        onOpenChange={setDeleteDialogOpen}
         onConfirm={handleConfirmDelete}
-        title="Excluir Processo"
-        description={`Tem certeza que deseja excluir o processo "${processoToDelete?.titulo}"? Esta ação não pode ser desfeita.`}
+        title="Arquivar Processo"
+        description={`Deseja arquivar o processo "${processoToDelete?.titulo}"?`}
         isLoading={isDeleting}
       />
 
-      {/* Painel de Detalhes (Drawer) */}
       <ProcessoDetailsDrawer
         processo={selectedProcesso as any}
         open={isDetailsOpen}
@@ -523,5 +393,4 @@ const Processos = React.memo(() => {
 });
 
 Processos.displayName = 'Processos';
-
 export default Processos;

@@ -182,9 +182,6 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
     conteudo: andamentos[0]?.resumo || ''
   };
 };
-leanHTML(movementDesc)
-  };
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders, status: 204 });
