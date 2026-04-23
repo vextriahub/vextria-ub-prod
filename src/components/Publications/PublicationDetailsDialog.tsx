@@ -40,7 +40,7 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-w-2xl h-[90vh] md:h-auto md:max-h-[85vh] border-white/10 bg-background/95 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] shadow-2xl p-0 overflow-hidden flex flex-col focus:outline-none">
+      <DialogContent className="max-w-3xl h-[90vh] md:h-auto md:max-h-[85vh] border-white/10 bg-background/95 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2rem] shadow-2xl p-0 overflow-hidden flex flex-col focus:outline-none">
         <DialogHeader className="p-6 md:p-8 pb-4 shrink-0 border-b border-white/5">
           <DialogTitle className="flex items-center gap-3 text-xl md:text-2xl font-black tracking-tight">
             <div className="p-2 bg-primary/10 rounded-xl">
@@ -120,44 +120,42 @@ export const PublicationDetailsDialog = ({ publication, open, onOpenChange, trig
           </div>
         </div>
         
-        <div className="p-6 md:p-8 bg-muted/20 shrink-0 border-t border-white/5 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
-          <div className="flex flex-col md:flex-row gap-3 w-full">
-             <Button 
-                onClick={() => onRegister?.(publication)}
-                variant="outline" 
-                className="rounded-xl border-white/10 hover:bg-primary/10 hover:text-primary px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-2"
-             >
-               <PlusCircle className="h-4 w-4" />
-               Cadastrar Processo
-             </Button>
-             
+        <div className="p-4 md:p-6 bg-muted/20 shrink-0 border-t border-white/5 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
+          <div className="flex flex-wrap items-center gap-3 w-full justify-start">
              <Button 
                 onClick={() => onSchedule?.(publication)}
-                className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-1 shadow-lg shadow-orange-500/20"
+                className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white px-5 font-bold text-[11px] uppercase tracking-widest gap-2 h-11 transition-all shadow-lg shadow-orange-500/20"
              >
                <Calendar className="h-4 w-4" />
                Agendar Prazo
              </Button>
 
              <Button 
+                onClick={() => onRegister?.(publication)}
+                variant="outline" 
+                className="rounded-xl border-white/10 hover:bg-primary/10 hover:text-primary px-5 font-bold text-[11px] uppercase tracking-widest gap-2 h-11 transition-all"
+             >
+               <PlusCircle className="h-4 w-4" />
+               Cadastrar Processo
+             </Button>
+             
+             <Button 
                 onClick={() => onProcess?.(publication.id)}
                 variant="outline" 
-                className="rounded-xl border-white/10 hover:bg-emerald-500/10 hover:text-emerald-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto order-3"
+                className="rounded-xl border-white/10 hover:bg-emerald-500/10 hover:text-emerald-500 px-5 font-bold text-[11px] uppercase tracking-widest gap-2 h-11 transition-all"
              >
                <CheckCircle className="h-4 w-4" />
                Marcar como Trata
              </Button>
              
-             <div className="md:ml-auto">
-               <Button 
-                  onClick={() => onDelete?.(publication.id)}
-                  variant="ghost" 
-                  className="rounded-xl hover:bg-red-500/10 hover:text-red-500 px-5 font-bold text-xs uppercase tracking-widest gap-2 h-12 md:h-11 transition-all w-full md:w-auto"
-               >
-                 <Trash2 className="h-4 w-4" />
-                 Excluir 
-               </Button>
-             </div>
+             <Button 
+                onClick={() => onDelete?.(publication.id)}
+                variant="ghost" 
+                className="rounded-xl hover:bg-red-500/10 hover:text-red-500 px-5 font-bold text-[11px] uppercase tracking-widest gap-2 h-11 transition-all ml-auto"
+             >
+               <Trash2 className="h-4 w-4" />
+               Excluir 
+             </Button>
           </div>
         </div>
       </DialogContent>
