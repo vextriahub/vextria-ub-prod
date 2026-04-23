@@ -123,41 +123,53 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
   // 1. Tenta extrair autores e réus do array formal de 'partes'
   const autoresList: string[] = [];
   const reusList: string[] = [];
-  const unknownList: string[] = [];
+  const allNamesFound: string[] = [];
 
-  source.partes?.forEach((p: any) => {
-    const nome = p.nome || '';
-    const tipo = (p.tipo || '').toLowerCase();
-    const polo = p.polo;
+  const processPart = (p: any) => {
+    const nome = p.nome || p.pessoa?.nome || '';
+    if (!nome || nome.length < 3) return;
+    if (!allNamesFound.includes(nome)) allNamesFound.push(nome);
+
+    const tipo = (p.tipo || p.tipoParte || '').toLowerCase();
+    const polo = p.polo || p.poloParte;
 
     if (tipo.includes('ativa') || tipo.includes('requerente') || tipo.includes('autor') || 
         tipo.includes('exequente') || tipo.includes('reclamante') || polo === 1 || polo === "1") {
-      autoresList.push(nome);
+      if (!autoresList.includes(nome)) autoresList.push(nome);
     } else if (tipo.includes('passiva') || tipo.includes('requerido') || tipo.includes('réu') || 
                tipo.includes('executado') || tipo.includes('reclamado') || polo === 2 || polo === "2") {
-      reusList.push(nome);
-    } else {
-      unknownList.push(nome);
+      if (!reusList.includes(nome)) reusList.push(nome);
     }
-  });
+  };
 
-  // 2. Fallback: Se não encontrou no array formal, tenta extrair dos textos de andamento (Forte no PJE/TJDFT)
-  const movements = source.movimentacoes || [];
-  const bestMovement = movements.find((m: any) => (m.descricao || '').length > 20) || movements[0] || null;
-  const movementDesc = bestMovement?.descricao || '';
+  source.partes?.forEach(processPart);
+  // Alguns tribunais colocam partes em outros níveis
+  source.informacoesGerais?.partes?.forEach(processPart);
 
-  if (autoresList.length === 0 || reusList.length === 0) {
-    const extracted = extractPartesFromTexto(movementDesc);
-    if (extracted && extracted.autor && extracted.reu) {
-      if (autoresList.length === 0) autoresList.push(extracted.autor);
-      if (reusList.length === 0) reusList.push(extracted.reu);
-    }
+  // 2. Extração de Emergência: Se não achou polos, mas achou nomes
+  if (autoresList.length === 0 && allNamesFound.length > 0) {
+    autoresList.push(allNamesFound[0]);
+    if (allNamesFound.length > 1) reusList.push(allNamesFound[1]);
   }
 
-  // 3. Ultra Fallback: Se ainda estiver vazio mas tiver unknown, usa os unknown
-  if (autoresList.length === 0 && unknownList.length > 0) {
-    autoresList.push(unknownList[0]);
-    if (unknownList.length > 1) reusList.push(unknownList[1]);
+  // 3. Fallback Extra: Tentar extrair do texto do andamento se ainda estiver vazio
+  const movements = source.movimentacoes || [];
+  // Ignora andamentos genéricos como "Poder Judiciário", "Justiça", etc.
+  const genericTitles = ["poder judiciário", "justiça federal", "justiça estadual", "tribunal de justiça", "pje", "processo"];
+  
+  const bestMovement = movements.find((m: any) => {
+    const desc = (m.descricao || '').toLowerCase();
+    return desc.length > 20 && !genericTitles.some(gt => desc.includes(gt));
+  }) || movements.find((m: any) => (m.descricao || '').length > 5) || movements[0] || null;
+
+  const movementDesc = bestMovement?.descricao || '';
+
+  if (autoresList.length === 0) {
+     const extracted = extractPartesFromTexto(movementDesc);
+     if (extracted) {
+       if (extracted.autor) autoresList.push(extracted.autor);
+       if (extracted.reu && reusList.length === 0) reusList.push(extracted.reu);
+     }
   }
 
   const autores = autoresList.length > 0 ? autoresList.join(', ') : 'Não identificado';
