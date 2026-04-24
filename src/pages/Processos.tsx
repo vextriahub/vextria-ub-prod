@@ -286,11 +286,72 @@ const Processos = React.memo(() => {
         </div>
 
         <TabsContent value="carteira" className="space-y-8 animate-in fade-in duration-500">
+          {/* KPI Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-primary/30 transition-all">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total da Carteira</p>
+                    <h3 className="text-3xl font-black">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : processos.length}</h3>
+                  </div>
+                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-green-500/30 transition-all">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Processos Ativos</p>
+                    <h3 className="text-3xl font-black text-green-500">
+                      {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : processos.filter(p => p.status === 'Em andamento' || p.status === 'ativo').length}
+                    </h3>
+                  </div>
+                  <div className="p-2 rounded-xl bg-green-500/10 text-green-500">
+                    <RotateCw className="h-5 w-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-orange-500/30 transition-all">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Prazos na Semana</p>
+                    <h3 className="text-3xl font-black text-orange-500">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 0}</h3>
+                  </div>
+                  <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
+                    <Plus className="h-5 w-5 rotate-45" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-blue-500/30 transition-all">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Sem Movimento (15d)</p>
+                    <h3 className="text-3xl font-black text-blue-500">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 0}</h3>
+                  </div>
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                    <Search className="h-5 w-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem]">
             <div className="relative group flex-1">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
               <Input 
-                placeholder="Busca global: título, cliente ou número CNJ..." 
+                placeholder="Busca: título, cliente ou número CNJ (ex: 07166164)..." 
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
@@ -300,18 +361,50 @@ const Processos = React.memo(() => {
             <ProcessoViewSwitcher view={view} onViewChange={setView} />
           </div>
 
-          {hookIsEmpty ? (
-            <div className="flex flex-col items-center justify-center p-16 text-center space-y-6 glass-card rounded-[3rem] border-white/5">
-               <div className="p-6 rounded-full bg-primary/5 border border-primary/10">
-                 <Database className="h-16 w-16 text-primary opacity-40" />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center p-20 animate-pulse">
+              <Loader2 className="h-12 w-12 text-primary animate-spin opacity-20" />
+              <p className="mt-4 text-muted-foreground font-bold uppercase tracking-widest text-xs">Carregando Carteira...</p>
+            </div>
+          ) : hookIsEmpty ? (
+            <div className="flex flex-col items-center justify-center p-12 md:p-24 text-center space-y-10 glass-card rounded-[3rem] border-white/5 relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+               
+               <div className="p-8 rounded-full bg-primary/5 border border-primary/10 relative">
+                 <Database className="h-20 w-20 text-primary opacity-30" />
+                 <div className="absolute -top-1 -right-1 bg-primary h-4 w-4 rounded-full animate-ping" />
                </div>
-               <div className="space-y-2">
-                 <h2 className="text-2xl font-black">Sua carteira está limpa</h2>
-                 <p className="text-muted-foreground max-w-sm mx-auto">Importe processos por OAB para começar a gerenciar seus prazos e andamentos de forma automatizada.</p>
+
+               <div className="space-y-3">
+                 <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Sua carteira está limpa</h2>
+                 <p className="text-muted-foreground max-w-lg mx-auto text-lg">Como você deseja iniciar sua jornada jurídica hoje?</p>
                </div>
-               <Button onClick={() => setActiveTab('novo')} size="lg" className="rounded-2xl font-bold h-14 px-10">
-                 Iniciar Primeira Sincronização
-               </Button>
+
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+                 <Button onClick={() => setActiveTab('novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 group">
+                    <RotateCw className="h-8 w-8 group-hover:rotate-180 transition-transform duration-500" />
+                    <div className="text-center">
+                      <p className="font-black uppercase text-xs tracking-widest">Sincronizar</p>
+                      <p className="text-[10px] opacity-60">Via OAB / CNJ</p>
+                    </div>
+                 </Button>
+                 
+                 <Button variant="outline" onClick={() => setActiveTab('novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 border-white/5 bg-white/5 hover:bg-white/10">
+                    <Search className="h-8 w-8 text-primary" />
+                    <div className="text-center">
+                      <p className="font-black uppercase text-xs tracking-widest">Buscar CNJ</p>
+                      <p className="text-[10px] opacity-60">Caso Específico</p>
+                    </div>
+                 </Button>
+
+                 <Button variant="outline" onClick={() => navigate('/processos?tab=novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 border-white/5 bg-white/5 hover:bg-white/10">
+                    <Plus className="h-8 w-8 text-green-500" />
+                    <div className="text-center">
+                      <p className="font-black uppercase text-xs tracking-widest">Manual</p>
+                      <p className="text-[10px] opacity-60">Cadastro Direto</p>
+                    </div>
+                 </Button>
+               </div>
             </div>
           ) : (
             <>
@@ -351,8 +444,14 @@ const Processos = React.memo(() => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-xs text-white/30 px-4">
-                <span>V20 • Judicial Sync Hardened</span>
+              <div className="flex items-center justify-between text-[10px] text-white/20 px-6 py-4 uppercase font-black tracking-widest bg-white/[0.02] rounded-2xl border border-white/5">
+                <div className="flex items-center gap-4">
+                  <span>V20.3 • Judicial Intelligence</span>
+                  <span className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Sincronizado agorinha
+                  </span>
+                </div>
                 <span>Exibindo {filteredProcessos.length} processos de {processos.length} no total</span>
               </div>
             </>

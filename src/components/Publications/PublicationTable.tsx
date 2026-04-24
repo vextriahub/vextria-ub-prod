@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { formatCNJ } from "@/utils/formatCNJ";
 
 interface Publication {
   id: string;
@@ -136,7 +137,7 @@ export const PublicationTable = ({
                     <div className="flex items-center gap-2">
                        <Scale className="h-3 w-3 text-muted-foreground/40" />
                        <span className="font-mono text-[10px] font-bold text-muted-foreground/70 uppercase">
-                        {pub.numero_processo}
+                        {formatCNJ(pub.numero_processo)}
                        </span>
                     </div>
                   </div>

@@ -243,37 +243,36 @@ export const ProcessoIntegracaoPanel: React.FC<ProcessoIntegracaoPanelProps> = (
 
         {/* Card Manual */}
         <Card 
-          className="group relative overflow-hidden cursor-pointer bg-white/5 border-white/10 hover:bg-amber-500/20 hover:border-amber-500/30 transition-all p-10 space-y-6 rounded-[3rem] shadow-xl hover:-translate-y-2"
-          onClick={() => {
-            toast({
-              title: "Funcionalidade em breve",
-              description: "O cadastro manual completo está sendo movido para esta aba. Por enquanto utilize o botão 'Novo Processo' acima.",
-            });
-          }}
+          className="group relative overflow-hidden cursor-pointer bg-white/5 border-white/10 hover:bg-amber-500/20 hover:border-amber-500/30 transition-all p-10 space-y-6 rounded-[3rem] shadow-xl hover:-translate-y-2 min-h-[320px] flex flex-col justify-between"
+          onClick={() => setMode('manual')}
         >
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <Plus className="h-24 w-24 -mr-8 -mt-8" />
           </div>
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-            <Plus className="h-8 w-8" />
-          </div>
-          <div className="space-y-2">
-            <h4 className="text-2xl font-bold text-white">Cadastro Manual</h4>
-            <p className="text-sm text-white/40 leading-relaxed">
-              Prefere controle total? Insira cada detalhe do processo manualmente, desde a vara até o valor da causa e observações.
-            </p>
+          <div>
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform mb-6">
+              <Plus className="h-8 w-8" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-2xl font-bold text-white uppercase tracking-tighter">Cadastro Manual</h4>
+              <p className="text-sm text-white/40 leading-relaxed">
+                Controle total e imediato. Insira cada detalhe do processo manualmente sem depender de robôs de busca.
+              </p>
+            </div>
           </div>
           <div className="pt-4">
             <Button className="w-full rounded-2xl font-bold group-hover:bg-amber-500 group-hover:text-white transition-colors" variant="outline">
-              Cadastrar Manual
+              Cadastrar Agora
             </Button>
           </div>
         </Card>
       </div>
 
-      <div className="max-w-xl mx-auto p-6 rounded-3xl bg-blue-500/5 border border-blue-500/20 flex items-center gap-4 text-sm text-blue-300">
-        <Info className="h-6 w-6 shrink-0" />
-        <p>A sincronização judicial consome créditos do seu plano. Novos advogados possuem limites diferenciados para a busca profunda da OAB.</p>
+      <div className="max-w-xl mx-auto p-6 rounded-3xl bg-blue-500/5 border border-blue-500/20 flex flex-col md:flex-row items-center gap-4 text-xs text-blue-300 backdrop-blur-3xl">
+        <Info className="h-6 w-6 shrink-0 text-blue-500" />
+        <p className="text-center md:text-left leading-relaxed">
+          <span className="font-bold text-blue-400">Nota Jurídica:</span> A sincronização judicial consome créditos do seu plano. Novos advogados possuem limites diferenciados para a busca profunda da OAB.
+        </p>
       </div>
     </div>
   );

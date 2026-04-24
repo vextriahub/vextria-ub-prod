@@ -31,7 +31,8 @@ export function useStats() {
 
   const fetchStats = async () => {
     if (!user?.office_id) {
-      setLoading(false);
+      // Se não há office_id mas ainda estamos carregando o auth, não pare o loading do stats
+      // Isso evita o flash de "0" antes do perfil carregar
       return;
     }
 

@@ -65,10 +65,16 @@ export const usePublicacoes = () => {
         console.error('[Sync] Invoke Error:', invokeError);
         throw new Error(`Erro na API de busca: ${invokeError.message}`);
       }
-      if (!results || !Array.isArray(results)) return [];
+
+      // Edge function returns { status: "ok", items: [...] }
+      const items = results?.items || results;
+      if (!items || !Array.isArray(items)) {
+        console.warn('[Sync] Unexpected response format:', results);
+        return [];
+      }
 
       const savedResults = [];
-      for (const item of results) {
+      for (const item of items) {
         // Simple duplicate check (by process number and content hash or similar)
         // For now, relies on supabase's RLS or unique constraints if any
         const newRecord = {

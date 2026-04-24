@@ -506,7 +506,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           className={`gap-2 px-8 bg-primary shadow-lg shadow-primary/20 h-11 font-bold transition-all hover:scale-[1.02] ${selectedIds.size === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
-          {importing ? 'Importando...' : `Importar ${selectedIds.size} Processos`}
+          {importing ? 'Importando...' : selectedIds.size > 0 ? `Importar ${selectedIds.size} Processo(s)` : 'Nenhum Selecionado'}
         </Button>
       </div>
 

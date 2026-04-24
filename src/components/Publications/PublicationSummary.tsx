@@ -66,15 +66,16 @@ interface PublicationSummaryProps {
     semVinculo: number;
     novosAndamentos: number;
   };
+  loading?: boolean;
   onCardClick?: (type: 'prazos' | 'novas' | 'sem_vinculo' | 'hoje') => void;
 }
 
-export const PublicationSummary = ({ stats, onCardClick }: PublicationSummaryProps) => {
+export const PublicationSummary = ({ stats, loading, onCardClick }: PublicationSummaryProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       <SummaryCard
         title="Prazos da Semana"
-        value={stats.prazosSemana}
+        value={loading ? "..." : stats.prazosSemana}
         description="Vencimentos críticos detectados"
         icon={Clock}
         color="text-red-500"
@@ -82,7 +83,7 @@ export const PublicationSummary = ({ stats, onCardClick }: PublicationSummaryPro
       />
       <SummaryCard
         title="Publicações Novas"
-        value={stats.naoTratadas}
+        value={loading ? "..." : stats.naoTratadas}
         description="Aguardando ciência ou tratamento"
         icon={Inbox}
         color="text-violet-600"
@@ -90,7 +91,7 @@ export const PublicationSummary = ({ stats, onCardClick }: PublicationSummaryPro
       />
       <SummaryCard
         title="Sem Vínculo"
-        value={stats.semVinculo}
+        value={loading ? "..." : stats.semVinculo}
         description="Não associadas a processos/clientes"
         icon={Link2Off}
         color="text-orange-500"
@@ -98,7 +99,7 @@ export const PublicationSummary = ({ stats, onCardClick }: PublicationSummaryPro
       />
       <SummaryCard
         title="Publicações Hoje"
-        value={stats.novosAndamentos}
+        value={loading ? "..." : stats.novosAndamentos}
         description="Atualizações capturadas no diário"
         icon={FilePlus}
         color="text-emerald-500"

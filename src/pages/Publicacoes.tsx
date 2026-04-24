@@ -1,5 +1,6 @@
 
 import { useState, useMemo } from "react";
+import { formatCNJ } from "@/utils/formatCNJ";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -131,7 +132,19 @@ export default function Publicacoes() {
 
   // Filtragem
   const filteredPublications = useMemo(() => {
-    return publications.filter(pub => {
+    // 1. De-duplicação por CNJ + Conteúdo (primeiros 50 chars) + Data
+    const uniqueMap = new Map();
+    publications.forEach(pub => {
+      const key = `${pub.numero_processo}-${pub.data_publicacao}-${(pub.conteudo || '').substring(0, 50)}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, pub);
+      }
+    });
+    
+    const uniquePublicacoes = Array.from(uniqueMap.values());
+
+    // 2. Filtros
+    return uniquePublicacoes.filter(pub => {
       const searchTerm = filters.search.toLowerCase();
       const matchesSearch = (pub.titulo || '').toLowerCase().includes(searchTerm) ||
                            (pub.numero_processo || '').includes(filters.search) ||
@@ -280,7 +293,7 @@ export default function Publicacoes() {
         </div>
       </div>
 
-      <PublicationSummary stats={stats} onCardClick={handleCardClick} />
+      <PublicationSummary stats={stats} loading={loading} onCardClick={handleCardClick} />
 
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
@@ -447,7 +460,7 @@ export default function Publicacoes() {
               onUpdateStatus={updateStatus}
             />
           ) : (
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               {filteredPublications.map((publication) => (
                 <div 
                   key={publication.id} 
@@ -457,18 +470,18 @@ export default function Publicacoes() {
                   )}
                 >
                   {/* Checkbox Overlay for Card View */}
-                  <div 
-                    className="absolute top-8 left-8 z-10 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleSelection(publication.id);
-                    }}
-                  >
-                    <Checkbox 
-                      checked={selectedIds.includes(publication.id)}
-                      className="h-6 w-6 rounded-lg border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all scale-110 shadow-lg"
-                    />
-                  </div>
+                    <div 
+                      className="absolute top-6 left-6 z-10 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleSelection(publication.id);
+                      }}
+                    >
+                      <Checkbox 
+                        checked={selectedIds.includes(publication.id)}
+                        className="h-6 w-6 rounded-lg border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all scale-110 shadow-lg"
+                      />
+                    </div>
 
                   <div className="flex flex-col lg:flex-row justify-between gap-8 pl-10">
                     <div className="flex-1 space-y-6">
@@ -477,12 +490,12 @@ export default function Publicacoes() {
                           <h4 className="text-2xl font-black group-hover:text-primary transition-colors duration-500 leading-tight tracking-tight text-foreground">
                             {publication.titulo === publication.numero_processo ? `Publicação no ${publication.tribunal || 'Tribunal'}` : publication.titulo}
                           </h4>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap items-center gap-3">
                             <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-3 py-1 rounded-lg text-xs font-mono uppercase">
-                              {publication.numero_processo}
+                              {formatCNJ(publication.numero_processo)}
                             </Badge>
-                            <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider opacity-60">
-                              Publicado em: {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}
+                            <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider opacity-60">
+                              {new Date(publication.data_publicacao).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
                         </div>
@@ -567,9 +580,9 @@ export default function Publicacoes() {
                           onProcess={(id) => updateStatus(id, 'processada')}
                           onDelete={deletePublication}
                           trigger={
-                            <Button variant="outline" size="sm" className="rounded-xl border-border hover:bg-card px-6 h-10 font-bold text-xs uppercase tracking-wider gap-2">
+                            <Button variant="outline" size="sm" className="rounded-xl border-border hover:bg-card px-4 md:px-6 h-10 font-bold text-[10px] md:text-xs uppercase tracking-wider gap-2">
                               <Eye className="h-4 w-4" />
-                              Ver Conteúdo Completo
+                              Ver Conteúdo
                             </Button>
                           }
                         />

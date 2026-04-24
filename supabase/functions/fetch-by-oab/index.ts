@@ -27,6 +27,14 @@ const UF_TO_TRIBUNAIS: Record<string, string[]> = {
   "TO": ["tjto", "trf1", "trt10"],
 };
 
+// Helper to format CNJ number
+function formatCNJ(numero: string): string {
+  if (!numero) return '';
+  const d = numero.replace(/\D/g, '');
+  if (d.length !== 20) return numero;
+  return `${d.substring(0, 7)}-${d.substring(7, 9)}.${d.substring(9, 13)}.${d.substring(13, 14)}.${d.substring(14, 16)}.${d.substring(16, 20)}`;
+}
+
 const INACTIVE_TERMS = ["arquivado", "baixado", "extinto", "transitado", "encerrado", "cumprida", "definitiv"];
 
 const isProcessActive = (process: any) => {
