@@ -263,7 +263,7 @@ export default function Publicacoes() {
               <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground">
-              Expediente
+              Publicações
             </h1>
           </div>
           <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl px-1">
@@ -298,7 +298,7 @@ export default function Publicacoes() {
       <div className="space-y-6">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-end px-4 mt-4">
-             <h3 className="text-2xl font-black tracking-tight text-foreground">Lista de Expedientes</h3>
+             <h3 className="text-2xl font-black tracking-tight text-foreground">Lista de Publicações</h3>
              <Badge variant="secondary" className="rounded-lg h-7 font-black tracking-[0.1em] text-[10px] uppercase shadow-sm">
                {filteredPublications.length} Itens Encontrados
              </Badge>

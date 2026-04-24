@@ -101,9 +101,9 @@ const Configuracoes = () => {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <div className="glass-card p-2 rounded-3xl inline-flex w-full overflow-x-auto h-auto no-scrollbar">
-          <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-1">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 min-w-0 w-full">
+        <div className="glass-card p-2 rounded-3xl w-full overflow-x-auto h-auto no-scrollbar">
+          <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-1 min-w-max">
             {[
               { id: "geral", label: "Geral" },
               { id: "usuarios", label: "Usuários" },

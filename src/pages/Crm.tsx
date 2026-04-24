@@ -266,35 +266,25 @@ export default function Crm() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[].map((lead: any) => (
-                    <div key={lead.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <UserCheck className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-sm md:text-base">{lead.name}</div>
-                          <div className="text-xs md:text-sm text-gray-500">{lead.company}</div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col lg:flex-row lg:items-center space-y-2 lg:space-y-0 lg:space-x-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:text-right">
-                          <div className="flex items-center text-xs md:text-sm text-gray-500">
-                            <Mail className="h-4 w-4 mr-1" />
-                            <span className="truncate">{lead.email}</span>
-                          </div>
-                          <div className="flex items-center text-xs md:text-sm text-gray-500">
-                            <Phone className="h-4 w-4 mr-1" />
-                            {lead.phone}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between lg:justify-end gap-2">
-                          <Badge className={getStatusColor(lead.status)}>{lead.status}</Badge>
-                          <div className="text-xs md:text-sm text-gray-500">{lead.lastContact}</div>
-                        </div>
-                      </div>
+                  <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                    <div className="p-4 rounded-full bg-primary/5 border border-primary/10">
+                      <UserCheck className="h-10 w-10 text-primary/30" />
                     </div>
-                  ))}
+                    <div className="space-y-1">
+                      <p className="font-bold text-foreground">Nenhum lead ativo</p>
+                      <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                        Adicione seu primeiro lead para começar a gerenciar seu pipeline de vendas.
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="rounded-xl font-bold mt-2"
+                      onClick={() => setShowNovoLeadDialog(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Lead
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -308,37 +298,17 @@ export default function Crm() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[].map((cliente: any) => (
-                    <div key={cliente.id} className="flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <UserCheck className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-sm md:text-base">{cliente.name}</div>
-                          <div className="text-xs md:text-sm text-gray-500">{cliente.company}</div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col lg:flex-row lg:items-center space-y-2 lg:space-y-0 lg:space-x-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 lg:text-right">
-                          <div className="flex items-center text-xs md:text-sm text-gray-500">
-                            <Mail className="h-4 w-4 mr-1" />
-                            <span className="truncate">{cliente.email}</span>
-                          </div>
-                          <div className="flex items-center text-xs md:text-sm text-gray-500">
-                            <Phone className="h-4 w-4 mr-1" />
-                            {cliente.phone}
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between lg:justify-end gap-4">
-                          <div className="text-center">
-                            <div className="font-medium text-green-600 text-sm md:text-base">{cliente.value}</div>
-                            <div className="text-xs md:text-sm text-gray-500">{cliente.cases} casos</div>
-                          </div>
-                        </div>
-                      </div>
+                  <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                    <div className="p-4 rounded-full bg-emerald-500/5 border border-emerald-500/10">
+                      <UserCheck className="h-10 w-10 text-emerald-500/30" />
                     </div>
-                  ))}
+                    <div className="space-y-1">
+                      <p className="font-bold text-foreground">Nenhum cliente convertido</p>
+                      <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                        Clientes convertidos a partir de leads aparecerão aqui.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

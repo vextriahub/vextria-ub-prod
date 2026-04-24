@@ -107,6 +107,10 @@ const AppWithRouter = () => {
           }
         />
         <Route
+          path="/processos/importar"
+          element={<Navigate to="/processos?tab=novo" replace />}
+        />
+        <Route
           path="/processos"
           element={
             <PrivateRoute>

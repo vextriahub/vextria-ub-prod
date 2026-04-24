@@ -263,7 +263,7 @@ const Processos = React.memo(() => {
               <div className="p-2 rounded-xl bg-primary/10">
                 <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
                 Gestão de Processos
               </h1>
             </div>

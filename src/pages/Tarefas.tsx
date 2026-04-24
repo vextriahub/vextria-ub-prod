@@ -260,8 +260,8 @@ const Tarefas = () => {
         
         <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Concluídas Hoje</p>
-          <p className="text-4xl font-extrabold text-foreground">{stats.completedTasks}</p>
-          <p className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full mt-2 inline-block">+{stats.completedTasks * 50} pontos</p>
+          <p className="text-4xl font-extrabold text-foreground">{stats.completed ?? 0}</p>
+          <p className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full mt-2 inline-block">+{(stats.completed ?? 0) * 50} pontos</p>
         </div>
 
         <div className="md:col-span-2 glass-card p-6 rounded-3xl overflow-hidden relative border-primary/20">

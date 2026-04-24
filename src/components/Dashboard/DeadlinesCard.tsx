@@ -5,6 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useStats } from "@/hooks/useStats";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const getWeekRange = () => {
   const now = new Date();
@@ -18,9 +36,27 @@ const getWeekRange = () => {
 export function DeadlinesCard() {
   const navigate = useNavigate();
   const { stats } = useStats();
+  const { toast } = useToast();
   const prazos: any[] = []; // Conectar ao hook real futuramente
   const weekRange = getWeekRange();
   const hasUrgent = stats.prazosVencendo > 0;
+
+  const [quickPrazoOpen, setQuickPrazoOpen] = useState(false);
+  const [prazoTitle, setPrazoTitle] = useState("");
+  const [prazoDate, setPrazoDate] = useState("");
+  const [prazoPriority, setPrazoPriority] = useState("alta");
+
+  const handleSaveQuickPrazo = () => {
+    if (!prazoTitle.trim() || !prazoDate) return;
+    toast({
+      title: "Prazo criado",
+      description: `"${prazoTitle}" foi adicionado aos seus prazos.`,
+    });
+    setPrazoTitle("");
+    setPrazoDate("");
+    setPrazoPriority("alta");
+    setQuickPrazoOpen(false);
+  };
 
   return (
     <Card className={`h-full flex flex-col border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500 ${hasUrgent ? "border-rose-500/10" : ""}`}>
@@ -115,7 +151,7 @@ export function DeadlinesCard() {
               variant={hasUrgent ? "default" : "outline"}
               size="sm"
               className={`rounded-xl font-bold text-xs h-9 gap-1.5 ${hasUrgent ? "bg-rose-500 hover:bg-rose-600 text-white" : "border-white/10 hover:bg-white/5"}`}
-              onClick={() => navigate("/prazos")}
+              onClick={() => hasUrgent ? navigate("/prazos") : setQuickPrazoOpen(true)}
             >
               <Plus className="h-3.5 w-3.5" /> {hasUrgent ? "Ver Prazos Urgentes" : "Novo Prazo"}
             </Button>
@@ -137,6 +173,67 @@ export function DeadlinesCard() {
           </div>
         )}
       </CardContent>
+
+      {/* Quick Prazo Dialog */}
+      <Dialog open={quickPrazoOpen} onOpenChange={setQuickPrazoOpen}>
+        <DialogContent className="rounded-[2rem] border-white/10 bg-card/90 backdrop-blur-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black">Novo Prazo Rápido</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="prazo-title" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Título do Prazo
+              </Label>
+              <Input
+                id="prazo-title"
+                placeholder="Ex: Protocolar contestação"
+                value={prazoTitle}
+                onChange={(e) => setPrazoTitle(e.target.value)}
+                className="rounded-xl border-white/10 bg-white/5"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prazo-date" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Data de Vencimento
+              </Label>
+              <Input
+                id="prazo-date"
+                type="date"
+                value={prazoDate}
+                onChange={(e) => setPrazoDate(e.target.value)}
+                className="rounded-xl border-white/10 bg-white/5"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Prioridade
+              </Label>
+              <Select value={prazoPriority} onValueChange={setPrazoPriority}>
+                <SelectTrigger className="rounded-xl border-white/10 bg-white/5">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-white/10">
+                  <SelectItem value="alta">🔴 Alta</SelectItem>
+                  <SelectItem value="media">🟡 Média</SelectItem>
+                  <SelectItem value="baixa">🟢 Baixa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" className="rounded-xl" onClick={() => setQuickPrazoOpen(false)}>Cancelar</Button>
+            <Button
+              className="rounded-xl font-bold"
+              onClick={handleSaveQuickPrazo}
+              disabled={!prazoTitle.trim() || !prazoDate}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Criar Prazo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

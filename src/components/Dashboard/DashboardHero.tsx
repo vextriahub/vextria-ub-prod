@@ -17,8 +17,8 @@ const getTodayStr = () =>
   });
 
 export function DashboardHero() {
-  const { profile } = useAuth();
-  const firstName = profile?.full_name ? profile.full_name.split(" ")[0] : "Doutor(a)";
+  const { profile, isLoading } = useAuth();
+  const firstName = profile?.full_name ? profile.full_name.split(" ")[0] : null;
   const greeting = getGreeting();
   const today = getTodayStr();
 
@@ -37,9 +37,16 @@ export function DashboardHero() {
           </div>
           <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
             {greeting},{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-secondary">
-              {firstName}!
-            </span>
+            {isLoading || !firstName ? (
+              /* Skeleton while profile loads — prevents "Doutor(a)" flash */
+              <span className="inline-block align-middle ml-1">
+                <span className="inline-block h-8 md:h-10 w-32 md:w-44 rounded-xl bg-primary/10 animate-pulse" />
+              </span>
+            ) : (
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-secondary">
+                {firstName}!
+              </span>
+            )}
           </h1>
           <p className="text-sm text-muted-foreground font-medium capitalize">{today}</p>
         </div>
