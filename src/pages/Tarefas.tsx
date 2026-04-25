@@ -235,11 +235,11 @@ const Tarefas = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5">
           <Button 
             onClick={handleNewTarefa}
             size="lg"
-            className="rounded-xl shadow-premium h-12 px-6 font-bold"
+            className="rounded-xl shadow-premium h-12 px-8 font-black uppercase text-xs tracking-widest bg-primary hover:bg-primary/90"
           >
             <Plus className="mr-2 h-5 w-5" />
             Nova Tarefa
@@ -249,46 +249,46 @@ const Tarefas = () => {
 
       {/* Grid de Estatísticas / Gamificação */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group relative overflow-hidden">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border border-black/5 dark:border-white/10 bg-card hover-lift group relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
             <Target className="h-20 w-20" />
           </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Total de Pontos</p>
-          <p className="text-4xl font-extrabold text-foreground group-hover:text-primary transition-colors">2.450</p>
-          <p className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mt-2 inline-block">Nível: Master</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Total de Pontos</p>
+          <p className="text-4xl font-black text-foreground group-hover:text-primary transition-colors tracking-tighter">2.450</p>
+          <p className="text-[9px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-widest">Nível: Master</p>
         </div>
         
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Concluídas Hoje</p>
-          <p className="text-4xl font-extrabold text-foreground">{stats.completed ?? 0}</p>
-          <p className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full mt-2 inline-block">+{(stats.completed ?? 0) * 50} pontos</p>
+        <div className="glass-card p-6 rounded-3xl shadow-premium border border-black/5 dark:border-white/10 bg-card hover-lift group">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Concluídas Hoje</p>
+          <p className="text-4xl font-black text-foreground tracking-tighter">{stats.completed ?? 0}</p>
+          <p className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-widest">+{(stats.completed ?? 0) * 50} pontos</p>
         </div>
 
-        <div className="md:col-span-2 glass-card p-6 rounded-3xl overflow-hidden relative border-primary/20">
+        <div className="md:col-span-2 glass-card p-6 rounded-3xl overflow-hidden relative border border-primary/20 bg-primary/[0.02] dark:bg-primary/5">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Missão Semanal</p>
-              <h3 className="text-xl font-extrabold">Finalizar 15 Prazos</h3>
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">Missão Semanal</p>
+              <h3 className="text-xl font-black tracking-tight">Finalizar 15 Prazos</h3>
             </div>
-            <Badge className="bg-primary hover:bg-primary py-1 px-3 rounded-full font-bold">500 XP</Badge>
+            <Badge className="bg-primary hover:bg-primary py-1.5 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20">500 XP</Badge>
           </div>
           <div className="space-y-3 pt-2">
-            <div className="flex justify-between text-sm font-bold">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
               <span>Progresso da Missão</span>
               <span>12 / 15</span>
             </div>
-            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-primary to-primary/60 w-[80%] rounded-full shadow-[0_0_15px_rgba(var(--primary),0.6)]" />
+            <div className="w-full h-3 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-primary to-primary/60 w-[80%] rounded-full shadow-[0_0_15px_rgba(var(--primary),0.3)]" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="glass-card rounded-[2.5rem] shadow-premium border-white/10 overflow-hidden">
-        <div className="p-8 border-b border-white/5 bg-white/2 space-y-6">
+      <div className="glass-card rounded-[2.5rem] shadow-premium border border-black/5 dark:border-white/10 overflow-hidden bg-card/40 backdrop-blur-xl">
+        <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/2 space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <h3 className="text-2xl font-extrabold tracking-tight">Lista de Afazeres</h3>
+            <h3 className="text-2xl font-black tracking-tight">Lista de Afazeres</h3>
             <TarefasFilters
               searchValue={searchValue}
               priorityFilter={priorityFilter}
@@ -321,18 +321,18 @@ const Tarefas = () => {
             ) : (
               <div className="space-y-6">
                 {/* Controles de seleção premium */}
-                <div className="flex items-center justify-between p-6 bg-white/5 rounded-3xl border border-white/5">
+                <div className="flex items-center justify-between p-6 bg-black/[0.03] dark:bg-white/5 rounded-3xl border border-black/5 dark:border-white/5 shadow-inner">
                   <div className="flex items-center gap-6">
                     <Checkbox
                       checked={multiSelect.isAllSelected}
                       onCheckedChange={() => 
                         multiSelect.isAllSelected ? multiSelect.clearSelection() : multiSelect.selectAll()
                       }
-                      className="h-6 w-6 border-2 border-white/20 rounded-lg data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      className="h-6 w-6 border-2 border-black/10 dark:border-white/20 rounded-lg data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all shadow-sm"
                     />
-                    <span className="text-sm md:text-base font-bold text-muted-foreground uppercase tracking-widest">
+                    <span className="text-xs font-black text-muted-foreground/60 uppercase tracking-widest">
                       {multiSelect.selectedCount > 0 ? (
-                        <span className="text-primary">{multiSelect.selectedCount} tarefas selecionadas</span>
+                        <span className="text-primary font-black">{multiSelect.selectedCount} tarefas selecionadas</span>
                       ) : (
                         "Selecionar todas as tarefas"
                       )}
@@ -343,7 +343,7 @@ const Tarefas = () => {
                       variant="ghost"
                       size="sm"
                       onClick={multiSelect.clearSelection}
-                      className="font-bold text-red-500 hover:bg-red-500/10 rounded-xl"
+                      className="font-black text-[10px] uppercase tracking-widest text-red-500 hover:bg-red-500/10 rounded-xl h-10 px-4"
                     >
                       Limpar seleção
                     </Button>

@@ -43,21 +43,28 @@ const Clientes = () => {
   const hasAdminRights = isAdmin || isOfficeAdmin || isSuperAdmin;
   
   // Mapeamento dos dados do banco para o formato da UI
-  const clients = dbClientes.map(c => ({
-    id: c.id,
-    name: c.nome,
-    email: c.email || '',
-    phone: c.telefone || '',
-    cases: c.processos?.[0]?.count || 0, // Contagem real vinda da query agregada do Supabase
-    status: c.status || 'Ativo',
-    lastContact: c.updated_at,
-    cpfCnpj: c.cpf_cnpj || '',
-    tipoPessoa: (c.tipo_pessoa || "fisica") as any,
-    origem: c.origem || '',
-    endereco: c.endereco || '',
-    dataAniversario: c.data_aniversario || '',
-    createdAt: c.created_at
-  }));
+  // Filtramos para mostrar apenas clientes reais (Ativo ou Convertido do CRM)
+  // Ocultamos leads que ainda estão em prospecção
+  const clients = dbClientes
+    .filter(c => {
+      const status = (c.status || "").toLowerCase();
+      return status === "ativo" || status === "convertido";
+    })
+    .map(c => ({
+      id: c.id,
+      name: c.nome,
+      email: c.email || '',
+      phone: c.telefone || '',
+      cases: c.processos?.[0]?.count || 0,
+      status: c.status || 'Ativo',
+      lastContact: c.updated_at,
+      cpfCnpj: c.cpf_cnpj || '',
+      tipoPessoa: (c.tipo_pessoa || "fisica") as any,
+      origem: c.origem || '',
+      endereco: c.endereco || '',
+      dataAniversario: c.data_aniversario || '',
+      createdAt: c.created_at
+    }));
 
   // Estados
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
@@ -240,49 +247,60 @@ const Clientes = () => {
 
   return (
     <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-12 overflow-x-hidden entry-animate">
-      {/* Page Header Moderno */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
-              <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-            </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
-              Gestão de Clientes
-            </h1>
-          </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
-            Visualize e gerencie todos os seus relacionamentos profissionais e CRM.
-          </p>
-        </div>
+      {/* Page Header Moderno Premium */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary/10 via-card/80 to-background border border-black/5 dark:border-white/10 p-8 shadow-premium">
+        <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-secondary/10 rounded-full blur-[60px] pointer-events-none" />
         
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
-          <Button 
-            onClick={() => setNovoClienteDialogOpen(true)}
-            size="lg"
-            className="rounded-xl shadow-premium h-12 px-6 font-bold"
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Novo Cliente
-          </Button>
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-premium group hover:scale-110 transition-transform duration-300">
+                <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+                Gestão de{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                  Clientes
+                </span>
+              </h1>
+            </div>
+            <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl px-1">
+              Gerencie sua base de relacionamentos e funil de vendas com inteligência.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 shadow-premium">
+            <Button 
+              onClick={() => setNovoClienteDialogOpen(true)}
+              size="lg"
+              className="rounded-xl shadow-premium h-12 px-8 font-black uppercase tracking-widest text-[11px] gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Novo Cliente
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Seção de Filtros e Busca */}
+      {/* Seção de Filtros e Busca Premium */}
       <div className="grid grid-cols-1 gap-6">
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 group transition-all duration-500">
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+        <div className="glass-card p-8 rounded-[2.5rem] shadow-premium border border-black/5 dark:border-white/10 bg-white dark:bg-card/40">
+          <div className="flex flex-col md:flex-row gap-6 mb-8">
+            <div className="flex-1 relative group/search">
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/30 group-focus-within/search:text-primary transition-all duration-300" />
               <Input
-                placeholder="Buscar por nome, email ou CPF/CNPJ..."
+                placeholder="Pesquisar por nome, email ou documento..."
                 value={searchValue}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-12 h-14 bg-background/50 border-white/5 rounded-2xl text-lg focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
+                className="pl-14 h-16 bg-white dark:bg-white/[0.05] border-black/5 dark:border-white/10 rounded-[1.5rem] text-lg focus:ring-4 focus:ring-primary/10 transition-all shadow-premium font-black placeholder:text-muted-foreground/30 placeholder:font-medium tracking-tight"
               />
             </div>
           </div>
-          <ClientsAdvancedFilters onFiltersChange={handleAdvancedFiltersChange} />
+          <ClientsAdvancedFilters 
+            onFiltersChange={handleAdvancedFiltersChange} 
+            onClearFilters={() => handleSearchChange("")}
+          />
         </div>
       </div>
 
@@ -311,16 +329,17 @@ const Clientes = () => {
                 onDeleteSelected={handleDeleteSelected}
               />
               
-              <div className="flex items-center p-1 bg-black/20 rounded-lg border border-white/10 backdrop-blur-sm self-end">
+              <div className="flex items-center p-1 bg-black/5 dark:bg-black/20 rounded-xl border border-black/5 dark:border-white/10 backdrop-blur-sm self-end">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 h-auto text-sm font-medium transition-all rounded-md ${
+                  className={cn(
+                    "px-4 py-2 h-auto text-xs font-black uppercase tracking-widest transition-all rounded-lg",
                     viewMode === 'list' 
-                      ? 'bg-orange-500 text-white shadow-sm' 
-                      : 'text-white/50 hover:text-white hover:bg-white/5'
-                  }`}
+                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                  )}
                 >
                   <List className="w-4 h-4 mr-2" />
                   Lista
@@ -329,11 +348,12 @@ const Clientes = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={`px-3 py-1.5 h-auto text-sm font-medium transition-all rounded-md ${
+                  className={cn(
+                    "px-4 py-2 h-auto text-xs font-black uppercase tracking-widest transition-all rounded-lg",
                     viewMode === 'grid' 
-                      ? 'bg-orange-500 text-white shadow-sm' 
-                      : 'text-white/50 hover:text-white hover:bg-white/5'
-                  }`}
+                      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5'
+                  )}
                 >
                   <LayoutGrid className="w-4 h-4 mr-2" />
                   Cards

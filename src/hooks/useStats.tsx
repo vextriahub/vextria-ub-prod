@@ -57,13 +57,14 @@ export function useStats() {
           .eq('deletado', false)
           .neq('status', 'encerrado'),
 
-        // Total de clientes do escritório
+        // Total de clientes reais do escritório (excluindo leads de prospecção)
         supabase
           .from('clientes')
           .select('id', { count: 'exact' })
           .eq('office_id', user.office_id)
           .eq('deletado', false)
-          .eq('deletado_pendente', false),
+          .eq('deletado_pendente', false)
+          .in('status', ['ativo', 'convertido']),
 
         // Tarefas do escritório
         supabase

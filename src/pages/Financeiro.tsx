@@ -54,7 +54,7 @@ const Financeiro = () => {
             <div className="p-2 rounded-xl bg-primary/10">
               <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
               Gestão Financeira
             </h1>
           </div>
@@ -63,10 +63,10 @@ const Financeiro = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-premium">
           <Button 
             size="lg"
-            className="rounded-xl shadow-premium h-12 px-6 font-bold"
+            className="rounded-xl shadow-premium h-12 px-8 font-black uppercase text-xs tracking-widest bg-primary hover:bg-primary/90"
           >
             <TrendingUp className="mr-2 h-5 w-5" />
             Exportar Fluxo
@@ -76,61 +76,61 @@ const Financeiro = () => {
 
       {/* Cards de Resumo Premium */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border border-black/5 dark:border-white/10 bg-card/40 backdrop-blur-xl hover-lift group">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Receita Mensal</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Receita Mensal</p>
             <div className="p-2 bg-emerald-500/10 rounded-xl">
               <TrendingUp className="h-5 w-5 text-emerald-500" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-foreground">R$ 28.500</p>
+          <p className="text-3xl font-black text-foreground tracking-tighter">R$ 28.500</p>
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12% vs mês anterior</span>
+            <span className="text-[9px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-widest">+12% vs mês anterior</span>
           </div>
         </div>
         
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border border-black/5 dark:border-white/10 bg-card/40 backdrop-blur-xl hover-lift group">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Receber</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">A Receber</p>
             <div className="p-2 bg-primary/10 rounded-xl">
               <CreditCard className="h-5 w-5 text-primary" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-foreground">R$ 9.300</p>
-          <p className="text-xs font-medium text-muted-foreground mt-2">3 faturas pendentes</p>
+          <p className="text-3xl font-black text-foreground tracking-tighter">R$ 9.300</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-2">3 faturas pendentes</p>
         </div>
 
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border border-black/5 dark:border-white/10 bg-card/40 backdrop-blur-xl hover-lift group">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">A Pagar</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">A Pagar</p>
             <div className="p-2 bg-orange-500/10 rounded-xl">
               <TrendingDown className="h-5 w-5 text-orange-500" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-foreground">R$ 1.550</p>
-          <p className="text-xs font-medium text-muted-foreground mt-2">2 vencimentos próximos</p>
+          <p className="text-3xl font-black text-foreground tracking-tighter">R$ 1.550</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-2">2 vencimentos próximos</p>
         </div>
 
-        <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+        <div className="glass-card p-6 rounded-3xl shadow-premium border border-black/5 dark:border-white/10 bg-card/40 backdrop-blur-xl hover-lift group">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Saldo Líquido</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Saldo Líquido</p>
             <div className="p-2 bg-primary/10 rounded-xl">
               <DollarSign className="h-5 w-5 text-primary" />
             </div>
           </div>
-          <p className="text-3xl font-extrabold text-foreground text-gradient">R$ 26.950</p>
-          <p className="text-xs font-medium text-primary mt-2">Eficiência de 94.6%</p>
+          <p className="text-3xl font-black text-primary tracking-tighter">R$ 26.950</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-primary/60 mt-2">Eficiência de 94.6%</p>
         </div>
       </div>
 
       {/* Tabs para Contas */}
       <Tabs defaultValue="receber" className="w-full space-y-8">
-        <div className="glass-card p-2 rounded-3xl inline-flex h-auto">
+        <div className="glass-card p-2 rounded-3xl inline-flex h-auto border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-inner">
           <TabsList className="bg-transparent h-auto p-0 gap-1">
-            <TabsTrigger value="receber" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+            <TabsTrigger value="receber" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
               Contas a Receber
             </TabsTrigger>
-            <TabsTrigger value="pagar" className="rounded-2xl px-8 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+            <TabsTrigger value="pagar" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
               Contas a Pagar
             </TabsTrigger>
           </TabsList>
@@ -138,40 +138,40 @@ const Financeiro = () => {
 
           <TabsContent value="receber" className="space-y-6 entry-animate slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-4">
-              <h3 className="text-2xl font-extrabold">Contas a Receber</h3>
-              <Button className="rounded-xl font-bold px-6 h-11 bg-emerald-500 hover:bg-emerald-600 text-white shadow-premium transition-all">
+              <h3 className="text-2xl font-black tracking-tight">Contas a Receber</h3>
+              <Button className="rounded-xl font-black uppercase text-[10px] tracking-widest px-6 h-11 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 transition-all">
                 Nova Cobrança
               </Button>
             </div>
             
             <div className="grid gap-6">
               {contasReceber.map((conta) => (
-                <div key={conta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group">
+                <div key={conta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl shadow-premium group">
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                     <div className="flex items-center gap-6">
                       <div className="h-16 w-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/10 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500">
                         <TrendingUp className="h-8 w-8" />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-extrabold text-2xl group-hover:text-primary transition-colors duration-500">{conta.cliente}</p>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
-                          <span className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg">
-                            <Calendar className="h-4 w-4" />
+                        <p className="font-black text-2xl group-hover:text-primary transition-colors duration-500 tracking-tight">{conta.cliente}</p>
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-bold">
+                          <span className="flex items-center gap-2 bg-black/[0.03] dark:bg-white/5 px-3 py-1.5 rounded-xl border border-black/5 dark:border-white/10 uppercase tracking-widest text-[9px]">
+                            <Calendar className="h-3.5 w-3.5 text-primary" />
                             Vence {conta.vencimento}
                           </span>
                           <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-                          <span className="uppercase tracking-widest text-[10px] font-black opacity-60">Honorários Contratuais</span>
+                          <span className="uppercase tracking-widest text-[9px] font-black opacity-40">Honorários Contratuais</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between w-full lg:w-auto gap-10 border-t lg:border-t-0 border-white/5 pt-6 lg:pt-0">
+                    <div className="flex items-center justify-between w-full lg:w-auto gap-10 border-t lg:border-t-0 border-black/5 dark:border-white/5 pt-6 lg:pt-0">
                       <div className="text-right">
-                        <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5 opacity-50">Valor Total</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-40">Valor Total</p>
                         <p className="text-3xl font-black tracking-tighter">R$ {conta.valor.toLocaleString()}</p>
                       </div>
-                      <Badge className={cn("px-6 py-2 rounded-2xl font-extrabold text-[11px] uppercase tracking-widest", getStatusColor(conta.status))}>
-                        {conta.status === 'vencido' && <AlertCircle className="h-4 w-4 mr-2" />}
+                      <Badge className={cn("px-6 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm", getStatusColor(conta.status))}>
+                        {conta.status === 'vencido' && <AlertCircle className="h-3.5 w-3.5 mr-2" />}
                         {conta.status}
                       </Badge>
                     </div>
@@ -183,39 +183,39 @@ const Financeiro = () => {
 
           <TabsContent value="pagar" className="space-y-6 entry-animate slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-4">
-              <h3 className="text-2xl font-extrabold">Contas a Pagar</h3>
-              <Button className="rounded-xl font-bold px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white shadow-premium transition-all">
+              <h3 className="text-2xl font-black tracking-tight">Contas a Pagar</h3>
+              <Button className="rounded-xl font-black uppercase text-[10px] tracking-widest px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 transition-all">
                 Nova Despesa
               </Button>
             </div>
             
             <div className="grid gap-6">
               {contasPagar.map((conta) => (
-                <div key={conta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group">
+                <div key={conta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl shadow-premium group">
                   <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                     <div className="flex items-center gap-6">
                       <div className="h-16 w-16 rounded-3xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/10 group-hover:bg-orange-500 group-hover:text-white transition-all duration-500">
                         <TrendingDown className="h-8 w-8" />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-extrabold text-2xl group-hover:text-primary transition-colors duration-500">{conta.fornecedor}</p>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium">
-                          <span className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-lg">
-                            <Calendar className="h-4 w-4" />
+                        <p className="font-black text-2xl group-hover:text-primary transition-colors duration-500 tracking-tight">{conta.fornecedor}</p>
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground font-bold">
+                          <span className="flex items-center gap-2 bg-black/[0.03] dark:bg-white/5 px-3 py-1.5 rounded-xl border border-black/5 dark:border-white/10 uppercase tracking-widest text-[9px]">
+                            <Calendar className="h-3.5 w-3.5 text-primary" />
                             Vence {conta.vencimento}
                           </span>
                           <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-                          <span className="uppercase tracking-widest text-[10px] font-black opacity-60">Custos Operacionais</span>
+                          <span className="uppercase tracking-widest text-[9px] font-black opacity-40">Custos Operacionais</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between w-full lg:w-auto gap-10 border-t lg:border-t-0 border-white/5 pt-6 lg:pt-0">
+                    <div className="flex items-center justify-between w-full lg:w-auto gap-10 border-t lg:border-t-0 border-black/5 dark:border-white/5 pt-6 lg:pt-0">
                       <div className="text-right">
-                        <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1.5 opacity-50">Valor Saída</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-40">Valor Saída</p>
                         <p className="text-3xl font-black tracking-tighter text-orange-500">- R$ {conta.valor.toLocaleString()}</p>
                       </div>
-                      <Badge className={cn("px-6 py-2 rounded-2xl font-extrabold text-[11px] uppercase tracking-widest", getStatusColor(conta.status))}>
+                      <Badge className={cn("px-6 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm", getStatusColor(conta.status))}>
                         {conta.status}
                       </Badge>
                     </div>

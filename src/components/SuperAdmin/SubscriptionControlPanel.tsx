@@ -99,60 +99,60 @@ export const SubscriptionControlPanel: React.FC = () => {
     <div className="space-y-6">
       {/* Cards de Métricas com visual limpo */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Escritórios</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Escritórios</p>
               <Users size={12} className="text-primary opacity-50" />
             </div>
             <div className="text-xl font-black">{metrics.totalOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Ativos</p>
+              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Ativos</p>
               <CheckCircle size={12} className="text-emerald-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-emerald-500">{metrics.activeOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Vitalício ⭐</p>
+              <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Vitalício ⭐</p>
               <Star size={12} className="text-amber-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-amber-500">{metrics.lifetimeOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Trial</p>
+              <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest">Trial</p>
               <Clock size={12} className="text-purple-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-purple-500">{metrics.trialOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Vencidos</p>
+              <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Vencidos</p>
               <AlertTriangle size={12} className="text-rose-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-rose-500">{metrics.blockedOffices}</div>
           </CardContent>
         </Card>
 
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">MRR Estimado</p>
+              <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest">MRR Estimado</p>
               <TrendingUp size={12} className="text-blue-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-blue-500">
@@ -163,15 +163,15 @@ export const SubscriptionControlPanel: React.FC = () => {
       </div>
 
       {/* Tabela de Controle */}
-      <Card className="border-muted/10 overflow-hidden bg-transparent">
-        <CardHeader className="border-b border-muted/5 pb-4">
+      <Card className="border-black/5 dark:border-white/5 overflow-hidden bg-card/20 backdrop-blur-xl rounded-[2rem] shadow-premium">
+        <CardHeader className="border-b border-black/5 dark:border-white/5 pb-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <CardTitle className="text-lg font-black flex items-center gap-2">
                 <CreditCard className="text-primary h-5 w-5" />
                 Gestão Financeira
               </CardTitle>
-              <CardDescription className="text-xs">Monitoramento de pagamentos e prazos em tempo real.</CardDescription>
+              <CardDescription className="text-xs font-medium">Monitoramento de pagamentos e prazos em tempo real.</CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-8 hover:bg-muted/10">
               <RefreshCw className={`h-3 w-3 mr-2 ${loading ? 'animate-spin' : ''}`} /> Sincronizar
@@ -186,11 +186,11 @@ export const SubscriptionControlPanel: React.FC = () => {
                 placeholder="Buscar escritório ou email de cobrança..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-9 bg-muted/5 border-muted/10"
+                className="pl-10 h-9 bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 rounded-xl"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[200px] h-9 bg-muted/5 border-muted/10">
+              <SelectTrigger className="w-full sm:w-[200px] h-9 bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 rounded-xl">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -207,7 +207,7 @@ export const SubscriptionControlPanel: React.FC = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/5 hover:bg-muted/5 border-none">
+                <TableRow className="bg-black/[0.02] dark:bg-white/5 hover:bg-black/[0.02] dark:hover:bg-white/5 border-none">
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Escritório / Admin</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Plano</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Valor</TableHead>
@@ -219,10 +219,10 @@ export const SubscriptionControlPanel: React.FC = () => {
                 {loading && admins.length === 0 ? (
                   <TableRow><TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic text-xs">Aguardando dados financeiros...</TableCell></TableRow>
                 ) : filteredAdmins.map((admin) => (
-                  <TableRow key={admin.id} className="hover:bg-muted/5 border-muted/5 transition-colors">
+                  <TableRow key={admin.id} className="hover:bg-black/[0.02] dark:hover:bg-white/5 border-black/5 dark:border-white/5 transition-colors">
                     <TableCell className="py-4 pl-6">
-                      <div className="font-bold text-sm tracking-tight">{admin.office_name}</div>
-                      <div className="text-[10px] text-muted-foreground tracking-tight">{admin.office_email || admin.email}</div>
+                      <div className="font-black text-sm tracking-tight">{admin.office_name}</div>
+                      <div className="text-[10px] text-muted-foreground font-medium tracking-tight">{admin.office_email || admin.email}</div>
                     </TableCell>
                     <TableCell className="py-4 text-center">
                       <Badge variant="outline" className="font-bold border-muted/20 text-[10px] uppercase">

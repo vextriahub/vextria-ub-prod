@@ -149,37 +149,37 @@ export const OfficeControlPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Escritórios</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Escritórios</p>
               <Users size={12} className="text-primary opacity-50" />
             </div>
             <div className="text-xl font-black">{stats.total}</div>
           </CardContent>
         </Card>
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Ativos</p>
+              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Ativos</p>
               <CheckCircle size={12} className="text-emerald-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-emerald-500">{stats.emDia}</div>
           </CardContent>
         </Card>
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Trials</p>
+              <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest">Trials</p>
               <Clock size={12} className="text-purple-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-purple-500">{stats.trial}</div>
           </CardContent>
         </Card>
-        <Card className="border-muted/10 bg-card/20 backdrop-blur-sm">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl shadow-premium hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center justify-between pb-1">
-              <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">Vencidos</p>
+              <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Vencidos</p>
               <AlertCircle size={12} className="text-rose-500 opacity-50" />
             </div>
             <div className="text-xl font-black text-rose-500">{stats.vencidos}</div>
@@ -187,14 +187,14 @@ export const OfficeControlPanel: React.FC = () => {
         </Card>
       </div>
 
-      <Card className="border-muted/10 overflow-hidden bg-transparent">
-        <CardHeader className="border-b border-muted/5 pb-4">
+      <Card className="border-black/5 dark:border-white/5 overflow-hidden bg-card/20 backdrop-blur-xl rounded-[2rem] shadow-premium">
+        <CardHeader className="border-b border-black/5 dark:border-white/5 pb-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <CardTitle className="text-lg font-black flex items-center gap-2">
                 <Shield className="text-primary h-5 w-5" /> Administração Global
               </CardTitle>
-              <CardDescription className="text-xs">Visualize e edite os dados institucionais dos escritórios.</CardDescription>
+              <CardDescription className="text-xs font-medium">Visualize e edite os dados institucionais dos escritórios.</CardDescription>
             </div>
             <Button type="button" variant="ghost" size="sm" onClick={refresh} disabled={loading} className="h-8 hover:bg-muted/10">
               <RefreshCw className={`h-3 w-3 mr-2 ${loading ? 'animate-spin' : ''}`} /> Atualizar
@@ -209,11 +209,11 @@ export const OfficeControlPanel: React.FC = () => {
                 placeholder="Escritório ou Administrador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-9 bg-muted/5 border-muted/10"
+                className="pl-10 h-9 bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 rounded-xl"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[150px] h-9 bg-muted/5 border-muted/10">
+              <SelectTrigger className="w-full sm:w-[150px] h-9 bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 rounded-xl">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -228,7 +228,7 @@ export const OfficeControlPanel: React.FC = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/5 hover:bg-muted/5 border-none">
+                <TableRow className="bg-black/[0.02] dark:bg-white/5 hover:bg-black/[0.02] dark:hover:bg-white/5 border-none">
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 pl-6">Identidade</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3">Escritório</TableHead>
                   <TableHead className="text-[10px] font-bold uppercase tracking-widest py-3 text-center">Cadastro</TableHead>
@@ -241,11 +241,11 @@ export const OfficeControlPanel: React.FC = () => {
                 {loading && admins.length === 0 ? (
                   <TableRow><TableCell colSpan={6} className="text-center py-24 text-muted-foreground italic text-xs">Sincronizando base de dados...</TableCell></TableRow>
                 ) : filteredAdmins.map((admin) => (
-                  <TableRow key={admin.id} className="hover:bg-muted/5 border-muted/5 transition-colors">
+                  <TableRow key={admin.id} className="hover:bg-black/[0.02] dark:hover:bg-white/5 border-black/5 dark:border-white/5 transition-colors">
                     <TableCell className="py-4 pl-6">
                       <div className="flex flex-col">
-                        <span className="font-bold text-sm tracking-tight">{admin.full_name}</span>
-                        <span className="text-[10px] text-muted-foreground tracking-tight">{admin.email}</span>
+                        <span className="font-black text-sm tracking-tight">{admin.full_name}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium tracking-tight">{admin.email}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4">
@@ -285,9 +285,9 @@ export const OfficeControlPanel: React.FC = () => {
                               <Eye size={16} className="text-primary/70" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[550px] overflow-hidden border-none shadow-2xl">
+                          <DialogContent className="sm:max-w-[550px] overflow-hidden border-none shadow-2xl rounded-[2rem] bg-background">
                             <form onSubmit={handleSave}>
-                              <div className="p-6 bg-muted/20 border-b border-muted/10">
+                              <div className="p-6 bg-black/[0.02] dark:bg-white/5 border-b border-black/5 dark:border-white/10">
                                 <DialogHeader>
                                   <DialogTitle className="flex items-center gap-2 text-xl font-black">
                                     <Building2 className="text-primary" /> Editar Escritório

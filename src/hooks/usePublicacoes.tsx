@@ -32,11 +32,23 @@ export const usePublicacoes = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const officeId = user?.office_id;
+      const userId = user?.id;
+
+      let query = supabase
         .from('publicacoes')
         .select('*')
-        .eq('office_id', user.office_id)
         .order('data_publicacao', { ascending: false });
+
+      if (officeId) {
+        query = query.eq('office_id', officeId);
+      } else if (userId) {
+        query = query.eq('user_id', userId);
+      } else {
+        return;
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setPublications(data || []);
@@ -156,8 +168,9 @@ export const usePublicacoes = () => {
       await supabase.from('processos').insert({
         numero_processo: pub.numero_processo,
         titulo: `Processo ${pub.numero_processo} (Auto)`,
-        jurisdicao: pub.tribunal,
+        tribunal: pub.tribunal,
         vara: pub.vara,
+        comarca: pub.comarca,
         office_id: user.office_id,
         user_id: user.id,
         status: 'ativo'
@@ -257,7 +270,7 @@ export const usePublicacoes = () => {
     try {
       const { data: newPub, error } = await supabase
         .from('publicacoes')
-        .insert([{ ...data, office_id: user.office_id }])
+        .insert([{ ...data, office_id: user.office_id, user_id: user.id }])
         .select()
         .single();
 

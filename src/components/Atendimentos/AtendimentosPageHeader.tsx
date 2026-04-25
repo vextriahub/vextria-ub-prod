@@ -42,37 +42,40 @@ export const AtendimentosPageHeader: React.FC<AtendimentosPageHeaderProps> = ({
       )}
 
       {/* Header principal */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-foreground">
             Atendimentos
             {isFiltered && clientName && (
-              <span className="text-lg text-muted-foreground ml-2">
+              <span className="text-lg text-muted-foreground ml-2 opacity-60">
                 - {clientName}
               </span>
             )}
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Gerencie seus atendimentos e agendamentos.
+          <p className="text-sm md:text-lg text-muted-foreground font-medium">
+            Gerencie seus atendimentos e agendamentos com precisão estratégica.
           </p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-premium">
           <PermissionGuard permission="canDeleteAtendimentos">
             {!isNoneSelected && (
               <Button
                 variant="destructive"
                 onClick={onDeleteSelected}
-                className="flex items-center gap-2"
+                className="rounded-xl h-12 px-6 font-black uppercase text-xs tracking-widest shadow-lg shadow-red-500/20"
               >
-                <Trash2 className="h-4 w-4" />
-                Excluir Selecionados ({selectedCount})
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir ({selectedCount})
               </Button>
             )}
           </PermissionGuard>
           
-          <Button onClick={onNewAtendimento}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button 
+            onClick={onNewAtendimento}
+            className="rounded-xl h-12 px-8 font-black uppercase text-xs tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+          >
+            <Plus className="mr-2 h-5 w-5" />
             Novo Atendimento
           </Button>
         </div>

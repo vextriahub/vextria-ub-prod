@@ -184,15 +184,15 @@ export function AppSidebar() {
   const getNavClasses = (isActiveManual: boolean) =>
     `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500 text-sm md:text-[15px] w-full group relative overflow-hidden ${
       isActiveManual 
-        ? "bg-primary text-primary-foreground font-bold shadow-premium scale-[1.02] z-10" 
-        : "hover:bg-primary/10 text-sidebar-foreground hover:text-primary hover:translate-x-1 font-medium"
+        ? "bg-primary text-primary-foreground font-black shadow-premium scale-[1.02] z-10" 
+        : "hover:bg-primary/10 text-sidebar-foreground hover:text-primary hover:translate-x-1 font-bold"
     }`;
 
   return (
-    <Sidebar className="border-r border-white/5 bg-sidebar-background/40 backdrop-blur-2xl" collapsible="icon">
+    <Sidebar className="border-r border-black/5 dark:border-white/5 bg-sidebar-background/40 backdrop-blur-2xl" collapsible="icon">
       <div className="flex h-full flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 md:p-4 border-b border-sidebar-border">
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-black/5 dark:border-sidebar-border">
           {(!isCollapsed || isMobile) ? (
             <div className="flex items-center">
               <img 
@@ -214,7 +214,7 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 md:h-8 md:w-8"
+              className="h-7 w-7 md:h-8 md:w-8 rounded-xl hover:bg-primary/10"
               onClick={toggleSidebar}
             >
               {isCollapsed ? <ChevronRight className="h-3 w-3 md:h-4 md:w-4" /> : <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />}
@@ -224,7 +224,7 @@ export function AppSidebar() {
 
         <SidebarContent className="flex-1 px-2 md:px-3">
           <SidebarGroup>
-            <SidebarGroupLabel className={`text-xs md:text-sm px-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
+            <SidebarGroupLabel className={`text-[10px] font-black uppercase tracking-widest px-4 mb-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
               {isSuperAdmin ? 'Gestão da Plataforma' : 'Menu Principal'}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -254,15 +254,15 @@ export function AppSidebar() {
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <div className="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-white/10 px-2.5 py-0.5 mt-1">
+                            <div className="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-black/10 dark:border-white/10 px-2.5 py-0.5 mt-1">
                               {item.items.map((subItem) => (
                                 <NavLink
                                   key={subItem.title}
                                   to={subItem.url}
                                   className={({ isActive }) => 
-                                    `flex h-9 items-center gap-2 rounded-lg px-3 text-sm transition-all duration-300 ${
+                                    `flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] transition-all duration-300 font-bold ${
                                       isActive 
-                                        ? "text-primary font-bold bg-primary/10" 
+                                        ? "text-primary bg-primary/10" 
                                         : "text-sidebar-foreground/70 hover:text-primary hover:bg-primary/5"
                                     }`
                                   }
@@ -292,12 +292,12 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
 
-          <Separator className="my-3 md:my-4" />
+          <Separator className="my-3 md:my-4 bg-black/5 dark:bg-white/5" />
 
           {/* Menu de Administração (Oculto para Super Admin porque já está no menu principal) */}
           {(canViewAdmin || canManageOffice) && !isMainSuperAdmin && !isSuperAdmin && (
             <SidebarGroup>
-              <SidebarGroupLabel className={`text-xs md:text-sm px-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
+              <SidebarGroupLabel className={`text-[10px] font-black uppercase tracking-widest px-4 mb-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
                 Administração
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -327,12 +327,12 @@ export function AppSidebar() {
             </SidebarGroup>
           )}
 
-          {(canViewAdmin || canManageOffice) && !isMainSuperAdmin && !isSuperAdmin && <Separator className="my-3 md:my-4" />}
+          {(canViewAdmin || canManageOffice) && !isMainSuperAdmin && !isSuperAdmin && <Separator className="my-3 md:my-4 bg-black/5 dark:bg-white/5" />}
 
           {/* Configurações - oculto para Super Admin */}
           {!isMainSuperAdmin && !isSuperAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className={`text-xs md:text-sm px-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
+            <SidebarGroupLabel className={`text-[10px] font-black uppercase tracking-widest px-4 mb-2 ${(isCollapsed && !isMobile) ? "sr-only" : ""}`}>
               Configurações
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -356,15 +356,15 @@ export function AppSidebar() {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="p-2 md:p-3 border-t border-sidebar-border">
+        <SidebarFooter className="p-2 md:p-3 border-t border-black/5 dark:border-sidebar-border">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
                 onClick={handleLogout}
-                className="flex items-center gap-2 md:gap-3 px-2 md:px-3 py-2.5 md:py-2 rounded-lg transition-all duration-200 text-sm md:text-base w-full text-destructive hover:bg-destructive/10 hover:text-destructive h-auto"
+                className="flex items-center gap-2 md:gap-3 px-3 py-3 rounded-2xl transition-all duration-200 text-sm md:text-base w-full text-destructive hover:bg-destructive/10 hover:text-destructive h-auto font-black uppercase tracking-widest"
               >
                 <LogOut className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
-                {(!isCollapsed || isMobile) && <span className="truncate">Sair</span>}
+                {(!isCollapsed || isMobile) && <span className="truncate">Sair do Hub</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

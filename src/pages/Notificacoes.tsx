@@ -124,29 +124,29 @@ const Notificacoes = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
+            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-premium">
               <Bell className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm flex items-center gap-3">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary drop-shadow-sm flex items-center gap-3">
               Notificações
               {unreadCount > 0 && (
-                <Badge variant="destructive" className="text-sm font-bold px-2 py-1 rounded-xl">
+                <Badge variant="destructive" className="bg-red-500 text-white text-sm font-black px-2 py-1 rounded-xl shadow-lg animate-pulse">
                   {unreadCount}
                 </Badge>
               )}
             </h1>
           </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+          <p className="text-sm md:text-lg text-muted-foreground font-black uppercase tracking-widest text-[10px] opacity-60 px-1">
             Acompanhe intimações, prazos e atualizações importantes dos seus processos.
           </p>
         </div>
         {notificationList.length > 0 && (
-          <div className="flex items-center gap-2 glass-morphism p-2 rounded-2xl">
-            <Button variant="ghost" size="sm" className="rounded-xl font-bold" onClick={markAllAsRead}>
+          <div className="flex items-center gap-2 glass-card p-2 rounded-2xl border-black/5 dark:border-white/5 shadow-premium">
+            <Button variant="ghost" size="sm" className="rounded-xl font-black uppercase tracking-widest text-[10px]" onClick={markAllAsRead}>
               <CheckCircle className="h-4 w-4 mr-2" />
-              Marcar todas como lidas
+              Marcar lidas
             </Button>
-            <Button variant="ghost" size="sm" className="rounded-xl font-bold text-destructive hover:text-destructive hover:bg-destructive/10" onClick={clearAll}>
+            <Button variant="ghost" size="sm" className="rounded-xl font-black uppercase tracking-widest text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10" onClick={clearAll}>
               <X className="h-4 w-4 mr-2" />
               Limpar tudo
             </Button>
@@ -157,13 +157,13 @@ const Notificacoes = () => {
       {/* Notifications List */}
       <div className="space-y-3">
         {notificationList.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 glass-card rounded-[2rem] border-white/5">
-            <div className="p-6 rounded-full bg-primary/5 border border-primary/10">
-              <Bell className="h-12 w-12 text-primary/30" />
+          <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 glass-card rounded-[2.5rem] border-black/5 dark:border-white/5 shadow-premium">
+            <div className="p-8 rounded-full bg-primary/5 border border-primary/10 shadow-inner">
+              <Bell className="h-16 w-16 text-primary/20" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-black text-foreground">Tudo em dia!</h3>
-              <p className="text-muted-foreground max-w-xs mx-auto">
+              <h3 className="text-2xl font-black text-foreground">Tudo em dia!</h3>
+              <p className="text-muted-foreground font-medium max-w-xs mx-auto">
                 Nenhuma notificação pendente. Prazos e publicações detectadas aparecerão aqui.
               </p>
             </div>
@@ -172,14 +172,14 @@ const Notificacoes = () => {
           notificationList.map((notification) => (
             <Card
               key={notification.id}
-              className={`border-l-4 ${getNotificationColor(notification.type)} ${!notification.read ? 'shadow-md' : 'opacity-70'} transition-all rounded-2xl`}
+              className={`glass-card border-l-4 ${getNotificationColor(notification.type)} ${!notification.read ? 'shadow-premium border-black/5 dark:border-white/5' : 'opacity-60 border-transparent'} transition-all duration-500 rounded-2xl overflow-hidden hover-lift`}
             >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start gap-3">
                   <div className="flex items-start gap-3 flex-1">
                     {getNotificationIcon(notification.type)}
                     <div className="flex-1 min-w-0">
-                      <CardTitle className={`text-base ${!notification.read ? 'font-bold' : 'font-medium'}`}>
+                      <CardTitle className={`text-base ${!notification.read ? 'font-black' : 'font-bold'} tracking-tight`}>
                         {notification.title}
                       </CardTitle>
                       <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">

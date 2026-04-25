@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Processo, NovoProcesso } from '@/types/database';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function useProcessos() {
+export function useProcessosV2() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -57,7 +57,7 @@ export function useProcessos() {
       try {
         let query = supabase
           .from('processos')
-          .select('*, cliente:clientes(nome)')
+          .select('*, cliente:clientes!cliente_id(nome)')
           .eq('deletado', false)
           .order('created_at', { ascending: false });
 
@@ -70,14 +70,23 @@ export function useProcessos() {
         const { data: result, error: fetchError } = await query;
 
         if (fetchError) {
-          console.error('❌ useProcessos: erro na query', fetchError);
+          console.error('❌ useProcessos: erro na query', {
+            message: fetchError.message,
+            code: fetchError.code,
+            details: fetchError.details,
+            hint: fetchError.hint
+          });
           throw fetchError;
         }
 
         console.log(`📋 useProcessos: ${result?.length ?? 0} processos encontrados`);
         return (result || []).map(mapDatabaseToProcesso);
-      } catch (e) {
-        console.error('❌ useProcessos: exceção capturada', e);
+      } catch (e: any) {
+        console.error('❌ useProcessos: exceção capturada', {
+          error: e,
+          message: e?.message,
+          stack: e?.stack
+        });
         throw e;
       }
     },
@@ -205,12 +214,28 @@ export function useProcessos() {
   const addMovimentacao = async (processoId: string, movData: any) => {
     if (!user) return null;
     try {
+      const targetDate = movData.data || new Date().toISOString();
+      
+      // De-duplication check
+      const { data: existing } = await supabase
+        .from('movimentacoes_processo')
+        .select('id')
+        .eq('processo_id', processoId)
+        .eq('descricao', movData.descricao)
+        .eq('data_movimentacao', targetDate)
+        .maybeSingle();
+
+      if (existing) {
+        console.log('🔄 Movimentação já existe, pulando:', movData.descricao.substring(0, 30));
+        return existing;
+      }
+
       const { data: result, error: movError } = await supabase
         .from('movimentacoes_processo')
         .insert([{
           processo_id: processoId,
           office_id: user.office_id,
-          data_movimentacao: movData.data || new Date().toISOString(),
+          data_movimentacao: targetDate,
           descricao: movData.descricao,
           detalhes: movData.detalhes || '',
           tipo: movData.tipo || 'andamento'

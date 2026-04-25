@@ -150,28 +150,28 @@ export default function Agenda() {
 
   return (
     <div className="flex flex-col h-full entry-animate">
-      <div className="p-8 border-b bg-background/50 backdrop-blur-xl">
+      <div className="p-8 border-b border-black/5 dark:border-white/5 bg-background/50 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-primary/10">
+                <div className="p-2.5 rounded-xl bg-primary/10">
                   <Calendar className="h-6 w-6 md:h-8 md:w-8 text-primary" />
                 </div>
-                <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                  Agenda & Compromissos
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+                  Agenda Estratégica
                 </h1>
               </div>
-              <p className="text-sm md:text-lg text-muted-foreground font-medium">
-                Organize seu tempo, audiências e prazos de forma estratégica.
+              <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+                Gerencie seus compromissos, audiências e prazos com visão 360º.
               </p>
             </div>
-            <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+            <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl shadow-premium">
               {!multiSelect.isNoneSelected && (
                 <Button
                   variant="destructive"
                   onClick={handleDeleteSelected}
-                  className="rounded-xl h-10 md:h-12 px-4 md:px-6"
+                  className="rounded-xl h-12 px-6 font-bold uppercase text-xs tracking-widest shadow-lg shadow-rose-500/20"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Excluir ({multiSelect.selectedCount})
@@ -180,9 +180,9 @@ export default function Agenda() {
               <Button 
                 onClick={() => handleNewEvent(new Date())} 
                 size="lg" 
-                className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6"
+                className="rounded-xl shadow-premium h-12 px-8 font-black uppercase text-xs tracking-widest bg-primary hover:bg-primary/90"
               >
-                <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                <Plus className="h-5 w-5 mr-2" />
                 Novo Compromisso
               </Button>
             </div>
@@ -190,17 +190,17 @@ export default function Agenda() {
       </div>
     </div>
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         <Tabs defaultValue="calendar" className="flex-1 flex flex-col">
-          <div className="border-b px-8 bg-background/30 backdrop-blur-sm">
-            <TabsList className="h-12 w-fit gap-2 bg-transparent border-none">
-              <TabsTrigger value="calendar" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20">Calendário</TabsTrigger>
-              <TabsTrigger value="list" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20">Lista Diária</TabsTrigger>
-              <TabsTrigger value="agenda" className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20">Visão Expandida</TabsTrigger>
+          <div className="border-b border-black/5 dark:border-white/5 px-8 bg-black/[0.02] dark:bg-white/[0.02] backdrop-blur-sm">
+            <TabsList className="h-14 w-fit gap-2 bg-transparent border-none">
+              <TabsTrigger value="calendar" className="rounded-xl px-8 h-10 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">Calendário</TabsTrigger>
+              <TabsTrigger value="list" className="rounded-xl px-8 h-10 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">Lista Diária</TabsTrigger>
+              <TabsTrigger value="agenda" className="rounded-xl px-8 h-10 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">Visão Expandida</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="calendar" className="flex-1 m-0">
+          <TabsContent value="calendar" className="flex-1 m-0 overflow-auto">
             <FullScreenCalendar 
               data={currentMonthData}
               onEventClick={handleEventClick}
@@ -209,27 +209,28 @@ export default function Agenda() {
             />
           </TabsContent>
 
-          <TabsContent value="list" className="flex-1 p-6">
+          <TabsContent value="list" className="flex-1 p-8 overflow-auto">
             <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Hoje - {format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}</CardTitle>
-                    <CardDescription>Seus compromissos de hoje</CardDescription>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black">Hoje - {format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}</CardTitle>
+                    <CardDescription className="font-medium">Seus compromissos de hoje</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-8 pt-0 space-y-4">
                                          {todayEvents.length > 0 && (
-                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center justify-between p-4 bg-black/[0.03] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-[1.5rem] mb-6">
                         <div className="flex items-center gap-3">
                           <Checkbox
                             checked={multiSelect.isAllSelected}
                             onCheckedChange={() => 
                               multiSelect.isAllSelected ? multiSelect.clearSelection() : multiSelect.selectAll()
                             }
+                            className="rounded-md border-black/10 dark:border-white/20"
                           />
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                             {multiSelect.selectedCount > 0 ? (
-                                                             `${multiSelect.selectedCount} de ${todayEvents.length} selecionado(s)`
+                                                              `${multiSelect.selectedCount} de ${todayEvents.length} selecionados`
                             ) : (
                               "Selecionar todos"
                             )}
@@ -237,9 +238,10 @@ export default function Agenda() {
                         </div>
                         {multiSelect.selectedCount > 0 && (
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             onClick={multiSelect.clearSelection}
+                            className="rounded-xl h-8 text-[10px] font-black uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5"
                           >
                             Limpar seleção
                           </Button>
@@ -247,69 +249,90 @@ export default function Agenda() {
                       </div>
                     )}
                                          {todayEvents.map((event) => (
-                      <div key={event.id} className={`flex items-start space-x-3 p-4 border rounded-lg transition-all duration-200 ${
-                        multiSelect.isSelected(event.id) ? "ring-2 ring-primary" : ""
-                      }`}>
+                      <div key={event.id} className={cn(
+                        "flex items-start space-x-4 p-5 rounded-[1.5rem] border transition-all duration-300 group",
+                        multiSelect.isSelected(event.id) 
+                          ? "bg-primary/[0.03] border-primary/20 ring-2 ring-primary/10" 
+                          : "bg-black/[0.01] dark:bg-white/[0.01] border-black/5 dark:border-white/5 hover:border-primary/20"
+                      )}>
                         <Checkbox
                           checked={multiSelect.isSelected(event.id)}
                           onCheckedChange={() => multiSelect.toggleItem(event.id)}
+                          className="mt-1 rounded-md border-black/10 dark:border-white/20"
                         />
-                        <div className="flex items-center gap-2">
-                          {getTypeIcon(event.type)}
-                          <div className="text-sm font-medium text-primary">
-                            {event.time}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{event.name}</div>
-                          <div className="text-sm text-gray-500">{event.client}</div>
-                          <div className="flex items-center text-xs text-gray-400 mt-1">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {event.location}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Badge className={`${getTypeColor(event.type)} text-xs`}>
-                              {event.type}
-                            </Badge>
-                            <Badge className={`${getStatusColor(event.status)} text-xs`}>
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className={cn("p-2 rounded-lg", getTypeColor(event.type).split(' ')[0].replace('100', '10'))}>
+                                {getTypeIcon(event.type)}
+                              </div>
+                              <div className="text-sm font-black text-primary uppercase tracking-tighter">
+                                {event.time}
+                              </div>
+                            </div>
+                            <Badge className={cn("rounded-lg px-3 py-1 text-[10px] font-black uppercase tracking-widest", getStatusColor(event.status))}>
                               {event.status}
+                            </Badge>
+                          </div>
+                          
+                          <div>
+                            <div className="font-black text-base text-foreground group-hover:text-primary transition-colors">{event.name}</div>
+                            <div className="text-xs font-bold text-muted-foreground/60">{event.client}</div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
+                            <div className="flex items-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">
+                              <MapPin className="h-3 w-3 mr-1.5 text-primary/40" />
+                              {event.location || 'Local não definido'}
+                            </div>
+                            <Badge variant="outline" className={cn("rounded-md text-[9px] font-black uppercase tracking-tighter border-black/5 dark:border-white/10", getTypeColor(event.type))}>
+                              {event.type}
                             </Badge>
                           </div>
                         </div>
                       </div>
                     ))}
                                          {todayEvents.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>Nenhum compromisso para hoje</p>
+                      <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+                        <div className="p-4 rounded-full bg-primary/5 border border-primary/10">
+                          <Calendar className="h-10 w-10 text-primary/30" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-bold text-foreground">Agenda livre hoje</p>
+                          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                            Aproveite para organizar suas tarefas ou colocar a leitura em dia.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Próximos Compromissos</CardTitle>
-                    <CardDescription>Agenda da próxima semana</CardDescription>
+                <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-black">Próximos Compromissos</CardTitle>
+                    <CardDescription className="font-medium">Agenda da próxima semana</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="p-8 pt-0 space-y-3">
                     {events.slice(0, 10).map((compromisso) => (
-                      <div key={compromisso.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          {getTypeIcon(compromisso.type)}
+                      <div key={compromisso.id} className="flex items-center justify-between p-4 rounded-2xl border border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/[0.01] hover:bg-primary/[0.03] transition-all group cursor-pointer" onClick={() => handleEventClick(compromisso)}>
+                        <div className="flex items-center gap-4">
+                          <div className={cn("p-2.5 rounded-xl transition-colors group-hover:bg-primary/10", getTypeColor(compromisso.type).split(' ')[0].replace('100', '10'))}>
+                            {getTypeIcon(compromisso.type)}
+                          </div>
                           <div>
-                            <div className="font-medium text-sm">{compromisso.name}</div>
-                            <div className="text-sm text-gray-500">{compromisso.client}</div>
-                            <div className="text-xs text-gray-400">
-                              {format(new Date(compromisso.datetime), "d 'de' MMM", { locale: ptBR })} às {compromisso.time}
+                            <div className="font-black text-sm text-foreground group-hover:text-primary transition-colors">{compromisso.name}</div>
+                            <div className="text-[10px] font-bold text-muted-foreground/60">{compromisso.client}</div>
+                            <div className="text-[9px] font-black uppercase tracking-widest text-primary/40 mt-1">
+                              {format(new Date(compromisso.datetime), "d 'de' MMM", { locale: ptBR })} • {compromisso.time}
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge className={getStatusColor(compromisso.status)}>
+                        <div className="flex flex-col items-end gap-1.5">
+                          <Badge className={cn("rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-tighter", getStatusColor(compromisso.status))}>
                             {compromisso.status}
                           </Badge>
-                          <Badge variant="outline" className={getTypeColor(compromisso.type)}>
+                          <Badge variant="outline" className={cn("rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-tighter border-black/5 dark:border-white/10", getTypeColor(compromisso.type))}>
                             {compromisso.type}
                           </Badge>
                         </div>
@@ -321,57 +344,60 @@ export default function Agenda() {
             </div>
           </TabsContent>
 
-          <TabsContent value="agenda" className="flex-1 p-6">
+          <TabsContent value="agenda" className="flex-1 p-8 overflow-auto">
             <div className="max-w-4xl mx-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Agenda Completa</CardTitle>
-                  <CardDescription>Visão detalhada de todos os compromissos</CardDescription>
+              <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden">
+                <CardHeader className="p-8 pb-4">
+                  <CardTitle className="text-xl font-black">Agenda Completa</CardTitle>
+                  <CardDescription className="font-medium">Visão detalhada de todos os compromissos</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
+                <CardContent className="p-8 pt-0">
+                  <div className="space-y-10">
                     {currentMonthData.map((day, index) => (
-                      <div key={index} className="border-l-4 border-primary/20 pl-4">
-                        <h3 className="font-semibold text-lg mb-3">
+                      <div key={index} className="border-l-2 border-primary/20 pl-6 py-2">
+                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary mb-6 flex items-center gap-3">
+                          <span className="w-2 h-2 rounded-full bg-primary" />
                           {format(day.day, "EEEE, d 'de' MMMM", { locale: ptBR })}
                           {isToday(day.day) && (
-                            <Badge className="ml-2 bg-primary/10 text-primary">Hoje</Badge>
+                            <Badge className="ml-2 bg-primary text-primary-foreground font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Hoje</Badge>
                           )}
                         </h3>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {day.events.map((event) => (
                             <div 
                               key={event.id} 
-                              className="flex items-center gap-4 p-3 bg-card border rounded-lg hover:shadow-md transition-all cursor-pointer"
+                              className="flex items-center gap-5 p-5 bg-black/[0.01] dark:bg-white/[0.01] border border-black/5 dark:border-white/5 rounded-[1.5rem] hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all cursor-pointer group"
                               onClick={() => handleEventClick(event)}
                             >
-                              <div className="flex items-center gap-2">
-                                {getTypeIcon(event.type)}
-                                <span className="font-mono text-sm font-medium">{event.time}</span>
+                              <div className="flex items-center gap-3">
+                                <div className={cn("p-2 rounded-xl group-hover:bg-primary/10 transition-colors", getTypeColor(event.type).split(' ')[0].replace('100', '10'))}>
+                                  {getTypeIcon(event.type)}
+                                </div>
+                                <span className="text-sm font-black text-primary uppercase tracking-tighter">{event.time}</span>
                               </div>
                               <div className="flex-1">
-                                <div className="font-medium">{event.name}</div>
-                                <div className="text-sm text-muted-foreground">{event.client}</div>
+                                <div className="font-black text-base text-foreground group-hover:text-primary transition-colors">{event.name}</div>
+                                <div className="text-xs font-bold text-muted-foreground/60">{event.client}</div>
                                 {event.location && (
-                                  <div className="flex items-center text-xs text-muted-foreground mt-1">
-                                    <MapPin className="h-3 w-3 mr-1" />
+                                  <div className="flex items-center text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mt-2">
+                                    <MapPin className="h-3 w-3 mr-1.5 text-primary/40" />
                                     {event.location}
                                   </div>
                                 )}
                               </div>
-                              <div className="flex flex-col items-end gap-1">
-                                <Badge className={getStatusColor(event.status)}>
+                              <div className="flex flex-col items-end gap-1.5">
+                                <Badge className={cn("rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-tighter", getStatusColor(event.status))}>
                                   {event.status}
                                 </Badge>
-                                <Badge variant="outline" className={getTypeColor(event.type)}>
+                                <Badge variant="outline" className={cn("rounded-lg px-2 py-0.5 text-[9px] font-black uppercase tracking-tighter border-black/5 dark:border-white/10", getTypeColor(event.type))}>
                                   {event.type}
                                 </Badge>
                               </div>
                             </div>
                           ))}
                           {day.events.length === 0 && (
-                            <p className="text-sm text-muted-foreground italic pl-8">
-                              Nenhum compromisso agendado
+                            <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-widest pl-10 italic">
+                              Sem compromissos
                             </p>
                           )}
                         </div>
@@ -402,3 +428,4 @@ export default function Agenda() {
     </div>
   );
 }
+

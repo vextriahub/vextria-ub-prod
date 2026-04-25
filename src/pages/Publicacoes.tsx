@@ -259,7 +259,7 @@ export default function Publicacoes() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-sm">
+            <div className="p-2.5 rounded-2xl bg-primary/10 border border-black/5 dark:border-primary/20 shadow-sm">
               <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-foreground">
@@ -271,7 +271,7 @@ export default function Publicacoes() {
           </p>
         </div>
         
-        <div className="flex items-center gap-2 glass-morphism p-1.5 rounded-2xl border-border bg-card/30">
+        <div className="flex items-center gap-2 glass-morphism p-1.5 rounded-2xl border-black/5 dark:border-border bg-black/[0.02] dark:bg-card/30">
           <Button 
             variant={view === 'grid' ? "secondary" : "ghost"} 
             size="sm" 
@@ -318,7 +318,7 @@ export default function Publicacoes() {
               })}
             />
             
-            <Separator className="bg-border/30" />
+            <Separator className="bg-black/5 dark:bg-border/30" />
 
             <div className="flex items-center justify-end gap-4 px-2">
               <DropdownMenu>
@@ -329,7 +329,7 @@ export default function Publicacoes() {
                     <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-card border-border shadow-2xl">
+                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-card border-black/5 dark:border-border shadow-2xl">
                   <DropdownMenuItem className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
                     <div className="p-1.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 transition-colors">
                       <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
@@ -362,7 +362,7 @@ export default function Publicacoes() {
                     <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl bg-card border-border shadow-2xl">
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl bg-card border-black/5 dark:border-border shadow-2xl">
                   <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Período de Busca</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-border/50" />
                   <DropdownMenuItem onClick={() => handleManualSync(1)} className="rounded-xl py-3 cursor-pointer group flex items-center gap-3">
@@ -437,8 +437,8 @@ export default function Publicacoes() {
           )}
 
           {filteredPublications.length === 0 ? (
-            <div className="py-24 text-center glass-card rounded-[3rem] bg-card/30 space-y-6 border-border shadow-inner">
-              <div className="p-8 bg-background/50 rounded-full inline-block border border-border shadow-sm">
+            <div className="py-24 text-center glass-card rounded-[3rem] bg-black/[0.02] dark:bg-card/30 space-y-6 border-black/5 dark:border-border shadow-inner">
+              <div className="p-8 bg-black/[0.03] dark:bg-background/50 rounded-full inline-block border border-black/5 dark:border-border shadow-sm">
                 <Inbox className="h-16 w-16 text-muted-foreground/20" />
               </div>
               <div className="space-y-2">
@@ -465,7 +465,7 @@ export default function Publicacoes() {
                 <div 
                   key={publication.id} 
                   className={cn(
-                    "glass-card hover-lift p-8 rounded-[2.5rem] border-border bg-card/40 shadow-premium group relative transition-all duration-300",
+                    "glass-card hover-lift p-8 rounded-[2.5rem] border border-black/5 dark:border-border bg-black/[0.02] dark:bg-card/40 shadow-premium group relative transition-all duration-300",
                     selectedIds.includes(publication.id) && "ring-2 ring-primary bg-primary/5"
                   )}
                 >
@@ -512,7 +512,7 @@ export default function Publicacoes() {
                         </Badge>
                       </div>
 
-                      <div className="p-8 bg-background/50 rounded-[2rem] border border-border text-foreground/80 font-medium line-clamp-4 leading-relaxed text-sm shadow-inner">
+                      <div className="p-8 bg-black/[0.03] dark:bg-background/50 rounded-[2rem] border border-black/5 dark:border-border text-foreground/80 font-medium line-clamp-4 leading-relaxed text-sm shadow-inner">
                         {publication.conteudo}
                       </div>
 
@@ -553,7 +553,7 @@ export default function Publicacoes() {
                               <Trash2 className="h-5 w-5 text-red-500/50 group-hover/del:text-red-500" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-[2.5rem] border-border bg-card/80 backdrop-blur-2xl p-10 shadow-2xl">
+                          <AlertDialogContent className="rounded-[2.5rem] border-black/5 dark:border-border bg-card/80 backdrop-blur-2xl p-10 shadow-2xl">
                             <AlertDialogHeader>
                               <AlertDialogTitle className="text-3xl font-black tracking-tighter">Eliminar Expediente</AlertDialogTitle>
                               <AlertDialogDescription className="text-base font-medium text-muted-foreground">

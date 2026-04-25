@@ -32,6 +32,8 @@ import { NovoProcessoForm, tiposProcesso, statusProcesso, fasesProcessuais } fro
 import { Separator } from '@/components/ui/separator';
 import { formatCNJ, unformatCNJ } from '@/lib/formatters';
 import { JudicialSyncDialog, JudicialSyncContent } from './JudicialSyncDialog';
+import { useProcessosV2 } from '@/hooks/useProcessosV2';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NovoProcessoDialogProps {
   onAddProcesso: (processo: any) => void;
@@ -52,6 +54,7 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
   const { user } = useAuth();
   const { limits } = usePlanLimits();
   const { users: teamMembers } = useOfficeUsers();
+  const { addMovimentacao } = useProcessosV2();
   const isLimitReached = limits.processes.isReached;
   
   const [internalOpen, setInternalOpen] = useState(false);
@@ -127,13 +130,27 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
         valorCausa: formData.valorCausa || 0
       };
 
-      onAddProcesso(novoProcesso);
+      const createdProc = await onAddProcesso(novoProcesso);
+      
+      // Sincronizar movimentações se vierem do CNJ
+      if (createdProc?.id && Array.isArray((formData as any).andamentos)) {
+        const andamentos = (formData as any).andamentos;
+        console.log(`📥 Salvando ${andamentos.length} movimentos pré-carregados`);
+        for (const and of andamentos) {
+          await addMovimentacao(createdProc.id, {
+            data: and.data,
+            descricao: and.resumo || and.descricao,
+            tipo: 'andamento'
+          });
+        }
+      }
+
       resetForm();
       setOpen(false);
       
       toast({
         title: "Processo criado",
-        description: "O novo processo foi criado com sucesso.",
+        description: "O novo processo e seu histórico foram salvos.",
       });
     } catch (error) {
       console.error('Erro ao criar processo:', error);
@@ -165,12 +182,13 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
           vara: data.vara || '',
           valorCausa: data.valorCausa || 0,
           faseProcessual: data.faseProcessual || 'Fase Inicial',
+          andamentos: data.andamentos || [], // Guardar andamentos para o save
           descricao: `Auto-preenchido via CNJ. Última movimentação: ${data.ultimoAndamento?.descricao || 'N/A'}`
         }));
         setStep('form');
         toast({
           title: "Processo encontrado!",
-          description: "Os dados básicos foram preenchidos automaticamente.",
+          description: "Os dados básicos e histórico foram recuperados.",
         });
       }
     } catch (error: any) {
@@ -189,7 +207,7 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
   const handleImportedSync = async (processes: any[]) => {
     try {
       for (const proc of processes) {
-        await onAddProcesso({
+        const createdProc = await onAddProcesso({
           titulo: proc.titulo,
           cliente: proc.clienteDestaque || 'Importado via OAB',
           clienteId: proc.clienteId,
@@ -201,6 +219,18 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
           valorCausa: proc.valorCausa || 0,
           descricao: `Importado via OAB. Último andamento: ${proc.ultimoAndamento?.descricao || 'N/A'}`
         });
+
+        // Sincronizar movimentações se existirem
+        if (createdProc?.id && Array.isArray(proc.andamentos)) {
+          console.log(`📥 Sincronizando ${proc.andamentos.length} movimentos para ${proc.numeroProcesso}`);
+          for (const and of proc.andamentos) {
+            await addMovimentacao(createdProc.id, {
+              data: and.data,
+              descricao: and.resumo || and.descricao,
+              tipo: 'andamento'
+            });
+          }
+        }
       }
       setOpen(false);
       resetForm();
@@ -231,19 +261,26 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
           {trigger || defaultTrigger}
         </DialogTrigger>
         
-        <DialogContent className={`sm:max-w-[800px] bg-background/40 backdrop-blur-3xl border-white/5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] p-0 overflow-hidden flex flex-col transition-all duration-300 ${step === 'oab' ? 'h-[90vh] max-h-[90vh]' : 'max-h-[95vh]'}`}>
-          <DialogHeader className="p-8 pb-4 border-b border-white/5">
+        <DialogContent className={`sm:max-w-[800px] bg-background/40 backdrop-blur-3xl border-white/5 shadow-2xl p-0 overflow-hidden rounded-[2.5rem] flex flex-col transition-all duration-300 ${step === 'oab' ? 'h-[90vh] max-h-[90vh]' : 'max-h-[95vh]'}`}>
+          <DialogHeader className="p-10 pb-6 border-b border-white/5">
             <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
-                  Novo Processo
-                </DialogTitle>
-                <DialogDescription className="text-white/40">
-                  {step === 'choice' ? 'Escolha como deseja iniciar o cadastro.' : 'Preencha as informações do processo.'}
-                </DialogDescription>
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                  <Gavel className="h-6 w-6" />
+                </div>
+                <div>
+                  <DialogTitle className="text-3xl font-black bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                    Novo Processo
+                  </DialogTitle>
+                  <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">
+                    {step === 'choice' ? 'Selecione o método de entrada' : 
+                     step === 'oab' ? 'Sincronização via OAB' : 
+                     step === 'cnj_search' ? 'Busca Inteligente DataJud' : 'Cadastro Detalhado'}
+                  </p>
+                </div>
               </div>
               {step !== 'choice' && (
-                <Button variant="ghost" size="sm" onClick={() => setStep('choice')} className="text-white/40 hover:text-white">
+                <Button variant="ghost" size="sm" onClick={() => setStep('choice')} className="rounded-xl h-10 px-4 font-bold text-white/40 hover:text-white hover:bg-white/5 transition-all">
                   Voltar
                 </Button>
               )}
@@ -262,43 +299,43 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
               <ScrollArea className="flex-1 px-8">
                 <div className="py-8">
                   {step === 'choice' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-6 duration-700 p-2">
                       <Card 
-                        className="group cursor-pointer bg-white/5 border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all p-6 text-center space-y-4 rounded-3xl"
+                        className="group cursor-pointer bg-white/5 border-white/5 hover:bg-primary/10 hover:border-primary/20 transition-all p-8 text-center space-y-6 rounded-[2rem] border-2 border-transparent"
                         onClick={() => setStep('oab')}
                       >
-                        <div className="mx-auto w-16 h-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                          <RotateCw className="h-8 w-8" />
+                        <div className="mx-auto w-20 h-20 rounded-3xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-lg shadow-indigo-500/5">
+                          <RotateCw className="h-10 w-10" />
                         </div>
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-white/90">Sincronizar OAB</h4>
-                          <p className="text-xs text-white/40">Busca automática em tribunais via número OAB</p>
+                        <div className="space-y-2">
+                          <h4 className="font-black text-lg text-white group-hover:text-primary transition-colors">Sincronizar OAB</h4>
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest leading-relaxed">Automação Completa via Tribunais</p>
                         </div>
                       </Card>
 
                       <Card 
-                        className="group cursor-pointer bg-white/5 border-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all p-6 text-center space-y-4 rounded-3xl"
+                        className="group cursor-pointer bg-white/5 border-white/5 hover:bg-emerald-500/10 hover:border-emerald-500/20 transition-all p-8 text-center space-y-6 rounded-[2rem] border-2 border-transparent"
                         onClick={() => setStep('cnj_search')}
                       >
-                        <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                          <Search className="h-8 w-8" />
+                        <div className="mx-auto w-20 h-20 rounded-3xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-500 shadow-lg shadow-emerald-500/5">
+                          <Search className="h-10 w-10" />
                         </div>
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-white/90">Buscar por CNJ</h4>
-                          <p className="text-xs text-white/40">Digitar o número e preencher capa do processo</p>
+                        <div className="space-y-2">
+                          <h4 className="font-black text-lg text-white group-hover:text-emerald-400 transition-colors">Buscar por CNJ</h4>
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest leading-relaxed">Extração de Capa via DataJud</p>
                         </div>
                       </Card>
 
                       <Card 
-                        className="group cursor-pointer bg-white/5 border-white/5 hover:bg-amber-500/10 hover:border-amber-500/20 transition-all p-6 text-center space-y-4 rounded-3xl"
+                        className="group cursor-pointer bg-white/5 border-white/5 hover:bg-amber-500/10 hover:border-amber-500/20 transition-all p-8 text-center space-y-6 rounded-[2rem] border-2 border-transparent"
                         onClick={() => setStep('form')}
                       >
-                        <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-                          <Plus className="h-8 w-8" />
+                        <div className="mx-auto w-20 h-20 rounded-3xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-all duration-500 shadow-lg shadow-amber-500/5">
+                          <Plus className="h-10 w-10" />
                         </div>
-                        <div className="space-y-1">
-                          <h4 className="font-bold text-white/90">Cadastro Manual</h4>
-                          <p className="text-xs text-white/40">Preencher cada informação manualmente</p>
+                        <div className="space-y-2">
+                          <h4 className="font-black text-lg text-white group-hover:text-amber-400 transition-colors">Manual</h4>
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest leading-relaxed">Preenchimento Personalizado</p>
                         </div>
                       </Card>
                     </div>
@@ -334,50 +371,50 @@ export const NovoProcessoDialog: React.FC<NovoProcessoDialogProps> = ({
                   )}
 
                   {step === 'form' && (
-                    <form onSubmit={handleSubmit} className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <form onSubmit={handleSubmit} className="space-y-12 animate-in fade-in slide-in-from-right-8 duration-700 pb-10">
                       {/* Seção 1: Identificação Básica */}
                       <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                          <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
                             <Info className="h-5 w-5 text-primary" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-white/90">Identificação Básica</h3>
-                            <p className="text-xs text-white/40">Informações principais do processo</p>
+                            <h3 className="text-xl font-black text-white/90 tracking-tight">Identificação Básica</h3>
+                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Informações essenciais de registro</p>
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 rounded-[2rem] bg-white/5 border border-white/5">
                           <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="titulo" className="text-white/60">Título do Processo *</Label>
+                            <Label htmlFor="titulo" className="text-white/60 ml-1 font-bold">Título do Processo *</Label>
                             <Input
                               id="titulo"
                               required
                               value={formData.titulo}
                               onChange={(e) => handleChange('titulo', e.target.value)}
                               placeholder="Ex: Ação Trabalhista - Cliente X"
-                              className="bg-white/5 border-white/10 h-11"
+                              className="bg-white/5 border-white/10 h-12 rounded-xl font-bold focus:ring-primary/20 transition-all"
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="cliente" className="text-white/60">Cliente *</Label>
+                            <Label htmlFor="cliente" className="text-white/60 ml-1 font-bold">Cliente / Autor *</Label>
                             <Input
                               id="cliente"
                               required
                               value={formData.cliente}
                               onChange={(e) => handleChange('cliente', e.target.value)}
                               placeholder="Nome do cliente"
-                              className="bg-white/5 border-white/10 h-11"
+                              className="bg-white/5 border-white/10 h-12 rounded-xl font-bold"
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="numeroProcesso" className="text-white/60">Número do Processo (CNJ)</Label>
+                            <Label htmlFor="numeroProcesso" className="text-white/60 ml-1 font-bold">Número do Processo (CNJ)</Label>
                             <Input
                               id="numeroProcesso"
                               value={formData.numeroProcesso || ''}
                               onChange={(e) => handleChange('numeroProcesso', formatCNJ(e.target.value))}
                               placeholder="0000000-00.0000.0.00.0000"
-                              className="font-mono bg-white/5 border-white/10 h-11"
+                              className="font-mono bg-white/5 border-white/10 h-12 rounded-xl text-primary font-bold"
                             />
                           </div>
                         </div>

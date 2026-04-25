@@ -98,15 +98,15 @@
 
 @layer utilities {
   .glass-morphism {
-    @apply bg-background/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)];
+    @apply bg-background/60 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
   }
   
   .glass-card {
-    @apply bg-card/40 backdrop-blur-xl border border-white/5 shadow-premium;
+    @apply bg-card/40 backdrop-blur-xl border border-black/5 dark:border-white/5 shadow-premium;
   }
 
   .shadow-premium {
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    @apply shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)];
   }
 
   .text-gradient {

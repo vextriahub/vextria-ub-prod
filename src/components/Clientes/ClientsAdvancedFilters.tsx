@@ -73,61 +73,69 @@ export const ClientsAdvancedFilters = ({ onFiltersChange, onClearFilters }: Clie
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="relative">
-          <Filter className="h-4 w-4 mr-2" />
+        <Button 
+          variant="outline" 
+          className={cn(
+            "relative h-12 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-300 shadow-premium",
+            hasActiveFilters 
+              ? "bg-primary/5 border-primary/20 text-primary shadow-lg shadow-primary/5" 
+              : "glass-card border-black/5 dark:border-white/10 text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5"
+          )}
+        >
+          <Filter className={cn("h-4 w-4 mr-2", hasActiveFilters ? "text-primary" : "text-muted-foreground/40")} />
           Filtros Avançados
           {hasActiveFilters && (
-            <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-primary rounded-full ring-2 ring-background animate-pulse" />
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-4" align="end">
-        <div className="space-y-4">
+      <PopoverContent className="w-96 p-6 rounded-[2rem] bg-white/95 dark:bg-card/95 backdrop-blur-2xl border-black/5 dark:border-white/10 shadow-premium" align="end">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium">Filtros Avançados</h4>
+            <h4 className="text-sm font-black uppercase tracking-widest text-primary">Filtros Avançados</h4>
             {hasActiveFilters && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClearFilters}
-                className="h-auto p-1"
+                className="h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-destructive/10 hover:text-destructive transition-all"
               >
-                <X className="h-4 w-4" />
+                Limpar
               </Button>
             )}
           </div>
 
-          <div className="space-y-3">
+          <div className="grid gap-5">
             <div className="space-y-2">
-              <Label>Tipo de Pessoa</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Tipo de Pessoa</Label>
               <Select
                 value={filters.tipoPessoa}
                 onValueChange={(value) => handleFilterChange("tipoPessoa", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 font-bold text-xs shadow-inner">
                   <SelectValue placeholder="Todos os tipos" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todos os tipos</SelectItem>
-                  <SelectItem value="fisica">Pessoa Física</SelectItem>
-                  <SelectItem value="juridica">Pessoa Jurídica</SelectItem>
+                <SelectContent className="rounded-xl border-black/10 dark:border-white/10 shadow-2xl">
+                  <SelectItem value="" className="font-bold text-xs">Todos os tipos</SelectItem>
+                  <SelectItem value="fisica" className="font-bold text-xs">Pessoa Física</SelectItem>
+                  <SelectItem value="juridica" className="font-bold text-xs">Pessoa Jurídica</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Origem</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Origem do Cliente</Label>
               <Select
                 value={filters.origem}
                 onValueChange={(value) => handleFilterChange("origem", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 font-bold text-xs shadow-inner">
                   <SelectValue placeholder="Todas as origens" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todas as origens</SelectItem>
+                <SelectContent className="rounded-xl border-black/10 dark:border-white/10 shadow-2xl">
+                  <SelectItem value="" className="font-bold text-xs">Todas as origens</SelectItem>
                   {origensCliente.map((origem) => (
-                    <SelectItem key={origem} value={origem}>
+                    <SelectItem key={origem} value={origem} className="font-bold text-xs">
                       {origem}
                     </SelectItem>
                   ))}
@@ -136,18 +144,18 @@ export const ClientsAdvancedFilters = ({ onFiltersChange, onClearFilters }: Clie
             </div>
 
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Status de Gestão</Label>
               <Select
                 value={filters.status}
                 onValueChange={(value) => handleFilterChange("status", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-11 rounded-xl bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 font-bold text-xs shadow-inner">
                   <SelectValue placeholder="Todos os status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todos os status</SelectItem>
+                <SelectContent className="rounded-xl border-black/10 dark:border-white/10 shadow-2xl">
+                  <SelectItem value="" className="font-bold text-xs">Todos os status</SelectItem>
                   {statusCliente.map((status) => (
-                    <SelectItem key={status} value={status}>
+                    <SelectItem key={status} value={status} className="font-bold text-xs">
                       {status.charAt(0).toUpperCase() + status.slice(1)}
                     </SelectItem>
                   ))}
@@ -156,33 +164,27 @@ export const ClientsAdvancedFilters = ({ onFiltersChange, onClearFilters }: Clie
             </div>
 
             <div className="space-y-2">
-              <Label>Data de Cadastro</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Período de Cadastro</Label>
               <div className="flex gap-2">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "flex-1 justify-start text-left font-normal",
-                        !filters.dataInicioFrom && "text-muted-foreground"
+                        "flex-1 h-11 rounded-xl bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 justify-start text-left font-bold text-xs shadow-inner",
+                        !filters.dataInicioFrom && "text-muted-foreground/40"
                       )}
-                      size="sm"
                     >
-                      <CalendarIcon className="mr-2 h-3 w-3" />
-                      {filters.dataInicioFrom ? (
-                        format(filters.dataInicioFrom, "dd/MM/yy")
-                      ) : (
-                        "De"
-                      )}
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                      {filters.dataInicioFrom ? format(filters.dataInicioFrom, "dd/MM/yy") : "Início"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 rounded-2xl border-black/10 dark:border-white/10 shadow-2xl">
                     <Calendar
                       mode="single"
                       selected={filters.dataInicioFrom}
                       onSelect={(date) => handleFilterChange("dataInicioFrom", date)}
                       locale={ptBR}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -192,64 +194,24 @@ export const ClientsAdvancedFilters = ({ onFiltersChange, onClearFilters }: Clie
                     <Button
                       variant="outline"
                       className={cn(
-                        "flex-1 justify-start text-left font-normal",
-                        !filters.dataInicioTo && "text-muted-foreground"
+                        "flex-1 h-11 rounded-xl bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 justify-start text-left font-bold text-xs shadow-inner",
+                        !filters.dataInicioTo && "text-muted-foreground/40"
                       )}
-                      size="sm"
                     >
-                      <CalendarIcon className="mr-2 h-3 w-3" />
-                      {filters.dataInicioTo ? (
-                        format(filters.dataInicioTo, "dd/MM/yy")
-                      ) : (
-                        "Até"
-                      )}
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                      {filters.dataInicioTo ? format(filters.dataInicioTo, "dd/MM/yy") : "Fim"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 rounded-2xl border-black/10 dark:border-white/10 shadow-2xl">
                     <Calendar
                       mode="single"
                       selected={filters.dataInicioTo}
                       onSelect={(date) => handleFilterChange("dataInicioTo", date)}
                       locale={ptBR}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tem Processos</Label>
-              <Select
-                value={filters.hasProcessos}
-                onValueChange={(value) => handleFilterChange("hasProcessos", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Indiferente" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Indiferente</SelectItem>
-                  <SelectItem value="sim">Sim</SelectItem>
-                  <SelectItem value="nao">Não</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tem Atendimentos</Label>
-              <Select
-                value={filters.hasAtendimentos}
-                onValueChange={(value) => handleFilterChange("hasAtendimentos", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Indiferente" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Indiferente</SelectItem>
-                  <SelectItem value="sim">Sim</SelectItem>
-                  <SelectItem value="nao">Não</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </div>

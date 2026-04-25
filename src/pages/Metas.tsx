@@ -98,11 +98,11 @@ const Metas = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl shadow-premium">
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-premium">
           <Button 
             onClick={() => setCreateGoalOpen(true)}
             size="lg"
-            className="rounded-xl h-12 shadow-premium bg-primary hover:bg-primary/90 font-bold px-8"
+            className="rounded-xl h-12 shadow-premium bg-primary hover:bg-primary/90 font-black uppercase text-xs tracking-widest px-8"
           >
             <Plus className="h-5 w-5 mr-2" />
             Nova Meta
@@ -111,15 +111,15 @@ const Metas = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <div className="glass-card p-2 rounded-3xl inline-flex w-full md:w-auto h-auto">
+        <div className="glass-card p-2 rounded-3xl inline-flex w-full md:w-auto h-auto border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-inner">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-1">
-            <TabsTrigger value="individuais" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+            <TabsTrigger value="individuais" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
               Individuais
             </TabsTrigger>
-            <TabsTrigger value="demandas" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+            <TabsTrigger value="demandas" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
               Demandas
             </TabsTrigger>
-            <TabsTrigger value="escritorio" className="rounded-2xl px-10 py-3 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all">
+            <TabsTrigger value="escritorio" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
               Escritório
             </TabsTrigger>
           </TabsList>
@@ -127,7 +127,7 @@ const Metas = () => {
 
           <TabsContent value="individuais" className="space-y-8 entry-animate slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center px-4">
-              <h3 className="text-2xl font-extrabold">Suas Metas Pessoais</h3>
+              <h3 className="text-2xl font-black tracking-tight">Suas Metas Pessoais</h3>
             </div>
 
             <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
@@ -135,7 +135,7 @@ const Metas = () => {
                 const percentage = Math.round((meta.valorAtual / meta.valorMeta) * 100);
                 
                 return (
-                  <div key={meta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border-white/5 shadow-premium group relative overflow-hidden">
+                  <div key={meta.id} className="glass-card hover-lift p-8 rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl shadow-premium group relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                       <Target className="h-24 w-24" />
                     </div>
@@ -143,14 +143,14 @@ const Metas = () => {
                     <div className="relative z-10 space-y-8">
                       <div className="flex items-start justify-between">
                         <div className="space-y-2">
-                          <h4 className="text-2xl font-extrabold group-hover:text-primary transition-colors duration-500 leading-tight">
+                          <h4 className="text-2xl font-black group-hover:text-primary transition-colors duration-500 leading-tight">
                             {meta.titulo}
                           </h4>
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-primary/10 text-primary border-primary/20 font-bold px-3 py-1 rounded-lg uppercase text-[10px] tracking-widest">
+                            <Badge className="bg-primary/10 text-primary border-primary/20 font-black px-3 py-1 rounded-lg uppercase text-[10px] tracking-widest shadow-sm">
                               {meta.periodo}
                             </Badge>
-                            <Badge className="bg-white/5 text-muted-foreground border-white/5 font-bold px-3 py-1 rounded-lg uppercase text-[10px] tracking-widest">
+                            <Badge className="bg-black/[0.03] dark:bg-white/5 text-muted-foreground border-black/5 dark:border-white/5 font-black px-3 py-1 rounded-lg uppercase text-[10px] tracking-widest shadow-sm">
                               {meta.tipo}
                             </Badge>
                           </div>
@@ -188,9 +188,9 @@ const Metas = () => {
                           </div>
                         </div>
 
-                        <div className="w-full bg-white/5 rounded-2xl h-4 p-1 border border-white/5">
+                        <div className="w-full bg-black/5 dark:bg-white/5 rounded-2xl h-4 p-1 border border-black/5 dark:border-white/5 shadow-inner">
                           <div 
-                            className="bg-gradient-to-r from-primary to-primary/60 h-full rounded-xl transition-all duration-1000 ease-out shadow-premium relative group-hover:shadow-[0_0_20px_rgba(var(--primary),0.4)]"
+                            className="bg-gradient-to-r from-primary to-primary/60 h-full rounded-xl transition-all duration-1000 ease-out shadow-premium relative group-hover:shadow-[0_0_20px_rgba(var(--primary),0.3)]"
                             style={{ width: `${Math.min(percentage, 100)}%` }}
                           >
                             <div className="absolute top-0 right-0 h-full w-2 bg-white/20 blur-sm rounded-full" />
@@ -198,12 +198,12 @@ const Metas = () => {
                         </div>
                       </div>
 
-                      <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                      <div className="pt-6 border-t border-black/5 dark:border-white/5 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                           <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Meta Ativa</span>
                         </div>
-                        <div className="bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
+                        <div className="bg-primary/5 dark:bg-primary/10 px-4 py-2 rounded-2xl border border-primary/10 dark:border-primary/20">
                           <p className="text-[10px] font-black uppercase tracking-widest text-primary/70 mb-0.5">Falta para concluir</p>
                           <p className="font-black text-primary text-lg leading-none">
                             {formatValue(Math.max(meta.valorMeta - meta.valorAtual, 0), meta.tipo)}

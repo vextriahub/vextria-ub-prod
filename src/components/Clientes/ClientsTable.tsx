@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Edit, Scale, Activity, FileText, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface ClientsTableProps {
   clients: Client[];
@@ -31,16 +32,16 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
   onDeleteClient
 }) => {
   return (
-    <div className="rounded-md border border-white/5 bg-black/20 backdrop-blur-sm overflow-hidden">
+    <div className="rounded-[2.5rem] border border-black/5 dark:border-white/10 bg-white dark:bg-card/40 backdrop-blur-md overflow-hidden shadow-premium">
       <Table>
         <TableHeader>
-          <TableRow className="border-b border-white/5 hover:bg-white/5">
-            <TableHead className="w-[50px]"></TableHead>
-            <TableHead>Nome</TableHead>
-            <TableHead>Contato</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Métricas</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="border-b border-black/5 dark:border-white/5 hover:bg-transparent bg-black/5 dark:bg-white/5">
+            <TableHead className="w-[60px] pl-6"></TableHead>
+            <TableHead className="font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 py-5">Nome</TableHead>
+            <TableHead className="font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 py-5">Contato</TableHead>
+            <TableHead className="font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 py-5">Tipo</TableHead>
+            <TableHead className="font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 py-5">Métricas</TableHead>
+            <TableHead className="text-right pr-6 font-black uppercase tracking-widest text-[10px] text-muted-foreground/60 py-5">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -50,93 +51,97 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
             return (
               <TableRow 
                 key={client.id} 
-                className={`border-b border-white/5 transition-colors cursor-pointer ${
-                  isSelected ? 'bg-orange-500/10 hover:bg-orange-500/20' : 'hover:bg-white/5'
-                }`}
+                className={cn(
+                   "border-b border-black/5 dark:border-white/5 transition-all duration-300 cursor-pointer group",
+                   isSelected ? 'bg-primary/[0.08] dark:bg-primary/20' : 'hover:bg-primary/[0.02] dark:hover:bg-white/[0.02]'
+                )}
                 onClick={(e) => {
-                  // Prevent click if clicking on actions or checkbox
                   if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.checkbox-cell')) {
                     return;
                   }
                   onClientClick(client);
                 }}
               >
-                <TableCell className="checkbox-cell" onClick={(e) => e.stopPropagation()}>
+                <TableCell className="checkbox-cell pl-6" onClick={(e) => e.stopPropagation()}>
                   <Checkbox 
                     checked={isSelected}
                     onCheckedChange={() => onToggleSelect(client.id)}
-                    className="border-white/20 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
+                    className="rounded-md border-black/10 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all"
                   />
                 </TableCell>
                 
                 <TableCell>
-                  <span className="font-medium text-white block">{client.name}</span>
-                  <span className="text-xs text-white/50">{client.cpfCnpj}</span>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">{client.name}</span>
+                    <span className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground/40">{client.cpfCnpj || 'Sem Documento'}</span>
+                  </div>
                 </TableCell>
                 
                 <TableCell>
-                  <span className="text-sm text-white/80 block">{client.email || 'Sem e-mail'}</span>
-                  <span className="text-xs text-white/50">{client.phone || 'Sem telefone'}</span>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground/80">{client.email || 'Sem e-mail'}</span>
+                    <span className="text-xs font-bold text-muted-foreground/50">{client.phone || 'Sem telefone'}</span>
+                  </div>
                 </TableCell>
                 
                 <TableCell>
-                  <Badge variant="outline" className={`
-                    bg-transparent font-medium border
-                    ${client.tipoPessoa === 'juridica' 
-                      ? 'border-indigo-500/30 text-indigo-400' 
-                      : 'border-orange-500/30 text-orange-400'}
-                  `}>
+                  <Badge variant="outline" className={cn(
+                    "font-black text-[9px] uppercase tracking-widest border px-2 py-0.5 rounded-lg",
+                    client.tipoPessoa === 'juridica' 
+                      ? 'border-indigo-500/20 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400' 
+                      : 'border-orange-500/20 bg-orange-500/5 text-orange-600 dark:text-orange-400'
+                  )}>
                     {client.tipoPessoa === 'juridica' ? 'PJ' : 'PF'}
                   </Badge>
                 </TableCell>
                 
                 <TableCell>
-                  <div className="flex items-center gap-1.5 opacity-80">
-                    <Scale className="h-3.5 w-3.5 text-white/50" />
-                    <span className="text-sm text-white/80">{client.cases || 0} processos</span>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 w-fit border border-black/5 dark:border-white/5">
+                    <Scale className="h-3 w-3 text-primary/60" />
+                    <span className="text-xs font-black uppercase tracking-tighter text-foreground/60">{client.cases || 0} processos</span>
                   </div>
                 </TableCell>
                 
-                <TableCell className="text-right">
+                <TableCell className="text-right pr-6">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-white/50 hover:text-white hover:bg-white/10">
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px] bg-[#1a1b1e] border-white/10">
+                    <DropdownMenuContent align="end" className="w-[220px] p-2 rounded-2xl bg-popover/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); onEditClient(client.id); }}
-                        className="text-white hover:bg-white/10 hover:text-white cursor-pointer"
+                        className="rounded-xl p-3 font-bold text-sm cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
                       >
-                        <Edit className="h-4 w-4 mr-2" /> Editar Dados
+                        <Edit className="h-4 w-4 mr-3 opacity-60" /> Editar Dados
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); onViewProcesses(client.id, client.name); }}
-                        className="text-white hover:bg-white/10 hover:text-white cursor-pointer"
+                        className="rounded-xl p-3 font-bold text-sm cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
                       >
-                        <Scale className="h-4 w-4 mr-2" /> Acessar Processos
+                        <Scale className="h-4 w-4 mr-3 opacity-60" /> Acessar Processos
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); onViewAtendimentos(client.id, client.name); }}
-                        className="text-white hover:bg-white/10 hover:text-white cursor-pointer"
+                        className="rounded-xl p-3 font-bold text-sm cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
                       >
-                        <Activity className="h-4 w-4 mr-2" /> Acessar C.R.M
+                        <Activity className="h-4 w-4 mr-3 opacity-60" /> Acessar C.R.M
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={(e) => { e.stopPropagation(); onViewConsultivo(client.id, client.name); }}
-                        className="text-white hover:bg-white/10 hover:text-white cursor-pointer"
+                        className="rounded-xl p-3 font-bold text-sm cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
                       >
-                        <FileText className="h-4 w-4 mr-2" /> Acessar Consultivo
+                        <FileText className="h-4 w-4 mr-3 opacity-60" /> Acessar Consultivo
                       </DropdownMenuItem>
                       {onDeleteClient && (
                         <>
-                          <DropdownMenuSeparator className="bg-white/10" />
+                          <DropdownMenuSeparator className="my-1 bg-black/5 dark:bg-white/5" />
                           <DropdownMenuItem 
                             onClick={(e) => { e.stopPropagation(); onDeleteClient(client.id); }}
-                            className="text-red-400 hover:bg-red-500/10 hover:text-red-400 cursor-pointer"
+                            className="rounded-xl p-3 font-bold text-sm cursor-pointer text-rose-500 hover:bg-rose-500/10 transition-colors"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" /> Excluir Cliente
+                            <Trash2 className="h-4 w-4 mr-3 opacity-60" /> Excluir Cliente
                           </DropdownMenuItem>
                         </>
                       )}
@@ -151,3 +156,4 @@ export const ClientsTable: React.FC<ClientsTableProps> = ({
     </div>
   );
 };
+

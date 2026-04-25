@@ -250,13 +250,30 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
           const rawName = polo === 'autor' ? proc.autor : proc.reu;
           if (rawName) {
             const nomeCliente = normalizeClientName(rawName);
-            const { data: novoCliente, error: errCliente } = await supabase
+            
+            // Verificar se cliente já existe por nome no escritório
+            const { data: existingClient } = await supabase
               .from('clientes')
-              .insert({ nome: nomeCliente, office_id: user?.office_id })
-              .select('id').single();
-              
-            if (!errCliente && novoCliente) {
-              finalClienteId = novoCliente.id;
+              .select('id')
+              .eq('nome', nomeCliente)
+              .eq('office_id', user?.office_id)
+              .maybeSingle();
+
+            if (existingClient) {
+              finalClienteId = existingClient.id;
+            } else {
+              const { data: novoCliente, error: errCliente } = await supabase
+                .from('clientes')
+                .insert({ 
+                  nome: nomeCliente, 
+                  office_id: user?.office_id,
+                  user_id: user?.id 
+                })
+                .select('id').single();
+                
+              if (!errCliente && novoCliente) {
+                finalClienteId = novoCliente.id;
+              }
             }
           }
         }
@@ -284,31 +301,31 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
     <div className="flex flex-col flex-1 min-h-0 h-full">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4 items-end p-1">
         <div className="space-y-2">
-          <Label className="text-white/60">UF do Tribunal</Label>
+          <Label className="text-muted-foreground/60 font-black uppercase tracking-widest text-[10px] ml-1">UF do Tribunal</Label>
           <Select value={uf} onValueChange={setUf}>
-            <SelectTrigger className="bg-white/5 border-white/10 h-10">
+            <SelectTrigger className="bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 h-11 rounded-xl font-bold">
               <SelectValue placeholder="UF" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-white/10">
+            <SelectContent className="glass-card border-black/10 dark:border-white/10 rounded-2xl shadow-2xl">
               {UFs.map(state => <SelectItem key={state} value={state}>{state}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
         <div className="md:col-span-3 space-y-2">
-          <Label className="text-white/60">Número da OAB</Label>
-          <div className="relative">
-            <ShieldCheck className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Label className="text-muted-foreground/60 font-black uppercase tracking-widest text-[10px] ml-1">Número da OAB</Label>
+          <div className="relative group">
+            <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30 group-focus-within:text-primary transition-colors" />
             <Input 
-              className="pl-10 bg-white/5 border-white/10 h-10"
+              className="pl-12 bg-black/[0.02] dark:bg-white/[0.05] border-black/5 dark:border-white/10 h-11 rounded-xl font-bold transition-all focus:ring-4 focus:ring-primary/10"
               placeholder="Ex: 61199" 
               value={oab}
               onChange={(e) => setOab(e.target.value.replace(/\D/g, ''))}
             />
           </div>
         </div>
-        <Button onClick={handleSearch} disabled={loading} className="gap-2 h-10 bg-primary">
+        <Button onClick={handleSearch} disabled={loading} className="gap-2 h-11 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-premium">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-          {loading ? 'Buscando...' : 'Buscar'}
+          {loading ? 'Buscando...' : 'Pesquisar'}
         </Button>
       </div>
 
@@ -321,33 +338,35 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </div>
       )}
 
-      {/* Resultados e Paginação */}
+      {/* Resultados e Paginação Premium */}
       {results.length > 0 && (
-        <div className="bg-slate-900/50 border border-white/5 p-3 rounded-xl mb-4 flex items-center justify-between px-4 shrink-0 shadow-sm">
+        <div className="bg-card/40 dark:bg-slate-900/50 border border-black/5 dark:border-white/10 p-4 rounded-2xl mb-4 flex items-center justify-between px-6 shrink-0 shadow-premium">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-white/90">Resultados encontrados ({results.length})</span>
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Database className="h-4 w-4" />
+              </div>
+              <span className="text-sm font-black text-foreground uppercase tracking-tight">Encontrados ({results.length})</span>
             </div>
             
             {/* Controles de Paginação */}
-            <div className="flex items-center gap-2 border-l border-white/10 ml-2 pl-4">
+            <div className="flex items-center gap-2 border-l border-black/5 dark:border-white/10 ml-2 pl-4">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 text-white/40"
+                className="h-8 w-8 text-muted-foreground/40 hover:bg-black/5 dark:hover:bg-white/5"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => p - 1)}
               >
                 <ChevronRight className="h-4 w-4 rotate-180" />
               </Button>
-              <span className="text-[10px] text-white/40 font-mono">
+              <span className="text-[10px] text-muted-foreground/60 font-mono font-bold">
                 {currentPage} / {totalPages}
               </span>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 text-white/40"
+                className="h-8 w-8 text-muted-foreground/40 hover:bg-black/5 dark:hover:bg-white/5"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(p => p + 1)}
               >
@@ -356,11 +375,11 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-             <span className="text-xs text-white/40">{selectedIds.size} selecionados</span>
+          <div className="flex items-center gap-6">
+             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">{selectedIds.size} selecionados</span>
              <button 
                onClick={toggleSelectAll}
-               className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+               className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 transition-colors border-b border-primary/20 pb-0.5"
              >
                {selectedIds.size === results.length ? 'Desmarcar todos' : 'Selecionar todos'}
              </button>
@@ -368,32 +387,35 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </div>
       )}
 
-      <div className="flex-1 min-h-[300px] border border-white/5 rounded-2xl bg-white/5 backdrop-blur-md overflow-hidden flex flex-col mb-4">
+      <div className="flex-1 min-h-[300px] border border-black/5 dark:border-white/10 rounded-[2rem] bg-card/20 dark:bg-white/5 backdrop-blur-md overflow-hidden flex flex-col mb-4 shadow-inner">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {results.length > 0 ? (
             <Table>
-              <TableHeader className="bg-slate-950/80 sticky top-0 z-20 backdrop-blur-md">
-                <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="w-[40px] px-4">
+              <TableHeader className="bg-slate-100/80 dark:bg-slate-950/80 sticky top-0 z-20 backdrop-blur-md">
+                <TableRow className="border-black/5 dark:border-white/5 hover:bg-transparent">
+                  <TableHead className="w-[40px] px-6">
                     <Checkbox 
                       checked={selectedIds.size === results.length && results.length > 0} 
                       onCheckedChange={toggleSelectAll}
-                      className="border-white/20 data-[state=checked]:bg-primary"
+                      className="border-black/20 dark:border-white/20 data-[state=checked]:bg-primary"
                     />
                   </TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Processo</TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Autor</TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Réu</TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Fase Processual</TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Tribunal</TableHead>
-                  <TableHead className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Andamento</TableHead>
+                  <TableHead className="text-muted-foreground/60 text-[10px] uppercase tracking-widest font-black py-5">Processo</TableHead>
+                  <TableHead className="text-muted-foreground/60 text-[10px] uppercase tracking-widest font-black py-5">Autor</TableHead>
+                  <TableHead className="text-muted-foreground/60 text-[10px] uppercase tracking-widest font-black py-5">Réu</TableHead>
+                  <TableHead className="text-muted-foreground/60 text-[10px] uppercase tracking-widest font-black py-5">Fase</TableHead>
+                  <TableHead className="text-muted-foreground/60 text-[10px] uppercase tracking-widest font-black py-5">Tribunal</TableHead>
+                  <TableHead className="text-muted-foreground/60 text-[10px] uppercase tracking-widest font-black py-5">Último Andamento</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedResults.map((proc) => (
                   <TableRow 
                     key={proc.id} 
-                    className="group border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                    className={cn(
+                       "group border-black/5 dark:border-white/5 transition-colors cursor-pointer",
+                       selectedIds.has(proc.id) ? "bg-primary/[0.04] dark:bg-primary/[0.08]" : "hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
+                    )}
                     onClick={(e) => {
                       if ((e.target as HTMLElement).closest('.checkbox-cell')) return;
                       setPreviewProc(proc);
@@ -417,11 +439,11 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="text-[10px] font-bold line-clamp-1 text-white/90 cursor-default max-w-[200px]">
+                            <div className="text-[10px] font-black line-clamp-1 text-foreground cursor-default max-w-[200px]">
                               {proc.autor || 'Não identificado'}
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-slate-800 border-white/10 text-white max-w-sm">
+                          <TooltipContent className="glass-card border-black/10 dark:border-white/10 text-foreground dark:text-white max-w-sm">
                             {proc.autor || 'Não identificado'}
                           </TooltipContent>
                         </Tooltip>
@@ -431,35 +453,35 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="text-[10px] font-medium line-clamp-2 text-white/90 cursor-default max-w-[200px]">
+                            <div className="text-[10px] font-medium line-clamp-2 text-foreground/80 cursor-default max-w-[200px]">
                               {proc.reu || 'Não identificada'}
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-slate-800 border-white/10 text-white max-w-sm">
+                          <TooltipContent className="glass-card border-black/10 dark:border-white/10 text-foreground dark:text-white max-w-sm">
                             {proc.reu || 'Não identificada'}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-[8px] h-5 uppercase font-bold bg-white/5 border-white/10 text-white/40 whitespace-nowrap">
+                      <Badge variant="outline" className="text-[8px] h-5 uppercase font-black bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-muted-foreground/60 whitespace-nowrap rounded-md">
                         {proc.faseProcessual}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <span className="text-[10px] text-white/60 truncate max-w-[120px] inline-block font-medium">
+                      <span className="text-[10px] text-muted-foreground/60 truncate max-w-[120px] inline-block font-bold">
                         {proc.tribunal} {proc.vara && `• ${proc.vara}`}
                       </span>
                     </TableCell>
                     <TableCell>
                       {proc.ultimoAndamento ? (
                         <div className="flex flex-col gap-0.5 max-w-[200px]">
-                          <span className="text-[9px] text-primary/70 font-bold uppercase">
+                          <span className="text-[9px] text-primary/70 font-black uppercase">
                             {new Date(proc.ultimoAndamento.data).toLocaleDateString()}
                           </span>
-                          <span className="text-[10px] line-clamp-1 italic text-white/50">{proc.ultimoAndamento.descricao}</span>
+                          <span className="text-[10px] line-clamp-1 italic text-muted-foreground/40 font-medium">{proc.ultimoAndamento.descricao}</span>
                         </div>
-                      ) : <span className="text-white/20 italic text-[10px]">Sem andamento</span>}
+                      ) : <span className="text-muted-foreground/20 italic text-[10px] font-medium">Sem andamento</span>}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -496,14 +518,14 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between bg-transparent">
-        <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-white/40 hover:text-white hover:bg-white/5">
+      <div className="mt-4 pt-6 border-t border-black/5 dark:border-white/10 flex items-center justify-between bg-transparent">
+        <Button variant="ghost" onClick={onCancel} disabled={importing} className="text-muted-foreground/40 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 font-black uppercase tracking-widest text-[10px] h-11 px-6 rounded-xl transition-all">
           Cancelar
         </Button>
         <Button 
           onClick={handleImport} 
           disabled={selectedIds.size === 0 || importing}
-          className={`gap-2 px-8 bg-primary shadow-lg shadow-primary/20 h-11 font-bold transition-all hover:scale-[1.02] ${selectedIds.size === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`gap-2 px-8 bg-primary shadow-premium h-11 font-black uppercase tracking-widest text-[10px] rounded-xl transition-all hover:scale-[1.02] ${selectedIds.size === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
           {importing ? 'Importando...' : selectedIds.size > 0 ? `Importar ${selectedIds.size} Processo(s)` : 'Nenhum Selecionado'}
@@ -511,18 +533,18 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
       </div>
 
       <Dialog open={!!previewProc} onOpenChange={(open) => !open && setPreviewProc(null)}>
-        <DialogContent className="max-w-2xl bg-slate-950 border-white/5 p-8 backdrop-blur-3xl">
+        <DialogContent className="max-w-2xl glass-card border-black/5 dark:border-white/10 p-8 shadow-2xl">
           {previewProc && (
             <div className="space-y-6">
-              <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+              <div className="flex items-center gap-4 border-b border-black/5 dark:border-white/10 pb-6">
                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
                   <Gavel className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold font-mono text-primary tracking-tight">
+                  <h3 className="text-xl font-black font-mono text-primary tracking-tight">
                     {formatCNJ(previewProc.numeroProcesso)}
                   </h3>
-                  <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">
+                  <p className="text-muted-foreground/40 text-[10px] font-black uppercase tracking-widest mt-1">
                     {previewProc.tribunal} • {previewProc.faseProcessual}
                   </p>
                 </div>
@@ -531,12 +553,12 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
               <div className="grid grid-cols-2 gap-8">
                 {/* Lado Autor */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-wider">
-                    <User className="h-4 w-4" /> Autor / Requerente
+                  <div className="flex items-center gap-2 text-muted-foreground/60 text-[10px] font-black uppercase tracking-widest">
+                    <User className="h-4 w-4 text-primary" /> Autor / Requerente
                   </div>
                   <div className="space-y-3">
                     <Input 
-                      className="bg-white/5 border-white/10 text-xs h-9 focus:ring-primary"
+                      className="bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 text-xs h-10 rounded-xl focus:ring-4 focus:ring-primary/10 font-bold"
                       placeholder="Nome do Autor"
                       value={previewProc.autor}
                       onChange={(e) => updateResultLocally(previewProc.id, { autor: e.target.value })}
@@ -544,7 +566,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                     <Button 
                       variant={clientPolos[previewProc.id] === 'autor' ? 'default' : 'outline'}
                       size="sm"
-                      className="w-full rounded-xl gap-2 font-bold text-[10px] h-8"
+                      className="w-full rounded-xl gap-2 font-black text-[10px] h-9 uppercase tracking-widest shadow-premium"
                       onClick={() => setClientPolos({...clientPolos, [previewProc.id]: 'autor'})}
                     >
                       {clientPolos[previewProc.id] === 'autor' && <ShieldCheck className="h-3 w-3" />}
@@ -555,12 +577,12 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
 
                 {/* Lado Réu */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-white/60 text-sm font-bold uppercase tracking-wider">
-                    <Users className="h-4 w-4" /> Réu / Requerido
+                  <div className="flex items-center gap-2 text-muted-foreground/60 text-[10px] font-black uppercase tracking-widest">
+                    <Users className="h-4 w-4 text-primary" /> Réu / Requerido
                   </div>
                   <div className="space-y-3">
                     <Input 
-                      className="bg-white/5 border-white/10 text-xs h-9 focus:ring-primary"
+                      className="bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 text-xs h-10 rounded-xl focus:ring-4 focus:ring-primary/10 font-bold"
                       placeholder="Nome do Réu"
                       value={previewProc.reu}
                       onChange={(e) => updateResultLocally(previewProc.id, { reu: e.target.value })}
@@ -568,7 +590,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                     <Button 
                       variant={clientPolos[previewProc.id] === 'reu' ? 'default' : 'outline'}
                       size="sm"
-                      className="w-full rounded-xl gap-2 font-bold text-[10px] h-8"
+                      className="w-full rounded-xl gap-2 font-black text-[10px] h-9 uppercase tracking-widest shadow-premium"
                       onClick={() => setClientPolos({...clientPolos, [previewProc.id]: 'reu'})}
                     >
                       {clientPolos[previewProc.id] === 'reu' && <ShieldCheck className="h-3 w-3" />}
@@ -578,20 +600,20 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                 </div>
               </div>
 
-              {/* Vara e Comarca */}
-              <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+              {/* Vara e Comarca Premium */}
+              <div className="grid grid-cols-2 gap-4 bg-black/[0.02] dark:bg-white/5 p-5 rounded-[1.5rem] border border-black/5 dark:border-white/5 shadow-inner">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] text-white/40 uppercase font-bold">Vara / Órgão</Label>
+                  <Label className="text-[10px] text-muted-foreground/40 uppercase font-black tracking-widest ml-1">Vara / Órgão</Label>
                   <Input 
-                    className="bg-transparent border-white/10 text-xs h-8"
+                    className="bg-transparent border-black/10 dark:border-white/10 text-xs h-9 font-bold"
                     value={previewProc.vara}
                     onChange={(e) => updateResultLocally(previewProc.id, { vara: e.target.value })}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] text-white/40 uppercase font-bold">Comarca / UF</Label>
+                  <Label className="text-[10px] text-muted-foreground/40 uppercase font-black tracking-widest ml-1">Comarca / UF</Label>
                   <Input 
-                    className="bg-transparent border-white/10 text-xs h-8"
+                    className="bg-transparent border-black/10 dark:border-white/10 text-xs h-9 font-bold"
                     value={previewProc.comarca}
                     onChange={(e) => updateResultLocally(previewProc.id, { comarca: e.target.value })}
                   />
@@ -601,12 +623,14 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
               <Separator className="bg-white/5" />
 
               <div className="space-y-4">
-                <div className="text-white/60 text-[11px] font-bold uppercase tracking-widest flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span>Histórico de Movimentações (Linha do Tempo)</span>
+                <div className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                    <Clock className="h-3 w-3" />
+                  </div>
+                  <span>Linha do Tempo de Movimentações</span>
                 </div>
                 
-                <div className="bg-white/5 rounded-2xl p-6 border border-white/5 max-h-[250px] overflow-y-auto custom-scrollbar space-y-6 relative pl-8">
+                <div className="bg-black/[0.02] dark:bg-white/5 rounded-[1.5rem] p-6 border border-black/5 dark:border-white/5 max-h-[250px] overflow-y-auto custom-scrollbar space-y-6 relative pl-8 shadow-inner">
                   {/* Linha vertical da timeline */}
                   <div className="absolute left-[31px] top-6 bottom-6 w-0.5 bg-primary/20" />
                   
@@ -614,7 +638,7 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                     previewProc.andamentos.map((and, idx) => (
                       <div key={idx} className="relative">
                         {/* Pontinho */}
-                        <div className="absolute -left-[37px] top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-slate-950" />
+                        <div className="absolute -left-[37px] top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-card" />
                         
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
@@ -622,30 +646,30 @@ export const JudicialSyncContent: React.FC<JudicialSyncContentProps> = ({
                               {and.data ? new Date(and.data).toLocaleDateString('pt-BR') : 'Sem data'}
                             </span>
                             {and.fase && (
-                              <Badge variant="outline" className="text-[8px] h-4 py-0 border-primary/30 text-primary/60">
+                              <Badge variant="outline" className="text-[8px] h-4 py-0 border-primary/30 text-primary/60 rounded-md font-black">
                                 {and.fase}
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs font-medium text-white/80 leading-relaxed">
+                          <p className="text-xs font-bold text-foreground/80 leading-relaxed">
                             {and.resumo}
                           </p>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-8 opacity-30">
+                    <div className="flex flex-col items-center justify-center py-8 opacity-20">
                        <AlertCircle className="h-8 w-8 mb-2" />
-                       <p className="text-xs uppercase font-bold tracking-tighter">Nenhum andamento extraído</p>
+                       <p className="text-[10px] uppercase font-black tracking-widest">Nenhum andamento extraído</p>
                     </div>
                   )}
                 </div>
               </div>
 
               <DialogFooter className="pt-2">
-                <Button variant="ghost" onClick={() => setPreviewProc(null)} className="text-white/40 text-xs font-bold">Fechar</Button>
+                <Button variant="ghost" onClick={() => setPreviewProc(null)} className="text-muted-foreground/40 text-[10px] font-black uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5 h-11 rounded-xl transition-all">Fechar</Button>
                 <Button 
-                  className="bg-primary hover:bg-primary/80 font-bold px-8 shadow-lg shadow-primary/20"
+                  className="bg-primary hover:bg-primary/90 font-black uppercase tracking-widest text-[10px] px-8 h-11 rounded-xl shadow-premium transition-all"
                   onClick={() => {
                     toggleSelect(previewProc.id);
                     setPreviewProc(null);
@@ -684,16 +708,16 @@ export const JudicialSyncDialog: React.FC<JudicialSyncDialogProps> = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-[1200px] w-[95vw] bg-background/45 backdrop-blur-3xl border-white/5 p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh]">
-        <DialogHeader className="p-8 pb-4 border-b border-white/5 bg-transparent">
+      <DialogContent className="max-w-[1200px] w-[95vw] glass-card border border-black/5 dark:border-white/10 p-0 overflow-hidden flex flex-col h-[90vh] max-h-[90vh] shadow-2xl">
+        <DialogHeader className="p-8 pb-4 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02]">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-inner">
               <Database className="h-6 w-6" />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-bold">Sincronização Judicial (PJE/CNJ)</DialogTitle>
-              <DialogDescription className="text-white/40">
-                Busque processos vinculados à sua OAB e importe-os seletivamente.
+              <DialogTitle className="text-2xl font-black tracking-tight">Sincronização Judicial (PJE/CNJ)</DialogTitle>
+              <DialogDescription className="text-muted-foreground/60 font-medium">
+                Busque processos vinculados à sua OAB e importe-os seletivamente para seu escritório.
               </DialogDescription>
             </div>
           </div>

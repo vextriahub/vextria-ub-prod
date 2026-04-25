@@ -33,14 +33,14 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
     switch (status) {
       case 'Em andamento':
       case 'ativo':
-        return 'border-blue-500/50 text-blue-400 bg-blue-500/5 font-bold';
+        return 'border-blue-500/20 text-blue-600 dark:text-blue-400 bg-blue-500/5 font-black';
       case 'Concluído':
       case 'encerrado':
-        return 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5 font-bold';
+        return 'border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 font-black';
       case 'Suspenso':
-        return 'border-orange-500/50 text-orange-400 bg-orange-500/5 font-bold';
+        return 'border-orange-500/20 text-orange-600 dark:text-orange-400 bg-orange-500/5 font-black';
       default:
-        return 'border-muted/30 text-muted-foreground bg-transparent';
+        return 'border-black/5 dark:border-white/10 text-muted-foreground bg-black/5 dark:bg-white/5 font-black';
     }
   };
 
@@ -84,7 +84,7 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
 
   return (
     <Card 
-      className="relative overflow-hidden border-white/5 bg-card/40 backdrop-blur-md group cursor-pointer hover:border-primary/20 transition-all duration-500 rounded-[2rem]"
+      className="relative overflow-hidden border border-black/5 dark:border-white/10 bg-white dark:bg-black/20 backdrop-blur-md group cursor-pointer hover:border-primary/20 transition-all duration-500 rounded-[2rem] shadow-premium hover:-translate-y-1"
       onClick={onClick}
     >
       <div className={`absolute top-0 left-0 w-1 h-full opacity-40 group-hover:opacity-100 transition-all duration-500 ${getBarColor()}`} />
@@ -94,11 +94,11 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
           <div className="flex-1 min-w-0 pr-8">
             {/* Status Badge */}
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <Badge variant="outline" className={cn("px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest", getStatusColor(processo.status))}>
+              <Badge variant="outline" className={cn("px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-md", getStatusColor(processo.status))}>
                 {getStatusLabel(processo.status)}
               </Badge>
               {processo.tipoProcesso && (
-                <span className="text-[9px] bg-white/5 text-white/50 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider border border-white/5">
+                <span className="text-[9px] bg-black/5 dark:bg-white/5 text-muted-foreground/60 dark:text-white/50 px-2 py-0.5 rounded-full font-black uppercase tracking-wider border border-black/5 dark:border-white/5">
                   {processo.tipoProcesso}
                 </span>
               )}
@@ -167,11 +167,11 @@ export const ProcessoCard: React.FC<ProcessoCardProps> = ({
           </div>
         )}
 
-        {/* Valor da causa */}
+        {/* Valor da causa Premium */}
         {processo.valorCausa && processo.valorCausa > 0 && (
-          <div className="bg-emerald-500/5 p-2.5 rounded-xl border border-emerald-500/10 flex items-center justify-between">
-            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Valor da Causa</span>
-            <span className="text-sm font-bold text-emerald-400">
+          <div className="bg-emerald-500/[0.03] dark:bg-emerald-500/5 p-3 rounded-2xl border border-emerald-500/10 flex items-center justify-between group-hover:bg-emerald-500/[0.05] transition-all">
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-500 font-black uppercase tracking-widest">Valor da Causa</span>
+            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(processo.valorCausa)}
             </span>
           </div>

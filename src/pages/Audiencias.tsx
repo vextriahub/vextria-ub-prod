@@ -110,7 +110,7 @@ const Audiencias = () => {
             <div className="p-2 rounded-xl bg-primary/10">
               <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            <h1 className="text-2xl md:text-4xl font-black tracking-tight text-foreground">
               Audiências
             </h1>
           </div>
@@ -118,12 +118,12 @@ const Audiencias = () => {
             Gerencie seus compromissos judiciais e sustentações orais.
           </p>
         </div>
-        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
+        <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-premium">
           {!multiSelect.isNoneSelected && (
             <Button
               variant="destructive"
               onClick={handleDeleteSelected}
-              className="rounded-xl h-10 md:h-12 px-4 md:px-6"
+              className="rounded-xl h-12 px-6 font-black uppercase text-xs tracking-widest shadow-lg shadow-red-500/20"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Excluir ({multiSelect.selectedCount})
@@ -134,7 +134,7 @@ const Audiencias = () => {
       </div>
 
       {/* Filtros */}
-      <Card className="border-white/5 bg-card/40 backdrop-blur-sm">
+      <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-premium">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -143,12 +143,12 @@ const Audiencias = () => {
                 placeholder="Buscar por título ou cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-11 bg-muted/20 border-white/5 rounded-xl"
+                className="pl-10 h-12 bg-black/[0.02] dark:bg-muted/20 border-black/5 dark:border-white/5 rounded-xl font-medium"
               />
             </div>
             <div className="flex gap-3">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-44 h-11 bg-muted/20 border-white/5 rounded-xl font-medium">
+                <SelectTrigger className="w-full md:w-44 h-12 bg-black/[0.02] dark:bg-muted/20 border-black/5 dark:border-white/5 rounded-xl font-bold">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
@@ -161,7 +161,7 @@ const Audiencias = () => {
                 </SelectContent>
               </Select>
               <Select value={tipoFilter} onValueChange={setTipoFilter}>
-                <SelectTrigger className="w-full md:w-44 h-11 bg-muted/20 border-white/5 rounded-xl font-medium">
+                <SelectTrigger className="w-full md:w-44 h-12 bg-black/[0.02] dark:bg-muted/20 border-black/5 dark:border-white/5 rounded-xl font-bold">
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
@@ -177,126 +177,138 @@ const Audiencias = () => {
         </CardContent>
       </Card>
 
-            <Tabs defaultValue="lista" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="lista">Lista</TabsTrigger>
-                <TabsTrigger value="calendario">Calendário</TabsTrigger>
-              </TabsList>
+      <Tabs defaultValue="lista" className="space-y-8">
+        <div className="glass-card p-2 rounded-3xl inline-flex h-auto border border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/5 shadow-inner">
+          <TabsList className="bg-transparent h-auto p-0 gap-1">
+            <TabsTrigger value="lista" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
+              Lista
+            </TabsTrigger>
+            <TabsTrigger value="calendario" className="rounded-2xl px-10 py-3 font-black text-[10px] uppercase tracking-widest data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 transition-all">
+              Calendário
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-              <TabsContent value="lista" className="space-y-4">
-                {/* Selection Controls */}
-                {filteredAudiencias.length > 0 && (
-                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                    <div className="flex items-center gap-4">
+        <TabsContent value="lista" className="space-y-6">
+          {/* Selection Controls */}
+          {filteredAudiencias.length > 0 && (
+            <div className="flex items-center justify-between p-4 bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10 rounded-2xl">
+              <div className="flex items-center gap-4">
+                <Checkbox
+                  checked={multiSelect.isAllSelected}
+                  onCheckedChange={() => 
+                    multiSelect.isAllSelected ? multiSelect.clearSelection() : multiSelect.selectAll()
+                  }
+                  className="rounded-md h-5 w-5"
+                />
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                  {multiSelect.selectedCount > 0 ? (
+                    `${multiSelect.selectedCount} de ${filteredAudiencias.length} selecionada(s)`
+                  ) : (
+                    "Selecionar todas"
+                  )}
+                </span>
+              </div>
+              {multiSelect.selectedCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={multiSelect.clearSelection}
+                  className="h-8 rounded-lg font-black uppercase text-[10px] tracking-widest text-primary hover:bg-primary/10"
+                >
+                  Limpar seleção
+                </Button>
+              )}
+            </div>
+          )}
+
+          <div className="grid gap-6">
+            {filteredAudiencias.map((audiencia) => (
+              <Card key={audiencia.id} className={`group hover-lift rounded-[2rem] border border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl shadow-premium transition-all duration-300 ${
+                multiSelect.isSelected(audiencia.id) ? "ring-2 ring-primary bg-primary/[0.02]" : ""
+              }`}>
+                <CardContent className="p-8">
+                  <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex items-start gap-6 flex-1">
                       <Checkbox
-                        checked={multiSelect.isAllSelected}
-                        onCheckedChange={() => 
-                          multiSelect.isAllSelected ? multiSelect.clearSelection() : multiSelect.selectAll()
-                        }
+                        checked={multiSelect.isSelected(audiencia.id)}
+                        onCheckedChange={() => multiSelect.toggleItem(audiencia.id)}
+                        className="rounded-md h-6 w-6 mt-1"
                       />
-                      <span className="text-sm text-muted-foreground">
-                        {multiSelect.selectedCount > 0 ? (
-                          `${multiSelect.selectedCount} de ${filteredAudiencias.length} selecionada(s)`
-                        ) : (
-                          "Selecionar todas"
-                        )}
-                      </span>
-                    </div>
-                    {multiSelect.selectedCount > 0 && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={multiSelect.clearSelection}
-                      >
-                        Limpar seleção
-                      </Button>
-                    )}
-                  </div>
-                )}
-
-                <div className="grid gap-4">
-                  {filteredAudiencias.map((audiencia) => (
-                    <Card key={audiencia.id} className={`hover:shadow-md transition-all duration-200 ${
-                      multiSelect.isSelected(audiencia.id) ? "ring-2 ring-primary" : ""
-                    }`}>
-                      <CardContent className="pt-6">
-                        <div className="flex flex-col lg:flex-row gap-4">
-                          <Checkbox
-                            checked={multiSelect.isSelected(audiencia.id)}
-                            onCheckedChange={() => multiSelect.toggleItem(audiencia.id)}
-                            className="self-start"
-                          />
-                          <div className="flex-1 space-y-3">
-                            <div className="flex items-start justify-between">
-                              <h3 className="font-semibold text-lg">{audiencia.titulo}</h3>
-                              <Badge className={`${getStatusColor(audiencia.status)} text-white`}>
-                                {getStatusText(audiencia.status)}
-                              </Badge>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <span>{new Date(audiencia.data).toLocaleDateString('pt-BR')}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-muted-foreground" />
-                                <span>{audiencia.hora}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-muted-foreground" />
-                                <span>{audiencia.local}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4 text-muted-foreground" />
-                                <span>{audiencia.cliente}</span>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              <Badge variant="outline">{audiencia.tipo}</Badge>
-                              {audiencia.observacao && (
-                                <p className="text-sm text-muted-foreground italic">
-                                  {audiencia.observacao}
-                                </p>
-                              )}
-                            </div>
+                      <div className="flex-1 space-y-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <h3 className="font-black text-2xl tracking-tight group-hover:text-primary transition-colors">{audiencia.titulo}</h3>
+                          <Badge className={cn("px-6 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm", getStatusColor(audiencia.status))}>
+                            {getStatusText(audiencia.status)}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          <div className="flex items-center gap-3 bg-black/[0.03] dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/10">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="text-[11px] font-black uppercase tracking-widest opacity-70">{new Date(audiencia.data).toLocaleDateString('pt-BR')}</span>
                           </div>
-                          
-                          <div className="flex lg:flex-col gap-2">
-                            <Button variant="outline" size="sm">
-                              <FileText className="h-4 w-4 mr-2" />
-                              Detalhes
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              Editar
-                            </Button>
+                          <div className="flex items-center gap-3 bg-black/[0.03] dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/10">
+                            <Clock className="h-4 w-4 text-primary" />
+                            <span className="text-[11px] font-black uppercase tracking-widest opacity-70">{audiencia.hora}</span>
+                          </div>
+                          <div className="flex items-center gap-3 bg-black/[0.03] dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/10">
+                            <MapPin className="h-4 w-4 text-primary" />
+                            <span className="text-[11px] font-black uppercase tracking-widest opacity-70 truncate">{audiencia.local}</span>
+                          </div>
+                          <div className="flex items-center gap-3 bg-black/[0.03] dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/10">
+                            <User className="h-4 w-4 text-primary" />
+                            <span className="text-[11px] font-black uppercase tracking-widest opacity-70 truncate">{audiencia.cliente}</span>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
 
-              <TabsContent value="calendario" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Calendário de Audiências</CardTitle>
-                    <CardDescription>
-                      Visualização mensal das suas audiências agendadas
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center text-muted-foreground py-8">
-                      <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Calendário de audiências em desenvolvimento</p>
-                      <p className="text-sm">Em breve você poderá visualizar suas audiências em formato de calendário</p>
+                        <div className="flex items-center justify-between pt-4 border-t border-black/5 dark:border-white/5">
+                          <Badge variant="outline" className="border-primary/20 text-primary bg-primary/5 font-black uppercase text-[10px] tracking-widest rounded-xl px-4 py-1">
+                            {audiencia.tipo}
+                          </Badge>
+                          {audiencia.observacao && (
+                            <p className="text-xs text-muted-foreground font-medium italic opacity-60">
+                              "{audiencia.observacao}"
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                    
+                    <div className="flex lg:flex-col gap-3 min-w-[140px]">
+                      <Button className="rounded-xl h-11 font-black uppercase text-[10px] tracking-widest bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Detalhes
+                      </Button>
+                      <Button variant="outline" className="rounded-xl h-11 font-black uppercase text-[10px] tracking-widest border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5">
+                        Editar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="calendario" className="space-y-6">
+          <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-premium">
+            <CardHeader className="p-8">
+              <CardTitle className="text-2xl font-black tracking-tight">Calendário de Audiências</CardTitle>
+              <CardDescription className="font-medium text-muted-foreground">
+                Visualização mensal das suas audiências agendadas
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 pt-0">
+              <div className="text-center text-muted-foreground py-20 bg-black/[0.01] dark:bg-white/[0.01] rounded-[2rem] border border-dashed border-black/10 dark:border-white/10">
+                <Calendar className="h-16 w-16 mx-auto mb-6 opacity-10" />
+                <p className="font-black uppercase tracking-widest text-xs mb-2">Calendário em desenvolvimento</p>
+                <p className="text-sm font-medium opacity-60">Em breve você poderá visualizar suas audiências em formato de calendário</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
             <DeleteConfirmDialog
               open={deleteDialogOpen}

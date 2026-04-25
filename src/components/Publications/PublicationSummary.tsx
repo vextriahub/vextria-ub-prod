@@ -24,7 +24,7 @@ interface SummaryCardProps {
 const SummaryCard = ({ title, value, description, icon: Icon, color, trend, onClick }: SummaryCardProps) => (
   <Card 
     className={cn(
-      "border-border bg-card transition-all duration-300 shadow-xl rounded-3xl overflow-hidden relative group",
+      "border-black/5 dark:border-border bg-card transition-all duration-300 shadow-xl rounded-3xl overflow-hidden relative group",
       onClick ? "cursor-pointer hover:border-primary/50 hover:shadow-primary/5 active:scale-[0.98]" : ""
     )}
     onClick={onClick}

@@ -16,7 +16,7 @@ const Escritorio = () => {
               <div className="p-2 rounded-xl bg-primary/10">
                 <Building2 className="h-6 w-6 md:h-8 md:w-8 text-primary" />
               </div>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+              <h1 className="text-2xl md:text-4xl font-black tracking-tight text-foreground">
                 Gestão do Escritório
               </h1>
             </div>
@@ -27,14 +27,14 @@ const Escritorio = () => {
         </div>
 
         <Tabs defaultValue="configuracoes" className="space-y-8">
-          <div className="border-b border-white/5 bg-background/30 backdrop-blur-sm p-1 rounded-2xl w-fit">
+          <div className="border-b border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-background/30 backdrop-blur-sm p-1.5 rounded-2xl w-fit">
             <TabsList className="h-11 gap-1 bg-transparent border-none">
-              <TabsTrigger value="configuracoes" className="rounded-xl px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 font-bold flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <TabsTrigger value="configuracoes" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all">
+                <Settings className="h-3.5 w-3.5" />
                 Configurações
               </TabsTrigger>
-              <TabsTrigger value="usuarios" className="rounded-xl px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary border border-transparent data-[state=active]:border-primary/20 font-bold flex items-center gap-2">
-                <Users className="h-4 w-4" />
+              <TabsTrigger value="usuarios" className="rounded-xl px-6 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg shadow-primary/20 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all">
+                <Users className="h-3.5 w-3.5" />
                 Usuários
               </TabsTrigger>
             </TabsList>

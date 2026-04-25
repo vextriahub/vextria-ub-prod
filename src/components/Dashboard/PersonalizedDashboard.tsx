@@ -37,24 +37,24 @@ const createWidgets = (userRole: any): DashboardWidget[] => [
     id: 'quick-stats',
     title: 'Resumo Rápido',
     description: 'Suas estatísticas principais',
-    icon: <BarChart3 className="h-5 w-5" />,
+    icon: <BarChart3 className="h-5 w-5 text-primary" />,
     content: (
       <div className="grid grid-cols-2 gap-4">
-        <div className="text-center">
-          <p className="text-2xl font-bold text-blue-600">12</p>
-          <p className="text-xs text-muted-foreground">Processos Ativos</p>
+        <div className="text-center p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
+          <p className="text-3xl font-black text-blue-600">12</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-blue-600/60">Processos</p>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-green-600">8</p>
-          <p className="text-xs text-muted-foreground">Tarefas Pendentes</p>
+        <div className="text-center p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
+          <p className="text-3xl font-black text-emerald-600">8</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/60">Tarefas</p>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-orange-600">3</p>
-          <p className="text-xs text-muted-foreground">Prazos Próximos</p>
+        <div className="text-center p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10">
+          <p className="text-3xl font-black text-orange-600">3</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-orange-600/60">Prazos</p>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-purple-600">15</p>
-          <p className="text-xs text-muted-foreground">Clientes Ativos</p>
+        <div className="text-center p-4 rounded-2xl bg-purple-500/5 border border-purple-500/10">
+          <p className="text-3xl font-black text-purple-600">15</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-purple-600/60">Clientes</p>
         </div>
       </div>
     ),
@@ -68,26 +68,32 @@ const createWidgets = (userRole: any): DashboardWidget[] => [
     icon: <AlertTriangle className="h-5 w-5" />,
     content: (
       <div className="space-y-3">
-        <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm">Resposta à contestação</span>
+        <div className="flex items-center justify-between p-3 bg-red-500/[0.03] dark:bg-red-500/5 border border-red-500/10 rounded-2xl group/item hover:bg-red-500/10 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-red-500/10 text-red-500">
+              <AlertTriangle className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold">Resposta à contestação</span>
           </div>
-          <Badge variant="destructive" className="text-xs">2 dias</Badge>
+          <Badge className="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">2 dias</Badge>
         </div>
-        <div className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-yellow-500" />
-            <span className="text-sm">Audiência preparação</span>
+        <div className="flex items-center justify-between p-3 bg-amber-500/[0.03] dark:bg-amber-500/5 border border-amber-500/10 rounded-2xl group/item hover:bg-amber-500/10 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+              <Clock className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold">Audiência preparação</span>
           </div>
-          <Badge variant="secondary" className="text-xs">5 dias</Badge>
+          <Badge className="bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">5 dias</Badge>
         </div>
-        <div className="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-orange-500" />
-            <span className="text-sm">Relatório mensal</span>
+        <div className="flex items-center justify-between p-3 bg-blue-500/[0.03] dark:bg-blue-500/5 border border-blue-500/10 rounded-2xl group/item hover:bg-blue-500/10 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+              <FileText className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-bold">Relatório mensal</span>
           </div>
-          <Badge variant="outline" className="text-xs">1 semana</Badge>
+          <Badge className="bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">1 semana</Badge>
         </div>
       </div>
     ),
@@ -201,23 +207,23 @@ const createWidgets = (userRole: any): DashboardWidget[] => [
     icon: <BarChart3 className="h-5 w-5" />,
     content: (
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-sm">Novos Clientes</span>
-          <Badge className="bg-green-100 text-green-800">+12</Badge>
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-black/[0.02] dark:bg-white/5 border border-black/5 dark:border-white/5">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Novos Clientes</span>
+          <Badge className="bg-emerald-500 text-white font-black rounded-lg">+12</Badge>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm">Processos Concluídos</span>
-          <Badge className="bg-blue-100 text-blue-800">8</Badge>
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-black/[0.02] dark:bg-white/5 border border-black/5 dark:border-white/5">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Concluídos</span>
+          <Badge className="bg-blue-500 text-white font-black rounded-lg">8</Badge>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm">Faturamento</span>
-          <Badge className="bg-purple-100 text-purple-800">R$ 45.2k</Badge>
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-black/[0.02] dark:bg-white/5 border border-black/5 dark:border-white/5">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Faturamento</span>
+          <Badge className="bg-purple-500 text-white font-black rounded-lg">R$ 45.2k</Badge>
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm">Satisfação Cliente</span>
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm">4.8</span>
+        <div className="flex justify-between items-center p-3 rounded-2xl bg-black/[0.02] dark:bg-white/5 border border-black/5 dark:border-white/5">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Satisfação</span>
+          <div className="flex items-center gap-1.5">
+            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+            <span className="text-lg font-black text-amber-500">4.8</span>
           </div>
         </div>
       </div>
@@ -371,18 +377,20 @@ export const PersonalizedDashboard: React.FC = () => {
         {visibleWidgets.map(widget => (
           <Card 
             key={widget.id} 
-            className={cn("transition-all duration-200", getGridClass(widget.size))}
+            className={cn("glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden shadow-premium hover-lift transition-all duration-300", getGridClass(widget.size))}
           >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                {widget.icon}
+            <CardHeader className="pb-3 border-b border-black/5 dark:border-white/5 bg-black/[0.01] dark:bg-white/[0.01]">
+              <CardTitle className="flex items-center gap-3 text-lg font-black">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  {widget.icon}
+                </div>
                 {widget.title}
               </CardTitle>
-              <CardDescription className="text-sm">
+              <CardDescription className="text-xs font-medium uppercase tracking-widest opacity-60">
                 {widget.description}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               {widget.content}
             </CardContent>
           </Card>

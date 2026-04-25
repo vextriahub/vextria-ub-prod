@@ -59,7 +59,7 @@ export function DeadlinesCard() {
   };
 
   return (
-    <Card className={`h-full flex flex-col border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500 ${hasUrgent ? "border-rose-500/10" : ""}`}>
+    <Card className={`h-full flex flex-col border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden group hover:shadow-xl transition-all duration-500 ${hasUrgent ? "border-rose-500/20" : ""}`}>
       {/* Urgent pulse indicator */}
       {hasUrgent && (
         <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-rose-500 to-transparent" />
@@ -107,7 +107,7 @@ export function DeadlinesCard() {
             </div>
 
             {/* Stats estilo eLaw */}
-            <div className="bg-background/40 rounded-2xl p-4 border border-white/5 mb-4">
+            <div className="bg-black/[0.03] dark:bg-background/40 rounded-2xl p-4 border border-black/5 dark:border-white/5 mb-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs text-muted-foreground font-medium">Prazos Urgentes</span>
                 <span className={`text-2xl font-black ${hasUrgent ? "text-rose-500" : "text-muted-foreground"}`}>
@@ -150,16 +150,19 @@ export function DeadlinesCard() {
             <Button
               variant={hasUrgent ? "default" : "outline"}
               size="sm"
-              className={`rounded-xl font-bold text-xs h-9 gap-1.5 ${hasUrgent ? "bg-rose-500 hover:bg-rose-600 text-white" : "border-white/10 hover:bg-white/5"}`}
+              className={cn(
+                "rounded-xl font-black uppercase text-[10px] tracking-widest h-11 px-8 gap-2 shadow-lg",
+                hasUrgent ? "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20" : "border-black/5 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5"
+              )}
               onClick={() => hasUrgent ? navigate("/prazos") : setQuickPrazoOpen(true)}
             >
-              <Plus className="h-3.5 w-3.5" /> {hasUrgent ? "Ver Prazos Urgentes" : "Novo Prazo"}
+              <Plus className="h-4 w-4" /> {hasUrgent ? "Ver Prazos Urgentes" : "Novo Prazo"}
             </Button>
           </div>
         ) : (
           <div className="w-full space-y-2">
             {prazos.map((p, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-background/40 border border-white/5 cursor-pointer hover:border-rose-500/20 transition-colors">
+              <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-black/[0.02] dark:bg-background/40 border border-black/5 dark:border-white/5 cursor-pointer hover:border-rose-500/20 transition-colors">
                 <Flag className="h-4 w-4 text-rose-500 shrink-0" />
                 <div className="flex-1 text-left">
                   <p className="text-sm font-bold truncate">{p.titulo}</p>
@@ -176,7 +179,7 @@ export function DeadlinesCard() {
 
       {/* Quick Prazo Dialog */}
       <Dialog open={quickPrazoOpen} onOpenChange={setQuickPrazoOpen}>
-        <DialogContent className="rounded-[2rem] border-white/10 bg-card/90 backdrop-blur-2xl sm:max-w-md">
+        <DialogContent className="rounded-[2rem] border-black/5 dark:border-white/10 bg-card/90 backdrop-blur-2xl sm:max-w-md p-8 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-black">Novo Prazo Rápido</DialogTitle>
           </DialogHeader>
@@ -210,10 +213,10 @@ export function DeadlinesCard() {
                 Prioridade
               </Label>
               <Select value={prazoPriority} onValueChange={setPrazoPriority}>
-                <SelectTrigger className="rounded-xl border-white/10 bg-white/5">
+                <SelectTrigger className="rounded-xl border-black/5 dark:border-white/10 bg-black/[0.03] dark:bg-white/5 h-12 font-bold">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-white/10">
+                <SelectContent className="rounded-2xl border-black/5 dark:border-white/10 shadow-2xl">
                   <SelectItem value="alta">🔴 Alta</SelectItem>
                   <SelectItem value="media">🟡 Média</SelectItem>
                   <SelectItem value="baixa">🟢 Baixa</SelectItem>

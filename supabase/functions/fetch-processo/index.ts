@@ -32,6 +32,66 @@ const UF_TO_TRIBUNAL: Record<string, string> = {
   "SP": "tjsp", "TO": "tjto",
 };
 
+// -------- Helpers de extração de partes (Expert Edition) --------
+const ATIVO = [
+  "REQUERENTE", "AUTOR", "AUTORA", "EXEQUENTE", "RECLAMANTE",
+  "APELANTE", "AGRAVANTE", "EMBARGANTE", "RECORRENTE", "IMPETRANTE", "POLO ATIVO",
+];
+const PASSIVO = [
+  "REQUERIDO", "REQUERIDA", "RÉU", "REU", "EXECUTADO", "RECLAMADO",
+  "APELADO", "AGRAVADO", "EMBARGADO", "RECORRIDO", "IMPETRIDO", "POLO PASSIVO",
+];
+const TERMINADORES = [
+  ...ATIVO, ...PASSIVO,
+  "ADVOGADO", "ADVOGADA", "ADVOGADO\\(A\\)", "CLASSE", "ASSUNTO",
+  "SENTENÇA", "DECISÃO", "DESPACHO", "CERTIDÃO", "FINALIDADE",
+  "DESTINAT", "OBSERVAÇÃO", "OBSERVACAO", "ATO ORDINATÓRIO", "EMENTA",
+];
+
+// -------- Classificador de fase processual (Expert Edition) --------
+const FASES: Array<[RegExp, string]> = [
+  [/ARQUIVAD[OA]\b|BAIXA\s+DEFINITIVA/i, "Arquivado"],
+  [/CUMPRIMENTO\s+DE\s+SENTEN[ÇC]A/i, "Cumprimento de sentença"],
+  [/EXECU[ÇC][ÃA]O\s+FISCAL/i, "Execução fiscal"],
+  [/EXECU[ÇC][ÃA]O/i, "Execução"],
+  [/RECURSO\s+ESPECIAL|AGRAVO\s+EM\s+RECURSO\s+ESPECIAL/i, "Recurso especial"],
+  [/RECURSO\s+EXTRAORDIN[ÁA]RIO/i, "Recurso extraordinário"],
+  [/APELA[ÇC][ÃA]O/i, "Recurso (apelação)"],
+  [/AGRAVO\s+DE\s+INSTRUMENTO/i, "Recurso (agravo)"],
+  [/EMBARGOS\s+DE\s+DECLARA[ÇC][ÃA]O/i, "Embargos de declaração"],
+  [/SENTEN[ÇC]A/i, "Sentenciado"],
+  [/AUDI[ÊE]NCIA/i, "Audiência designada"],
+  [/DESPACHO|DECIS[ÃA]O\s+INTERLOCUT[ÓO]RIA/i, "Em andamento (decisão)"],
+  [/ATO\s+ORDINAT[ÓO]RIO|INTIMA[ÇC][ÃA]O/i, "Em andamento (intimação)"],
+  [/CONCLUS[ÃA]O/i, "Concluso"],
+  [/CITA[ÇC][ÃA]O/i, "Citação"],
+];
+
+function classifyFase(text: string): string {
+  if (!text) return "Não identificada";
+  for (const [re, label] of FASES) if (re.test(text)) return label;
+  return "Em andamento";
+}
+
+function summarize(descricao: string, max = 160): string {
+  if (!descricao) return "";
+  const clean = descricao.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max).replace(/\s\S*$/, "") + "…";
+}
+
+function buildAndamentos(rawMovs: any[]): Array<{ data: string | null; resumo: string; fase: string }> {
+  if (!Array.isArray(rawMovs)) return [];
+  return rawMovs
+    .slice(0, 30) // Pegamos mais no CNJ
+    .map((a: any) => ({
+      data: a?.dataHora ?? a?.data ?? a?.dt ?? null,
+      resumo: summarize(a?.descricao ?? a?.titulo ?? a?.nome ?? a?.texto ?? "", 400),
+      fase: classifyFase(a?.descricao ?? a?.titulo ?? a?.texto ?? ""),
+    }))
+    .filter((a) => a.resumo.length > 0);
+}
+
 const mapProcess = (hit: any, tribunalSigla?: string) => {
   const source = hit?._source;
   if (!source) {
@@ -42,6 +102,7 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
       partes: 'Não ident.',
       tribunal: tribunalSigla?.toUpperCase() || '---',
       ultimoAndamento: null,
+      andamentos: [],
       faseProcessual: '---',
       valorCausa: 0
     };
@@ -49,19 +110,23 @@ const mapProcess = (hit: any, tribunalSigla?: string) => {
 
   const autores = source.partes?.filter((p: any) => p.tipo === 'Ativa' || p.tipo === 'Requerente')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
   const reus = source.partes?.filter((p: any) => p.tipo === 'Passiva' || p.tipo === 'Requerido')?.map((p: any) => p.nome)?.join(', ') || 'Não identificado';
-  const lastMovement = source.movimentacoes?.[0] || null;
+  
+  const andamentos = buildAndamentos(source.movimentacoes || []);
 
   return {
     id: hit._id,
     numeroProcesso: source.numeroProcesso || 'N/A',
     titulo: `${autores} x ${reus}`,
     partes: `${autores} x ${reus}`,
+    autor: autores,
+    reu: reus,
     tribunal: source.tribunal || tribunalSigla?.toUpperCase() || 'Não ident.',
-    ultimoAndamento: lastMovement ? {
-      descricao: lastMovement.descricao,
-      data: lastMovement.dataHora
+    ultimoAndamento: andamentos[0] ? {
+      descricao: andamentos[0].resumo,
+      data: andamentos[0].data
     } : null,
-    faseProcessual: source.classe?.nome || 'Não identificada',
+    andamentos,
+    faseProcessual: andamentos[0]?.fase ?? source.classe?.nome || 'Não identificada',
     valorCausa: source.valorCausa || 0,
     vara: source.orgaoJulgador?.nome || '',
     comarca: source.orgaoJulgador?.codigoMunicipioIBGE || '',

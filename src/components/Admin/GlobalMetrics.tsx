@@ -27,11 +27,11 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, sub, icon: Icon, color, bg, badge, badgeColor, trend }: MetricCardProps) {
   return (
-    <Card className="relative overflow-hidden group border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-0.5">
+    <Card className="relative overflow-hidden group border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] hover:shadow-2xl transition-all duration-500 hover:-translate-y-0.5">
       <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500", bg)} />
       <CardContent className="p-5 relative z-10">
         <div className="flex items-start justify-between mb-3">
-          <div className={cn("p-2.5 rounded-2xl border border-white/10 group-hover:scale-110 transition-transform duration-300", bg, color)}>
+          <div className={cn("p-2.5 rounded-2xl border border-black/5 dark:border-white/10 group-hover:scale-110 transition-transform duration-300", bg, color)}>
             <Icon className="h-5 w-5" />
           </div>
           {badge && (
@@ -98,12 +98,12 @@ export const GlobalMetrics: React.FC = () => {
     <div className="space-y-6 animate-in fade-in duration-700">
 
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary/20 via-card/80 to-background border border-white/10 p-8 shadow-premium">
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary/10 via-card/80 to-background border border-black/5 dark:border-white/10 p-8 shadow-premium">
         <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-secondary/10 rounded-full blur-[60px] pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">
               <ShieldCheck className="h-3 w-3" /> Super Admin · Modo CEO
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight">
@@ -194,8 +194,8 @@ export const GlobalMetrics: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Distribuição de planos */}
-        <Card className="border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl overflow-hidden">
-          <div className="p-6 border-b border-white/5">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-premium">
+          <div className="p-6 border-b border-black/5 dark:border-white/5">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-primary/10 text-primary">
                 <Globe className="h-4 w-4" />
@@ -213,7 +213,7 @@ export const GlobalMetrics: React.FC = () => {
                   ? offices.filter(o => o.is_lifetime).length
                   : offices.filter(o => o.plan === plan && !o.is_lifetime).length;
                 return (
-                  <div key={plan} className="bg-background/40 rounded-2xl p-3 border border-white/5 text-center hover:border-white/10 transition-colors">
+                  <div key={plan} className="bg-black/[0.02] dark:bg-background/40 rounded-2xl p-3 border border-black/5 dark:border-white/5 text-center hover:border-primary/20 transition-colors">
                     <div className={cn("text-2xl font-black mb-1", planColors[plan] || 'text-foreground')}>
                       {count}
                     </div>
@@ -226,8 +226,8 @@ export const GlobalMetrics: React.FC = () => {
         </Card>
 
         {/* Últimos escritórios */}
-        <Card className="border-white/5 bg-card/40 backdrop-blur-xl rounded-3xl overflow-hidden">
-          <div className="p-6 border-b border-white/5">
+        <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden shadow-premium">
+          <div className="p-6 border-b border-black/5 dark:border-white/5">
             <div className="flex items-center gap-2">
               <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
                 <Building2 className="h-4 w-4" />
@@ -242,7 +242,7 @@ export const GlobalMetrics: React.FC = () => {
             <div className="space-y-2">
               {offices.length > 0 ? (
                 offices.slice(0, 5).map((office, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-background/40 border border-white/5 hover:border-white/10 transition-colors group">
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-black/[0.02] dark:bg-background/40 border border-black/5 dark:border-white/5 hover:border-primary/20 transition-colors group">
                     <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform">
                       <Building2 className="h-4 w-4" />
                     </div>

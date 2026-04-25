@@ -148,28 +148,28 @@ const Admin = () => {
             <TabsContent value="requests" className="space-y-6 entry-animate slide-in-from-bottom-4 duration-500 mt-0">
             {/* Stats Rápido */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+              <div className="glass-card p-6 rounded-[2rem] shadow-premium border border-black/5 dark:border-white/10 hover-lift group">
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Pendentes</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Pendentes</p>
                   <AlertCircle className="h-5 w-5 text-amber-500" />
                 </div>
-                <p className="text-4xl font-extrabold text-amber-500">{exclusoesPendentes.length}</p>
+                <p className="text-4xl font-black text-amber-500">{exclusoesPendentes.length}</p>
               </div>
 
-              <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+              <div className="glass-card p-6 rounded-[2rem] shadow-premium border border-black/5 dark:border-white/10 hover-lift group">
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Selecionadas</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Selecionadas</p>
                   <Check className="h-5 w-5 text-primary" />
                 </div>
-                <p className="text-4xl font-extrabold text-foreground">{multiSelect.selectedCount}</p>
+                <p className="text-4xl font-black text-foreground">{multiSelect.selectedCount}</p>
               </div>
 
-              <div className="glass-card p-6 rounded-3xl shadow-premium border-white/10 hover-lift group">
+              <div className="glass-card p-6 rounded-[2rem] shadow-premium border border-black/5 dark:border-white/10 hover-lift group">
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Categorias</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Categorias</p>
                   <TrendingUp className="h-5 w-5 text-emerald-500" />
                 </div>
-                <p className="text-4xl font-extrabold text-emerald-500">{new Set(exclusoesPendentes.map(e => e.tabela)).size}</p>
+                <p className="text-4xl font-black text-emerald-500">{new Set(exclusoesPendentes.map(e => e.tabela)).size}</p>
               </div>
             </div>
 
@@ -255,8 +255,8 @@ const Admin = () => {
                       return (
                         <Card 
                           key={exclusao.id}
-                          className={`transition-all duration-200 ${
-                            multiSelect.isSelected(exclusao.id) ? "ring-2 ring-primary" : ""
+                          className={`glass-card rounded-[2rem] border-black/5 dark:border-white/5 transition-all duration-500 overflow-hidden ${
+                            multiSelect.isSelected(exclusao.id) ? "ring-2 ring-primary bg-primary/[0.02]" : ""
                           }`}
                         >
                           <CardHeader className="pb-3">

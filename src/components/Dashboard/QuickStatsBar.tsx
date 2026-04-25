@@ -41,7 +41,7 @@ function QuickStat({ icon: Icon, label, value, sub, color, bgColor, onClick, urg
       onClick={onClick}
       className={cn(
         "group relative flex items-center gap-4 px-5 py-4 rounded-2xl border transition-all duration-300",
-        "bg-card/40 backdrop-blur-xl border-white/5 hover:border-white/15",
+        "bg-card/40 backdrop-blur-xl border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/15",
         "hover:shadow-lg hover:-translate-y-0.5 text-left w-full",
         urgent && "border-red-500/20 hover:border-red-500/30"
       )}
@@ -56,10 +56,10 @@ function QuickStat({ icon: Icon, label, value, sub, color, bgColor, onClick, urg
         <Icon className={cn("h-5 w-5", color)} />
       </div>
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{label}</p>
         <div className="flex items-baseline gap-2">
           <span className="text-2xl font-black tracking-tight">{value}</span>
-          {sub && <span className="text-[10px] text-muted-foreground font-medium hidden sm:block">{sub}</span>}
+          {sub && <span className="text-[10px] text-muted-foreground font-bold hidden sm:block opacity-40">{sub}</span>}
         </div>
       </div>
       <ArrowRight className="h-4 w-4 text-muted-foreground/30 ml-auto shrink-0 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" />
@@ -76,7 +76,7 @@ export function QuickStatsBar() {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-20 rounded-2xl bg-card/20 animate-pulse border border-white/5" />
+          <div key={i} className="h-20 rounded-2xl bg-black/[0.03] dark:bg-card/20 animate-pulse border border-black/5 dark:border-white/5" />
         ))}
       </div>
     );
@@ -88,13 +88,13 @@ export function QuickStatsBar() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-black tracking-tight">Painel de Controle</h2>
-          <p className="text-xs text-muted-foreground font-medium">{weekRange}</p>
+          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-40">{weekRange}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="outline"
-            className="rounded-xl text-xs font-bold border-white/10 hover:bg-white/5 gap-1.5 h-9"
+            className="rounded-xl text-[10px] font-black uppercase tracking-widest border-black/5 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 gap-1.5 h-10 px-4"
             onClick={() => navigate("/prazos")}
           >
             <Plus className="h-3.5 w-3.5" /> Novo Prazo
@@ -102,14 +102,14 @@ export function QuickStatsBar() {
           <Button
             size="sm"
             variant="outline"
-            className="rounded-xl text-xs font-bold border-white/10 hover:bg-white/5 gap-1.5 h-9"
+            className="rounded-xl text-[10px] font-black uppercase tracking-widest border-black/5 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 gap-1.5 h-10 px-4"
             onClick={() => navigate("/tarefas")}
           >
             <Plus className="h-3.5 w-3.5" /> Nova Tarefa
           </Button>
           <Button
             size="sm"
-            className="rounded-xl text-xs font-bold gap-1.5 h-9"
+            className="rounded-xl text-[10px] font-black uppercase tracking-widest gap-1.5 h-10 px-6 shadow-premium shadow-primary/20"
             onClick={() => navigate("/agenda")}
           >
             <Calendar className="h-3.5 w-3.5" /> Agenda Completa

@@ -39,7 +39,7 @@ const Equipe = () => {
             <div className="p-2 rounded-xl bg-primary/10">
               <Users className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            <h1 className="text-2xl md:text-4xl font-black tracking-tight text-foreground">
               Gestão de Equipe
             </h1>
           </div>
@@ -48,15 +48,16 @@ const Equipe = () => {
           </p>
         </div>
         <div className="flex items-center gap-3 glass-morphism p-2 rounded-2xl">
-          <Button size="lg" className="rounded-xl shadow-premium h-10 md:h-12 px-4 md:px-6">
-            <Plus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <Button size="lg" className="rounded-xl shadow-premium h-12 px-8 font-black uppercase text-xs tracking-widest bg-primary hover:bg-primary/90">
+            <Plus className="h-5 w-5 mr-2" />
             Adicionar Membro
           </Button>
         </div>
       </div>
 
       {/* Filtros */}
-      <Card className="border-white/5 bg-card/40 backdrop-blur-sm">
+      {/* Filtros */}
+      <Card className="border-black/5 dark:border-white/5 bg-card/40 backdrop-blur-xl rounded-[2rem] overflow-hidden">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
@@ -65,11 +66,11 @@ const Equipe = () => {
                 placeholder="Buscar por nome, cargo ou equipe..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-11 bg-muted/20 border-white/5 rounded-xl"
+                className="pl-10 h-12 bg-black/[0.02] dark:bg-muted/20 border-black/5 dark:border-white/5 rounded-xl font-medium"
               />
             </div>
             <Select value={equipeFilter} onValueChange={setEquipeFilter}>
-              <SelectTrigger className="w-full md:w-56 h-11 bg-muted/20 border-white/5 rounded-xl font-medium">
+              <SelectTrigger className="w-full md:w-64 h-12 bg-black/[0.02] dark:bg-muted/20 border-black/5 dark:border-white/5 rounded-xl font-bold">
                 <SelectValue placeholder="Filtrar por Equipe" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">

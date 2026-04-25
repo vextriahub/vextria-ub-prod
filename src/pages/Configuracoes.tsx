@@ -88,21 +88,21 @@ const Configuracoes = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10">
+            <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-premium">
               <Settings className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary drop-shadow-sm">
               Configurações
             </h1>
           </div>
-          <p className="text-sm md:text-lg text-muted-foreground font-medium max-w-2xl">
+          <p className="text-sm md:text-lg text-muted-foreground font-black uppercase tracking-widest text-[10px] opacity-60 px-1">
             Ajuste as preferências globais e personalize a inteligência do seu escritório.
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 min-w-0 w-full">
-        <div className="glass-card p-2 rounded-3xl w-full overflow-x-auto h-auto no-scrollbar">
+        <div className="glass-card p-2 rounded-[2rem] border-black/5 dark:border-white/10 w-full overflow-x-auto h-auto no-scrollbar shadow-premium">
           <TabsList className="bg-transparent h-auto p-0 flex flex-nowrap gap-1 min-w-max">
             {[
               { id: "geral", label: "Geral" },
@@ -118,7 +118,7 @@ const Configuracoes = () => {
               <TabsTrigger 
                 key={tab.id}
                 value={tab.id} 
-                className="rounded-2xl px-6 py-2.5 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all whitespace-nowrap"
+                className="rounded-2xl px-6 py-2.5 font-black uppercase tracking-widest text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-premium transition-all whitespace-nowrap"
               >
                 {tab.label}
               </TabsTrigger>
@@ -126,33 +126,35 @@ const Configuracoes = () => {
           </TabsList>
         </div>
 
-              <TabsContent value="geral" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Informações Gerais</CardTitle>
-                    <CardDescription>
+              <TabsContent value="geral" className="space-y-6">
+                <Card className="glass-card rounded-[2rem] border-black/5 dark:border-white/5 overflow-hidden shadow-premium">
+                  <CardHeader className="border-b border-black/5 dark:border-white/5 pb-4">
+                    <CardTitle className="text-xl font-black">Informações Gerais</CardTitle>
+                    <CardDescription className="text-xs font-medium">
                       Gerencie suas informações pessoais e preferências
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-6 space-y-4">
                     <div className="grid gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Nome</Label>
+                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Nome</Label>
                         <Input
                           id="name"
                           name="name"
                           value={formValues.name}
                           onChange={handleInputChange}
+                          className="h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email</Label>
                         <Input
                           id="email"
                           name="email"
                           type="email"
                           value={formValues.email}
                           onChange={handleInputChange}
+                          className="h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10"
                         />
                       </div>
                       <div className="flex items-center justify-between">
@@ -170,24 +172,24 @@ const Configuracoes = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Preferências</CardTitle>
-                    <CardDescription>
+                <Card className="glass-card rounded-[2rem] border-black/5 dark:border-white/5 overflow-hidden shadow-premium">
+                  <CardHeader className="border-b border-black/5 dark:border-white/5 pb-4">
+                    <CardTitle className="text-xl font-black">Preferências</CardTitle>
+                    <CardDescription className="text-xs font-medium">
                       Personalize a aparência e o comportamento do sistema
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="p-6 space-y-4">
                     <div className="grid gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="theme">Tema</Label>
+                        <Label htmlFor="theme" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Tema</Label>
                         <Select
                           value={formValues.theme}
                           onValueChange={(value) =>
                             setFormValues({ ...formValues, theme: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 font-bold">
                             <SelectValue placeholder="Selecione o tema" />
                           </SelectTrigger>
                           <SelectContent>
@@ -198,14 +200,14 @@ const Configuracoes = () => {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="language">Idioma</Label>
+                        <Label htmlFor="language" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Idioma</Label>
                         <Select
                           value={formValues.language}
                           onValueChange={(value) =>
                             setFormValues({ ...formValues, language: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 font-bold">
                             <SelectValue placeholder="Selecione o idioma" />
                           </SelectTrigger>
                           <SelectContent>
@@ -216,14 +218,14 @@ const Configuracoes = () => {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="timezone">Fuso Horário</Label>
+                        <Label htmlFor="timezone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Fuso Horário</Label>
                         <Select
                           value={formValues.timezone}
                           onValueChange={(value) =>
                             setFormValues({ ...formValues, timezone: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 font-bold">
                             <SelectValue placeholder="Selecione o fuso horário" />
                           </SelectTrigger>
                           <SelectContent>
@@ -236,13 +238,13 @@ const Configuracoes = () => {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label>Formato de Data</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Formato de Data</Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
                               variant={"outline"}
                               className={cn(
-                                "w-[240px] justify-start text-left font-normal",
+                                "w-full h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 justify-start text-left font-bold",
                                 !formValues.dateFormat && "text-muted-foreground"
                               )}
                             >
@@ -265,14 +267,14 @@ const Configuracoes = () => {
                         </Popover>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="timeFormat">Formato de Hora</Label>
+                        <Label htmlFor="timeFormat" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Formato de Hora</Label>
                         <Select
                           value={formValues.timeFormat}
                           onValueChange={(value) =>
                             setFormValues({ ...formValues, timeFormat: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="h-12 rounded-2xl bg-black/[0.02] dark:bg-white/5 border-black/5 dark:border-white/10 font-bold">
                             <SelectValue placeholder="Selecione o formato" />
                           </SelectTrigger>
                           <SelectContent>
@@ -286,16 +288,19 @@ const Configuracoes = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="usuarios" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Gerenciamento de Usuários</CardTitle>
-                    <CardDescription>
+              <TabsContent value="usuarios" className="space-y-6">
+                <Card className="glass-card rounded-[2rem] border-black/5 dark:border-white/5 overflow-hidden shadow-premium">
+                  <CardHeader className="border-b border-black/5 dark:border-white/5 pb-4">
+                    <CardTitle className="text-xl font-black">Gerenciamento de Usuários</CardTitle>
+                    <CardDescription className="text-xs font-medium uppercase tracking-widest opacity-60">
                       Adicione, edite e remova usuários do sistema
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <p>Em desenvolvimento</p>
+                  <CardContent className="p-12 text-center">
+                    <div className="p-8 rounded-full bg-primary/5 border border-primary/10 w-fit mx-auto mb-4">
+                      <Users className="h-12 w-12 text-primary/30" />
+                    </div>
+                    <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">Módulo em calibração</p>
                   </CardContent>
                 </Card>
               </TabsContent>

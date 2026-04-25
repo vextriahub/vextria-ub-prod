@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProcessos } from '@/hooks/useProcessos';
+import { useProcessosV2 } from '@/hooks/useProcessosV2';
 import { FileText, Loader2, RotateCw, Search, Plus, Filter, Database } from 'lucide-react';
 import { formatCNJ, extractYearFromCNJ } from '@/utils/formatCNJ';
 
 // Debug logs
-console.log('%c [VEXTRIA] DEPLOY VERIFICADO - V20.2 - FINAL STABILITY ', 'background: #10b981; color: #fff; font-weight: bold; font-size: 16px;');
-console.log('🔍 Processos.tsx - Renderização V20.2 (Auth Fix & Broad Search)');
+console.log('%c [VEXTRIA] DEPLOY VERIFICADO - 2026-04-24-11-40 ', 'background: #10b981; color: #fff; font-weight: bold; font-size: 16px;');
+console.log('🔍 Processos.tsx - Renderização (2026-04-24-11-40)');
 
 // Componentes UI
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ const Processos = React.memo(() => {
     requestDelete, 
     isEmpty: hookIsEmpty,
     addMovimentacao
-  } = useProcessos();
+  } = useProcessosV2();
 
   const [view, setView] = useState<'grid' | 'table'>('table');
   const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
@@ -257,89 +257,99 @@ const Processos = React.memo(() => {
   return (
     <div className="flex-1 p-4 md:p-8 space-y-8 md:space-y-10 overflow-x-hidden entry-animate">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-              </div>
-              <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 drop-shadow-sm">
-                Gestão de Processos
-              </h1>
-            </div>
-            <p className="text-sm md:text-lg text-muted-foreground font-medium">
-              {activeTab === 'carteira' 
-                ? "Visualize e gerencie toda sua carteira acumulada." 
-                : "Sincronize processos novos diretamente dos tribunais."}
-            </p>
-          </div>
+        {/* Page Header Moderno Premium */}
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-white dark:bg-black/20 border border-black/5 dark:border-white/10 p-8 shadow-premium">
+          <div className="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-secondary/10 rounded-full blur-[60px] pointer-events-none" />
 
-          <div className="flex items-center gap-2">
-             <Button variant="outline" onClick={() => navigate('/publicacoes')} className="rounded-xl font-bold h-10 border-white/10">
-               Ver Publicações
-             </Button>
-             <Button onClick={() => setActiveTab('novo')} className="rounded-xl font-bold h-10 group">
-               <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform" />
-               Sincronizar Novos
-             </Button>
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-premium group hover:scale-110 transition-transform duration-300">
+                  <FileText className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+                </div>
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight text-foreground">
+                  Gestão de{" "}
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                    Processos
+                  </span>
+                </h1>
+              </div>
+              <p className="text-sm md:text-lg text-muted-foreground font-medium px-1">
+                {activeTab === 'carteira' 
+                  ? "Visualize e gerencie toda sua carteira acumulada com precisão." 
+                  : "Sincronize processos novos diretamente dos tribunais via IA."}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 glass-morphism p-2 rounded-2xl border border-black/5 dark:border-white/10 shadow-premium">
+               <Button variant="outline" onClick={() => navigate('/publicacoes')} className="rounded-xl font-black uppercase tracking-widest text-[10px] h-12 px-6 border-black/5 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5 transition-all">
+                 Publicações
+               </Button>
+               <Button onClick={() => setActiveTab('novo')} className="rounded-xl font-black uppercase tracking-widest text-[10px] h-12 px-6 group gap-2 shadow-premium">
+                 <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                 Sincronizar
+               </Button>
+            </div>
           </div>
+        </div>         </div>
         </div>
 
         <TabsContent value="carteira" className="space-y-8 animate-in fade-in duration-500">
           {/* KPI Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-primary/30 transition-all">
+            <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden group hover:border-primary/30 transition-all hover-lift">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total da Carteira</p>
-                    <h3 className="text-3xl font-black">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : processos.length}</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Total da Carteira</p>
+                    <h3 className="text-3xl font-black text-foreground">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : processos.length}</h3>
                   </div>
-                  <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
                     <FileText className="h-5 w-5" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-green-500/30 transition-all">
+            <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden group hover:border-green-500/30 transition-all hover-lift">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Processos Ativos</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Processos Ativos</p>
                     <h3 className="text-3xl font-black text-green-500">
                       {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : processos.filter(p => p.status === 'Em andamento' || p.status === 'ativo').length}
                     </h3>
                   </div>
-                  <div className="p-2 rounded-xl bg-green-500/10 text-green-500">
+                  <div className="p-2.5 rounded-xl bg-green-500/10 text-green-500">
                     <RotateCw className="h-5 w-5" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-orange-500/30 transition-all">
+            <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden group hover:border-orange-500/30 transition-all hover-lift">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Prazos na Semana</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Prazos na Semana</p>
                     <h3 className="text-3xl font-black text-orange-500">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 0}</h3>
                   </div>
-                  <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
+                  <div className="p-2.5 rounded-xl bg-orange-500/10 text-orange-500">
                     <Plus className="h-5 w-5 rotate-45" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="glass-morphism border-white/5 rounded-3xl overflow-hidden group hover:border-blue-500/30 transition-all">
+            <Card className="glass-card border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden group hover:border-blue-500/30 transition-all hover-lift">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Sem Movimento (15d)</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Sem Movimento (15d)</p>
                     <h3 className="text-3xl font-black text-blue-500">{loading ? <Loader2 className="h-6 w-6 animate-spin" /> : 0}</h3>
                   </div>
-                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                  <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500">
                     <Search className="h-5 w-5" />
                   </div>
                 </div>
@@ -347,14 +357,14 @@ const Processos = React.memo(() => {
             </Card>
           </div>
 
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-morphism p-3 rounded-[2rem]">
-            <div className="relative group flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/40 h-5 w-5 transition-colors group-focus-within:text-primary" />
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 glass-card p-6 rounded-[2.5rem] border border-black/5 dark:border-white/10 shadow-premium bg-white dark:bg-card/40">
+            <div className="relative group/search flex-1">
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-muted-foreground/30 h-5 w-5 transition-all group-focus-within/search:text-primary" />
               <Input 
                 placeholder="Busca: título, cliente ou número CNJ (ex: 07166164)..." 
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="pl-12 h-12 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/20 placeholder:text-muted-foreground/50 transition-all font-medium"
+                className="pl-14 h-16 bg-white dark:bg-white/[0.05] border-black/5 dark:border-white/10 rounded-2xl focus:ring-4 focus:ring-primary/10 placeholder:text-muted-foreground/30 transition-all font-black text-lg shadow-premium"
               />
             </div>
             
@@ -367,7 +377,7 @@ const Processos = React.memo(() => {
               <p className="mt-4 text-muted-foreground font-bold uppercase tracking-widest text-xs">Carregando Carteira...</p>
             </div>
           ) : hookIsEmpty ? (
-            <div className="flex flex-col items-center justify-center p-12 md:p-24 text-center space-y-10 glass-card rounded-[3rem] border-white/5 relative overflow-hidden">
+            <div className="flex flex-col items-center justify-center p-12 md:p-24 text-center space-y-10 glass-card rounded-[3rem] border-black/5 dark:border-white/5 relative overflow-hidden">
                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
                
                <div className="p-8 rounded-full bg-primary/5 border border-primary/10 relative">
@@ -389,7 +399,7 @@ const Processos = React.memo(() => {
                     </div>
                  </Button>
                  
-                 <Button variant="outline" onClick={() => setActiveTab('novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 border-white/5 bg-white/5 hover:bg-white/10">
+                 <Button variant="outline" onClick={() => setActiveTab('novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 border-foreground/10 dark:border-white/5 bg-foreground/5 dark:bg-white/5 hover:bg-foreground/10 dark:hover:bg-white/10">
                     <Search className="h-8 w-8 text-primary" />
                     <div className="text-center">
                       <p className="font-black uppercase text-xs tracking-widest">Buscar CNJ</p>
@@ -397,7 +407,7 @@ const Processos = React.memo(() => {
                     </div>
                  </Button>
 
-                 <Button variant="outline" onClick={() => navigate('/processos?tab=novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 border-white/5 bg-white/5 hover:bg-white/10">
+                 <Button variant="outline" onClick={() => navigate('/processos?tab=novo')} className="h-auto flex-col py-8 rounded-[2rem] gap-4 border-foreground/10 dark:border-white/5 bg-foreground/5 dark:bg-white/5 hover:bg-foreground/10 dark:hover:bg-white/10">
                     <Plus className="h-8 w-8 text-green-500" />
                     <div className="text-center">
                       <p className="font-black uppercase text-xs tracking-widest">Manual</p>
@@ -417,9 +427,9 @@ const Processos = React.memo(() => {
               />
 
               {filteredProcessos.length === 0 ? (
-                <div className="p-20 text-center glass-card rounded-[2rem] border-white/5 space-y-4">
+                <div className="p-20 text-center glass-card rounded-[2rem] border-black/5 dark:border-white/5 space-y-4">
                    <Filter className="h-12 w-12 text-primary/20 mx-auto" />
-                   <p className="text-white/40 font-bold uppercase tracking-tighter">Nenhum processo corresponde aos filtros</p>
+                   <p className="text-muted-foreground font-bold uppercase tracking-tighter">Nenhum processo corresponde aos filtros</p>
                    <Button variant="link" onClick={handleClearFilters}>Limpar todos os filtros</Button>
                 </div>
               ) : view === 'table' ? (
@@ -444,7 +454,7 @@ const Processos = React.memo(() => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-[10px] text-white/20 px-6 py-4 uppercase font-black tracking-widest bg-white/[0.02] rounded-2xl border border-white/5">
+              <div className="flex items-center justify-between text-[10px] text-foreground/20 dark:text-white/20 px-6 py-4 uppercase font-black tracking-widest bg-black/[0.02] dark:bg-white/[0.02] rounded-2xl border border-black/5 dark:border-white/5">
                 <div className="flex items-center gap-4">
                   <span>V20.3 • Judicial Intelligence</span>
                   <span className="flex items-center gap-2">

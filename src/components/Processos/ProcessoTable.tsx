@@ -38,12 +38,12 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
   const getStatusColor = (status: string) => {
     const s = (status || '').toLowerCase();
     if (s.includes('andamento') || s === 'ativo') 
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+      return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
     if (s.includes('concluído') || s.includes('encerrado')) 
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
     if (s.includes('suspenso')) 
-      return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-    return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+      return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
+    return 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20';
   };
 
   const getStatusLabel = (status: string) => {
@@ -55,11 +55,11 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
   };
 
   return (
-    <div className="rounded-[2.5rem] border border-white/5 bg-[#0A0A0B]/60 backdrop-blur-xl overflow-hidden shadow-2xl">
+    <div className="rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-white dark:bg-card/40 backdrop-blur-xl overflow-hidden shadow-premium">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/5 hover:bg-transparent">
+            <TableRow className="border-black/5 dark:border-white/5 hover:bg-transparent bg-black/5 dark:bg-white/5">
               <TableHead className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60 py-6 pl-8">Nº Processo</TableHead>
               <TableHead className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60 py-6">Título / Partes</TableHead>
               <TableHead className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground/60 py-6">Tribunal & Comarca</TableHead>
@@ -72,7 +72,7 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
             {processos.map((processo) => (
               <TableRow 
                 key={processo.id} 
-                className="group border-white/5 cursor-pointer transition-all duration-300 hover:bg-primary/[0.03]"
+                className="group border-black/5 dark:border-white/5 cursor-pointer transition-all duration-300 hover:bg-primary/[0.04] dark:hover:bg-primary/[0.1]"
                 onClick={() => onViewDetails(processo)}
               >
                 {/* NÚMERO DO PROCESSO */}
@@ -80,7 +80,7 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                        <div className="w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
-                       <span className="font-mono text-[13px] font-bold text-white/90 group-hover:text-primary transition-colors tracking-tight">
+                       <span className="font-mono text-[13px] font-bold text-foreground/90 dark:text-white/90 group-hover:text-primary transition-colors tracking-tight">
                          {formatCNJ(processo.numeroProcesso)}
                        </span>
                     </div>
@@ -96,13 +96,13 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
                 {/* TÍTULO / PARTES */}
                 <TableCell className="py-6">
                   <div className="flex flex-col gap-1 max-w-[280px]">
-                    <span className="font-bold text-[15px] truncate group-hover:text-white transition-colors">
+                    <span className="font-bold text-[15px] truncate group-hover:text-primary dark:group-hover:text-white transition-colors">
                       {processo.titulo}
                     </span>
                     {processo.valorCausa && processo.valorCausa > 0 && (
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500/80">Valor:</span>
-                        <span className="text-[11px] text-emerald-400 font-bold">
+                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
                           {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(processo.valorCausa)}
                         </span>
                       </div>
@@ -114,13 +114,13 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
                 <TableCell className="py-6">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <div className="p-1 rounded-md bg-white/5">
+                      <div className="p-1 rounded-md bg-black/5 dark:bg-white/5">
                         <Building2 className="h-3 w-3 text-primary/70" />
                       </div>
-                      <span className="text-xs font-bold text-white/70 uppercase tracking-tight">{processo.tribunal || '—'}</span>
+                      <span className="text-xs font-bold text-foreground/70 dark:text-white/70 uppercase tracking-tight">{processo.tribunal || '—'}</span>
                     </div>
                     {processo.comarca && (
-                      <span className="text-[10px] text-white/30 pl-7 font-medium uppercase">{processo.comarca}</span>
+                      <span className="text-[10px] text-foreground/30 dark:text-white/30 pl-7 font-medium uppercase">{processo.comarca}</span>
                     )}
                   </div>
                 </TableCell>
@@ -128,10 +128,10 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
                 {/* TIPO / FASE */}
                 <TableCell className="py-6">
                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-white/60">
+                      <span className="text-xs font-bold text-foreground/60 dark:text-white/60">
                         {(processo as any).faseProcessual || processo.tipoProcesso || '—'}
                       </span>
-                      <span className="text-[10px] text-white/30 uppercase tracking-tighter">Fase Processual</span>
+                      <span className="text-[10px] text-foreground/30 dark:text-white/30 uppercase tracking-tighter">Fase Processual</span>
                    </div>
                 </TableCell>
 
@@ -146,12 +146,12 @@ export const ProcessoTable: React.FC<ProcessoTableProps> = ({
                 <TableCell className="py-6 pr-8 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-10 w-10 p-0 rounded-2xl hover:bg-white/5 hover:text-primary transition-all border border-transparent hover:border-white/10 shadow-lg">
+                      <Button variant="ghost" className="h-10 w-10 p-0 rounded-2xl hover:bg-black/5 dark:hover:bg-white/5 hover:text-primary transition-all border border-transparent hover:border-black/10 dark:hover:border-white/10 shadow-lg">
                         <MoreHorizontal className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="glass-card border-white/10 rounded-2xl w-52 p-1.5 shadow-2xl">
-                      <DropdownMenuItem onClick={() => onViewDetails(processo)} className="rounded-xl cursor-pointer py-3 transition-all hover:bg-primary/10 hover:text-white">
+                    <DropdownMenuContent align="end" className="glass-card border-black/10 dark:border-white/10 rounded-2xl w-52 p-1.5 shadow-2xl">
+                      <DropdownMenuItem onClick={() => onViewDetails(processo)} className="rounded-xl cursor-pointer py-3 transition-all hover:bg-primary/10 hover:text-primary dark:hover:text-white">
                         <ExternalLink className="mr-3 h-4 w-4 text-primary" />
                         <span className="font-bold text-sm">Painel de Controle</span>
                       </DropdownMenuItem>

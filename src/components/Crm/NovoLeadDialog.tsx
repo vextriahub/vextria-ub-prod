@@ -153,6 +153,7 @@ export const NovoLeadDialog = ({ open, onOpenChange, onSave }: NovoLeadDialogPro
         .from('clientes')
         .insert([{
           user_id: user.id,
+          office_id: user.office_id,
           nome: formData.nome.trim(),
           email: formData.email.trim() || null,
           telefone: formData.telefone.trim() || null,
@@ -209,141 +210,152 @@ export const NovoLeadDialog = ({ open, onOpenChange, onSave }: NovoLeadDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
-            Novo Lead
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[700px] bg-background/40 backdrop-blur-3xl border-white/5 shadow-2xl p-0 overflow-hidden rounded-[2.5rem]">
+        <DialogHeader className="p-8 pb-4 border-b border-white/5">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+              <Target className="h-6 w-6" />
+            </div>
+            <div>
+              <DialogTitle className="text-2xl font-black bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+                Novo Lead
+              </DialogTitle>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">Captação Estratégica</p>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
-          {/* Informações Básicas */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <UserCheck className="h-4 w-4" />
-              Informações Básicas
+        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {/* Seção 1: Identificação */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-primary/60 text-[10px] font-black uppercase tracking-widest">
+              <UserCheck className="h-4 w-4" /> 01. Identificação do Lead
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nome">Nome completo *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-3xl bg-white/5 border border-white/5">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="nome" className="text-white/60 ml-1">Nome completo / Razão Social *</Label>
                 <Input
                   id="nome"
                   value={formData.nome}
                   onChange={(e) => handleInputChange("nome", e.target.value)}
                   placeholder="Ex: João Silva"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 font-bold"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Tipo de pessoa</Label>
+              <div className="space-y-3">
+                <Label className="text-white/60 ml-1">Tipo de Perfil</Label>
                 <RadioGroup
                   value={formData.tipo_pessoa}
-                  onValueChange={(value) => handleInputChange("tipo_pessoa", value)}
-                  className="flex gap-6"
+                  onValueChange={(value) => handleInputChange("tipo_pessoa", value as any)}
+                  className="flex gap-4"
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="fisica" id="fisica" />
-                    <Label htmlFor="fisica">Pessoa Física</Label>
+                  <div className="flex items-center space-x-2 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                    <RadioGroupItem value="fisica" id="fisica" className="border-primary" />
+                    <Label htmlFor="fisica" className="text-xs font-bold cursor-pointer">Pessoa Física</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="juridica" id="juridica" />
-                    <Label htmlFor="juridica">Pessoa Jurídica</Label>
+                  <div className="flex items-center space-x-2 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                    <RadioGroupItem value="juridica" id="juridica" className="border-primary" />
+                    <Label htmlFor="juridica" className="text-xs font-bold cursor-pointer">Pessoa Jurídica</Label>
                   </div>
                 </RadioGroup>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cpf_cnpj">
-                {formData.tipo_pessoa === "fisica" ? "CPF" : "CNPJ"}
-              </Label>
-              <Input
-                id="cpf_cnpj"
-                value={formData.cpf_cnpj}
-                onChange={(e) => handleInputChange("cpf_cnpj", e.target.value)}
-                placeholder={formData.tipo_pessoa === "fisica" ? "000.000.000-00" : "00.000.000/0001-00"}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="cpf_cnpj" className="text-white/60 ml-1">
+                  {formData.tipo_pessoa === "fisica" ? "Documento (CPF)" : "Documento (CNPJ)"}
+                </Label>
+                <Input
+                  id="cpf_cnpj"
+                  value={formData.cpf_cnpj}
+                  onChange={(e) => handleInputChange("cpf_cnpj", e.target.value)}
+                  placeholder={formData.tipo_pessoa === "fisica" ? "000.000.000-00" : "00.000.000/0001-00"}
+                  className="h-12 bg-white/5 border-white/10 rounded-xl font-mono"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Contato */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Phone className="h-4 w-4" />
-              Informações de Contato
+          {/* Seção 2: Contato e Localização */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-blue-400/60 text-[10px] font-black uppercase tracking-widest">
+              <Phone className="h-4 w-4" /> 02. Canais de Contato
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-3xl bg-white/5 border border-white/5">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white/60 ml-1">E-mail Corporativo/Pessoal</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="joao@email.com"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl font-bold"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="telefone">Telefone *</Label>
+                <Label htmlFor="telefone" className="text-white/60 ml-1">WhatsApp / Telefone *</Label>
                 <Input
                   id="telefone"
                   value={formData.telefone}
                   onChange={(e) => handleInputChange("telefone", e.target.value)}
                   placeholder="(11) 99999-9999"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl font-bold"
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="endereco" className="text-white/60 ml-1">Endereço de Correspondência</Label>
+                <Input
+                  id="endereco"
+                  value={formData.endereco}
+                  onChange={(e) => handleInputChange("endereco", e.target.value)}
+                  placeholder="Rua, número, bairro, cidade - UF"
+                  className="h-12 bg-white/5 border-white/10 rounded-xl"
                 />
               </div>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="endereco">Endereço</Label>
-              <Input
-                id="endereco"
-                value={formData.endereco}
-                onChange={(e) => handleInputChange("endereco", e.target.value)}
-                placeholder="Rua, número, bairro, cidade - UF"
-              />
-            </div>
           </div>
 
-          {/* CRM */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Target className="h-4 w-4" />
-              Informações de CRM
+          {/* Seção 3: Inteligência Comercial */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-emerald-400/60 text-[10px] font-black uppercase tracking-widest">
+              <Target className="h-4 w-4" /> 03. Inteligência Comercial
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-3xl bg-white/5 border border-white/5">
               <div className="space-y-2">
-                <Label htmlFor="origem">Origem do Lead</Label>
+                <Label htmlFor="origem" className="text-white/60 ml-1">Origem do Lead</Label>
                 <Select value={formData.origem} onValueChange={(value) => handleInputChange("origem", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Como chegou até nós?" />
+                  <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold">
+                    <SelectValue placeholder="Fonte de aquisição" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-900 border-white/10">
                     {origensLead.map((origem) => (
-                      <SelectItem key={origem} value={origem}>
-                        {origem}
-                      </SelectItem>
+                      <SelectItem key={origem} value={origem} className="font-bold text-xs uppercase tracking-wider">{origem}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Status do Lead</Label>
-                <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Classificação" />
+                <Label htmlFor="status" className="text-white/60 ml-1">Classificação (Temperatura)</Label>
+                <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value as any)}>
+                  <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold">
+                    <SelectValue placeholder="Nível de interesse" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-900 border-white/10">
                     {statusLead.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
+                      <SelectItem key={status.value} value={status.value} className="font-bold text-xs uppercase tracking-wider">
                         <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full bg-${status.color}-500`} />
+                          <div className={cn("w-2 h-2 rounded-full", 
+                            status.value === 'quente' ? 'bg-red-500' : 
+                            status.value === 'morno' ? 'bg-yellow-500' : 
+                            status.value === 'frio' ? 'bg-blue-500' : 'bg-gray-500'
+                          )} />
                           {status.label}
                         </div>
                       </SelectItem>
@@ -351,43 +363,42 @@ export const NovoLeadDialog = ({ open, onOpenChange, onSave }: NovoLeadDialogPro
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="interesse">Área de Interesse</Label>
-              <Select value={formData.interesse} onValueChange={(value) => handleInputChange("interesse", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Qual área jurídica?" />
-                </SelectTrigger>
-                <SelectContent>
-                  {interessesLead.map((interesse) => (
-                    <SelectItem key={interesse} value={interesse}>
-                      {interesse}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="interesse" className="text-white/60 ml-1">Área Jurídica de Interesse</Label>
+                <Select value={formData.interesse} onValueChange={(value) => handleInputChange("interesse", value)}>
+                  <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl font-bold text-primary">
+                    <SelectValue placeholder="Selecione a especialidade" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10">
+                    {interessesLead.map((interesse) => (
+                      <SelectItem key={interesse} value={interesse} className="font-bold text-xs uppercase tracking-wider">{interesse}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea
-                id="observacoes"
-                value={formData.observacoes}
-                onChange={(e) => handleInputChange("observacoes", e.target.value)}
-                placeholder="Informações adicionais sobre o lead..."
-                rows={3}
-              />
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="observacoes" className="text-white/60 ml-1">Observações Estratégicas</Label>
+                <Textarea
+                  id="observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => handleInputChange("observacoes", e.target.value)}
+                  placeholder="Informações relevantes para o fechamento..."
+                  rows={3}
+                  className="bg-white/5 border-white/10 rounded-xl font-medium"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-            Cancelar
+        <DialogFooter className="p-8 pt-4 bg-white/5 border-t border-white/5 flex gap-4">
+          <Button variant="ghost" onClick={handleCancel} disabled={isLoading} className="flex-1 h-12 rounded-xl font-bold text-white/40 hover:text-white">
+            Descartar
           </Button>
-          <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading ? "Salvando..." : "Criar Lead"}
+          <Button onClick={handleSave} disabled={isLoading} className="flex-1 h-12 rounded-xl font-bold bg-primary shadow-lg shadow-primary/20">
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Registrar Lead"}
           </Button>
         </DialogFooter>
       </DialogContent>
