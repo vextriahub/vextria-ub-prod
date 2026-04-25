@@ -12,13 +12,13 @@ import { cn } from '@/lib/utils';
 interface ClientCardProps {
   client: Client;
   isSelected: boolean;
-  onToggleSelect: (clientId: number) => void;
+  onToggleSelect: (clientId: string) => void;
   onClientClick: (client: Client) => void;
-  onEditClient: (clientId: number) => void;
-  onViewProcesses: (clientId: number, clientName: string) => void;
-  onViewAtendimentos: (clientId: number, clientName: string) => void;
-  onViewConsultivo: (clientId: number, clientName: string) => void;
-  onDeleteClient?: (clientId: number) => void;
+  onEditClient: (clientId: string) => void;
+  onViewProcesses: (clientId: string, clientName: string) => void;
+  onViewAtendimentos: (clientId: string, clientName: string) => void;
+  onViewConsultivo: (clientId: string, clientName: string) => void;
+  onDeleteClient?: (clientId: string) => void;
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({

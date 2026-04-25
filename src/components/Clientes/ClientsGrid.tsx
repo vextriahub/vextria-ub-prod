@@ -4,13 +4,13 @@ import { ClientCard } from './ClientCard';
 
 interface ClientsGridProps {
   clients: Client[];
-  selectedIds: number[];
-  onToggleSelect: (clientId: number) => void;
+  selectedIds: string[];
+  onToggleSelect: (clientId: string) => void;
   onClientClick: (client: Client) => void;
-  onEditClient: (clientId: number) => void;
-  onViewProcesses: (clientId: number, clientName: string) => void;
-  onViewAtendimentos: (clientId: number, clientName: string) => void;
-  onViewConsultivo: (clientId: number, clientName: string) => void;
+  onEditClient: (clientId: string) => void;
+  onViewProcesses: (clientId: string, clientName: string) => void;
+  onViewAtendimentos: (clientId: string, clientName: string) => void;
+  onViewConsultivo: (clientId: string, clientName: string) => void;
 }
 
 export const ClientsGrid: React.FC<ClientsGridProps> = ({

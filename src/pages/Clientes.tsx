@@ -10,6 +10,7 @@ import { useClientes } from "@/hooks/useClientes";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 // Debug logs
 console.log('%c [VEXTRIA] CLIENTES DEPLOY - 2026-04-25-01-30 ', 'background: #0ea5e9; color: #fff; font-weight: bold; font-size: 16px;');
