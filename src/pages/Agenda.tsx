@@ -1,5 +1,6 @@
 
 import { Calendar, Clock, Users, MapPin, Plus, Trash2, CalendarCheck, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteConfirmDialog } from "@/components/ui/DeleteConfirmDialog";
 import { NovoCompromissoDialog } from "@/components/Agenda/NovoCompromissoDialog";

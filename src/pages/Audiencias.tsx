@@ -14,6 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitialData } from "@/utils/initialData";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 
 const Audiencias = () => {
@@ -246,7 +249,9 @@ const Audiencias = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                           <div className="flex items-center gap-3 bg-black/[0.03] dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/10">
                             <Calendar className="h-4 w-4 text-primary" />
-                            <span className="text-[11px] font-black uppercase tracking-widest opacity-70">{new Date(audiencia.data).toLocaleDateString('pt-BR')}</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest opacity-70">
+                              {format(new Date(audiencia.data), 'dd/MM/yyyy', { locale: ptBR })}
+                            </span>
                           </div>
                           <div className="flex items-center gap-3 bg-black/[0.03] dark:bg-white/5 p-3 rounded-2xl border border-black/5 dark:border-white/10">
                             <Clock className="h-4 w-4 text-primary" />

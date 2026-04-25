@@ -21,6 +21,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Settings } from "lucide-react";
 
 import { TeamManagement } from "@/components/Settings/TeamManagement";
@@ -249,7 +250,7 @@ const Configuracoes = () => {
                               )}
                             >
                               {formValues.dateFormat ? (
-                                format(formValues.dateFormat, "PPP")
+                                format(formValues.dateFormat, "PPP", { locale: ptBR })
                               ) : (
                                 <span>Selecione a data</span>
                               )}

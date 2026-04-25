@@ -15,6 +15,8 @@ import { OfficeControlPanel } from "@/components/SuperAdmin/OfficeControlPanel";
 import { SubscriptionControlPanel } from "@/components/SuperAdmin/SubscriptionControlPanel";
 import { GlobalMetrics } from "@/components/Admin/GlobalMetrics";
 import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const getTabelaDisplayName = (tabela: string) => {
   const nomes: Record<string, string> = {
@@ -247,7 +249,7 @@ const Admin = () => {
                   )}
 
                   {/* Exclusões Pendentes */}
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {exclusoesPendentes.map((exclusao) => {
                       const TabelaIcon = getTabelaIcon(exclusao.tabela);
                       const dadosRegistro = exclusao.dados_registro as any;
@@ -255,97 +257,113 @@ const Admin = () => {
                       return (
                         <Card 
                           key={exclusao.id}
-                          className={`glass-card rounded-[2rem] border-black/5 dark:border-white/5 transition-all duration-500 overflow-hidden ${
+                          className={`glass-card rounded-[2rem] border-black/5 dark:border-white/5 transition-all duration-500 overflow-hidden hover-lift ${
                             multiSelect.isSelected(exclusao.id) ? "ring-2 ring-primary bg-primary/[0.02]" : ""
                           }`}
                         >
-                          <CardHeader className="pb-3">
+                          <CardHeader className="pb-3 px-6 pt-6">
                             <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-3">
-                                <Checkbox
-                                  checked={multiSelect.isSelected(exclusao.id)}
-                                  onCheckedChange={() => multiSelect.toggleItem(exclusao.id)}
-                                />
-                                <div className="flex items-center gap-2">
-                                  <TabelaIcon className="h-5 w-5 text-primary" />
+                              <div className="flex items-center gap-4">
+                                <div className="relative flex items-center justify-center">
+                                  <Checkbox
+                                    checked={multiSelect.isSelected(exclusao.id)}
+                                    onCheckedChange={() => multiSelect.toggleItem(exclusao.id)}
+                                    className="rounded-lg h-5 w-5 border-black/10 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2.5 rounded-2xl bg-primary/10 text-primary shadow-inner">
+                                    <TabelaIcon className="h-5 w-5" />
+                                  </div>
                                   <div>
-                                    <CardTitle className="text-lg">
-                                      Exclusão de {getTabelaDisplayName(exclusao.tabela)}
+                                    <CardTitle className="text-lg font-black tracking-tight">
+                                      {getTabelaDisplayName(exclusao.tabela)}
                                     </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
-                                      Solicitado em {format(new Date(exclusao.solicitado_em), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                                      {format(new Date(exclusao.solicitado_em), "dd MMM yyyy 'às' HH:mm", { locale: ptBR })}
                                     </p>
                                   </div>
                                 </div>
                               </div>
-                              <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
+                              <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-xl">
                                 Pendente
                               </Badge>
                             </div>
                           </CardHeader>
-                          <CardContent className="space-y-4">
+                          <CardContent className="p-6 pt-2 space-y-5">
                             {/* Informações do registro */}
-                            <div className="p-3 bg-muted/30 rounded-lg">
-                              <h4 className="font-medium mb-2">Dados do Registro:</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div className="p-5 bg-black/[0.03] dark:bg-white/[0.03] rounded-3xl border border-black/5 dark:border-white/5 shadow-inner">
+                              <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3 opacity-60">Dados do Registro</h4>
+                              <div className="grid grid-cols-1 gap-2 text-sm font-bold text-foreground/80">
                                 {dadosRegistro.nome && (
-                                  <div>
-                                    <span className="text-muted-foreground">Nome:</span> {dadosRegistro.nome}
+                                  <div className="flex items-center justify-between py-1 border-b border-black/5 dark:border-white/5">
+                                    <span className="text-muted-foreground font-medium">Nome:</span>
+                                    <span>{dadosRegistro.nome}</span>
                                   </div>
                                 )}
                                 {dadosRegistro.titulo && (
-                                  <div>
-                                    <span className="text-muted-foreground">Título:</span> {dadosRegistro.titulo}
+                                  <div className="flex items-center justify-between py-1 border-b border-black/5 dark:border-white/5">
+                                    <span className="text-muted-foreground font-medium">Título:</span>
+                                    <span>{dadosRegistro.titulo}</span>
                                   </div>
                                 )}
                                 {dadosRegistro.numero_processo && (
-                                  <div>
-                                    <span className="text-muted-foreground">Nº Processo:</span> {dadosRegistro.numero_processo}
+                                  <div className="flex items-center justify-between py-1 border-b border-black/5 dark:border-white/5">
+                                    <span className="text-muted-foreground font-medium">Nº Processo:</span>
+                                    <span className="font-mono">{dadosRegistro.numero_processo}</span>
                                   </div>
                                 )}
                                 {dadosRegistro.email && (
-                                  <div>
-                                    <span className="text-muted-foreground">Email:</span> {dadosRegistro.email}
+                                  <div className="flex items-center justify-between py-1 border-b border-black/5 dark:border-white/5">
+                                    <span className="text-muted-foreground font-medium">Email:</span>
+                                    <span className="text-primary">{dadosRegistro.email}</span>
                                   </div>
                                 )}
-                                <div>
-                                  <span className="text-muted-foreground">Status:</span> {dadosRegistro.status || 'N/A'}
+                                <div className="flex items-center justify-between py-1">
+                                  <span className="text-muted-foreground font-medium">Status Atual:</span>
+                                  <Badge variant="outline" className="rounded-lg font-black text-[9px] uppercase">{dadosRegistro.status || 'N/A'}</Badge>
                                 </div>
                               </div>
                             </div>
 
                             {/* Informações da solicitação */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                              <div className="space-y-1">
-                                <p className="text-sm">
-                                  <span className="text-muted-foreground">Solicitado por:</span>{' '}
-                                  {(exclusao as any).user?.full_name || (exclusao as any).user?.email || 'Usuário desconhecido'}
-                                </p>
-                                {exclusao.motivo && (
-                                  <p className="text-sm">
-                                    <span className="text-muted-foreground">Motivo:</span> {exclusao.motivo}
+                            <div className="space-y-4 pt-2">
+                              <div className="flex items-center gap-3 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                                <div className="p-2 bg-primary/10 rounded-xl">
+                                  <User className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[9px] font-black uppercase tracking-widest text-primary/60">Solicitado por</p>
+                                  <p className="text-xs font-black truncate">
+                                    {(exclusao as any).user?.full_name || (exclusao as any).user?.email || 'Usuário desconhecido'}
                                   </p>
-                                )}
+                                </div>
                               </div>
+
+                              {exclusao.motivo && (
+                                <div className="px-4 py-3 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10 italic text-xs text-muted-foreground leading-relaxed">
+                                  "{exclusao.motivo}"
+                                </div>
+                              )}
                               
-                              <div className="flex gap-2">
+                              <div className="grid grid-cols-2 gap-3 pt-2">
                                 <Button
                                   variant="outline"
-                                  size="sm"
+                                  size="lg"
                                   onClick={() => handleRejeitar(exclusao.id)}
                                   disabled={processando === exclusao.id}
-                                  className="flex items-center gap-2"
+                                  className="rounded-2xl h-12 font-black uppercase text-[10px] tracking-widest border-black/5 dark:border-white/10 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-4 w-4 mr-2" />
                                   Rejeitar
                                 </Button>
                                 <Button
-                                  size="sm"
+                                  size="lg"
                                   onClick={() => handleAprovar(exclusao.id)}
                                   disabled={processando === exclusao.id}
-                                  className="flex items-center gap-2"
+                                  className="rounded-2xl h-12 font-black uppercase text-[10px] tracking-widest shadow-premium bg-primary hover:bg-primary/90 transition-all"
                                 >
-                                  <Check className="h-4 w-4" />
+                                  <Check className="h-4 w-4 mr-2" />
                                   Aprovar
                                 </Button>
                               </div>
@@ -359,50 +377,60 @@ const Admin = () => {
               </Tabs>
             ) : (
               // Non-super admin view (existing deletion requests view)
-              <div className="space-y-6">
-                {!multiSelect.isNoneSelected && (
-                  <div className="flex justify-end">
+              <div className="space-y-8 animate-in fade-in duration-700">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div>
+                    <h2 className="text-3xl font-black tracking-tight">Solicitações de Exclusão</h2>
+                    <p className="text-sm text-muted-foreground font-medium mt-1">Gerencie os pedidos de remoção de dados do seu escritório.</p>
+                  </div>
+                  {!multiSelect.isNoneSelected && (
                     <Button
                       onClick={handleAprovarSelecionados}
                       disabled={processando === 'multiplo'}
-                      className="flex items-center gap-2"
+                      size="lg"
+                      className="rounded-2xl h-14 px-8 font-black uppercase text-xs tracking-widest shadow-premium bg-primary hover:bg-primary/90 transition-all"
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="h-5 w-5 mr-2" />
                       Aprovar Selecionados ({multiSelect.selectedCount})
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold text-primary">
-                        {exclusoesPendentes.length}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="glass-card p-6 rounded-[2rem] shadow-premium border border-black/5 dark:border-white/10 hover-lift group">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Pendentes</p>
+                      <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                        <AlertCircle className="h-4 w-4" />
                       </div>
-                      <p className="text-sm text-muted-foreground">Solicitações Pendentes</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold text-amber-600">
-                        {multiSelect.selectedCount}
+                    </div>
+                    <p className="text-4xl font-black text-primary">{exclusoesPendentes.length}</p>
+                  </div>
+
+                  <div className="glass-card p-6 rounded-[2rem] shadow-premium border border-black/5 dark:border-white/10 hover-lift group">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Selecionadas</p>
+                      <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+                        <Check className="h-4 w-4" />
                       </div>
-                      <p className="text-sm text-muted-foreground">Itens Selecionados</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-2xl font-bold text-green-600">
-                        {new Set(exclusoesPendentes.map(e => e.tabela)).size}
+                    </div>
+                    <p className="text-4xl font-black text-amber-500">{multiSelect.selectedCount}</p>
+                  </div>
+
+                  <div className="glass-card p-6 rounded-[2rem] shadow-premium border border-black/5 dark:border-white/10 hover-lift group">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Categorias</p>
+                      <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                        <Activity className="h-4 w-4" />
                       </div>
-                      <p className="text-sm text-muted-foreground">Tipos de Registros</p>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <p className="text-4xl font-black text-emerald-500">{new Set(exclusoesPendentes.map(e => e.tabela)).size}</p>
+                  </div>
                 </div>
 
                 {/* Exclusões Pendentes */}
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {exclusoesPendentes.map((exclusao) => {
                     const TabelaIcon = getTabelaIcon(exclusao.tabela);
                     const dadosRegistro = exclusao.dados_registro as any;
@@ -410,97 +438,111 @@ const Admin = () => {
                     return (
                       <Card 
                         key={exclusao.id}
-                        className={`transition-all duration-200 ${
-                          multiSelect.isSelected(exclusao.id) ? "ring-2 ring-primary" : ""
+                        className={`glass-card rounded-[2.5rem] border-black/5 dark:border-white/5 transition-all duration-500 overflow-hidden hover-lift ${
+                          multiSelect.isSelected(exclusao.id) ? "ring-2 ring-primary bg-primary/[0.02]" : ""
                         }`}
                       >
-                        <CardHeader className="pb-3">
+                        <CardHeader className="pb-3 px-8 pt-8">
                           <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                               <Checkbox
                                 checked={multiSelect.isSelected(exclusao.id)}
                                 onCheckedChange={() => multiSelect.toggleItem(exclusao.id)}
+                                className="rounded-lg h-6 w-6 border-black/10 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               />
-                              <div className="flex items-center gap-2">
-                                <TabelaIcon className="h-5 w-5 text-primary" />
+                              <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-2xl bg-primary/10 text-primary shadow-inner">
+                                  <TabelaIcon className="h-6 w-6" />
+                                </div>
                                 <div>
-                                  <CardTitle className="text-lg">
-                                    Exclusão de {getTabelaDisplayName(exclusao.tabela)}
+                                  <CardTitle className="text-xl font-black tracking-tight">
+                                    {getTabelaDisplayName(exclusao.tabela)}
                                   </CardTitle>
-                                  <p className="text-sm text-muted-foreground">
-                                    Solicitado em {format(new Date(exclusao.solicitado_em), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                  <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                                    {format(new Date(exclusao.solicitado_em), "dd MMM yyyy 'às' HH:mm", { locale: ptBR })}
                                   </p>
                                 </div>
                               </div>
                             </div>
-                            <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
+                            <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-xl">
                               Pendente
                             </Badge>
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="p-8 pt-4 space-y-6">
                           {/* Informações do registro */}
-                          <div className="p-3 bg-muted/30 rounded-lg">
-                            <h4 className="font-medium mb-2">Dados do Registro:</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <div className="p-6 bg-black/[0.03] dark:bg-white/[0.03] rounded-[2rem] border border-black/5 dark:border-white/5 shadow-inner">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4 opacity-60">Dados do Registro</h4>
+                            <div className="grid grid-cols-1 gap-3 text-sm font-bold text-foreground/80">
                               {dadosRegistro.nome && (
-                                <div>
-                                  <span className="text-muted-foreground">Nome:</span> {dadosRegistro.nome}
+                                <div className="flex items-center justify-between py-2 border-b border-black/5 dark:border-white/5">
+                                  <span className="text-muted-foreground font-medium">Nome:</span>
+                                  <span>{dadosRegistro.nome}</span>
                                 </div>
                               )}
                               {dadosRegistro.titulo && (
-                                <div>
-                                  <span className="text-muted-foreground">Título:</span> {dadosRegistro.titulo}
+                                <div className="flex items-center justify-between py-2 border-b border-black/5 dark:border-white/5">
+                                  <span className="text-muted-foreground font-medium">Título:</span>
+                                  <span>{dadosRegistro.titulo}</span>
                                 </div>
                               )}
                               {dadosRegistro.numero_processo && (
-                                <div>
-                                  <span className="text-muted-foreground">Nº Processo:</span> {dadosRegistro.numero_processo}
+                                <div className="flex items-center justify-between py-2 border-b border-black/5 dark:border-white/5">
+                                  <span className="text-muted-foreground font-medium">Nº Processo:</span>
+                                  <span className="font-mono text-primary">{dadosRegistro.numero_processo}</span>
                                 </div>
                               )}
                               {dadosRegistro.email && (
-                                <div>
-                                  <span className="text-muted-foreground">Email:</span> {dadosRegistro.email}
+                                <div className="flex items-center justify-between py-2 border-b border-black/5 dark:border-white/5">
+                                  <span className="text-muted-foreground font-medium">Email:</span>
+                                  <span className="text-blue-500">{dadosRegistro.email}</span>
                                 </div>
                               )}
-                              <div>
-                                <span className="text-muted-foreground">Status:</span> {dadosRegistro.status || 'N/A'}
+                              <div className="flex items-center justify-between py-2">
+                                <span className="text-muted-foreground font-medium">Status Atual:</span>
+                                <Badge variant="outline" className="rounded-lg font-black text-[10px] uppercase px-3">{dadosRegistro.status || 'N/A'}</Badge>
                               </div>
                             </div>
                           </div>
 
                           {/* Informações da solicitação */}
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="space-y-1">
-                              <p className="text-sm">
-                                <span className="text-muted-foreground">Solicitado por:</span>{' '}
-                                {(exclusao as any).user?.full_name || (exclusao as any).user?.email || 'Usuário desconhecido'}
-                              </p>
-                              {exclusao.motivo && (
-                                <p className="text-sm">
-                                  <span className="text-muted-foreground">Motivo:</span> {exclusao.motivo}
+                          <div className="space-y-6">
+                            <div className="flex items-center gap-4 p-4 rounded-3xl bg-primary/5 border border-primary/10">
+                              <div className="p-2.5 bg-primary/10 rounded-2xl">
+                                <User className="h-5 w-5 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Solicitado por</p>
+                                <p className="text-sm font-black truncate">
+                                  {(exclusao as any).user?.full_name || (exclusao as any).user?.email || 'Usuário desconhecido'}
                                 </p>
-                              )}
+                              </div>
                             </div>
+
+                            {exclusao.motivo && (
+                              <div className="px-5 py-4 rounded-3xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/5 dark:border-white/10 italic text-sm text-muted-foreground leading-relaxed">
+                                "{exclusao.motivo}"
+                              </div>
+                            )}
                             
-                            <div className="flex gap-2">
+                            <div className="grid grid-cols-2 gap-4 pt-2">
                               <Button
                                 variant="outline"
-                                size="sm"
+                                size="lg"
                                 onClick={() => handleRejeitar(exclusao.id)}
                                 disabled={processando === exclusao.id}
-                                className="flex items-center gap-2"
+                                className="rounded-[1.5rem] h-14 font-black uppercase text-xs tracking-widest border-black/5 dark:border-white/10 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all"
                               >
-                                <X className="h-4 w-4" />
+                                <X className="h-5 w-5 mr-2" />
                                 Rejeitar
                               </Button>
                               <Button
-                                size="sm"
+                                size="lg"
                                 onClick={() => handleAprovar(exclusao.id)}
                                 disabled={processando === exclusao.id}
-                                className="flex items-center gap-2"
+                                className="rounded-[1.5rem] h-14 font-black uppercase text-xs tracking-widest shadow-premium bg-primary hover:bg-primary/90 transition-all"
                               >
-                                <Check className="h-4 w-4" />
+                                <Check className="h-5 w-5 mr-2" />
                                 Aprovar
                               </Button>
                             </div>

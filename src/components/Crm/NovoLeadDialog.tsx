@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserCheck, Building2, Phone, Mail, MapPin, Target } from "lucide-react";
+import { UserCheck, Building2, Phone, Mail, MapPin, Target, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Lead {
   id?: string;
